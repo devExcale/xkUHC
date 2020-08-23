@@ -1,0 +1,12 @@
+name: xkUHC
+version: 2.0.0
+description: A simple single-instance UHC plugin
+main: ovh.excale.mc.UHC
+authors:
+  - Excale
+  - Cr4zy5ky_U
+depend:
+  - CommandAPI
+api-version: "1.13"
+website: http://mc.excale.ovh/
+load: POSTWORLD
