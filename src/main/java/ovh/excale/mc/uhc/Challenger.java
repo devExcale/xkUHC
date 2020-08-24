@@ -3,10 +3,15 @@ package ovh.excale.mc.uhc;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ovh.excale.mc.UHC;
+import ovh.excale.mc.uhc.events.ChallengerDisconnectEvent;
+import ovh.excale.mc.uhc.events.ChallengerJoinEvent;
 
 import java.util.*;
 
@@ -30,6 +35,8 @@ public class Challenger {
 		Challenger challenger = challengerMap.get(player.getUniqueId());
 		if(challenger == null)
 			challengerMap.put(player.getUniqueId(), challenger = new Challenger(player));
+		else
+			challenger.player = player;
 
 		return challenger;
 	}
@@ -66,16 +73,47 @@ public class Challenger {
 		return team;
 	}
 
-	public static class DisconnectListener implements org.bukkit.event.Listener {
+	public static class DisconnectListener implements Listener {
 
 		private static final DisconnectListener instance = new DisconnectListener();
-
 		private static final Set<UUID> disconnectPool = Collections.synchronizedSet(new HashSet<>());
 
-		private DisconnectListener() { }
+		private boolean listening;
+
+		private DisconnectListener() {
+			listening = false;
+		}
 
 		public static DisconnectListener getInstance() {
 			return instance;
+		}
+
+		public static void start() {
+			instance.listening = true;
+			Bukkit.getPluginManager()
+					.registerEvent(PlayerQuitEvent.class,
+							instance,
+							EventPriority.HIGH,
+							(listener, event) -> ((DisconnectListener) listener).onPlayerDisconnect((PlayerQuitEvent) event),
+							UHC.plugin());
+			Bukkit.getPluginManager()
+					.registerEvent(PlayerJoinEvent.class,
+							instance,
+							EventPriority.HIGH,
+							(listener, event) -> ((DisconnectListener) listener).onPlayerJoin((PlayerJoinEvent) event),
+							UHC.plugin());
+		}
+
+		public static void stop() {
+			instance.listening = false;
+			PlayerQuitEvent.getHandlerList()
+					.unregister(instance);
+			PlayerJoinEvent.getHandlerList()
+					.unregister(instance);
+		}
+
+		public static boolean isListening() {
+			return instance.listening;
 		}
 
 		@EventHandler
@@ -85,7 +123,8 @@ public class Challenger {
 
 			if(challenger != null) {
 				disconnectPool.add(player.getUniqueId());
-				Bukkit.getPluginManager().callEvent(new ChallengerDisconnectEvent(challenger));
+				Bukkit.getPluginManager()
+						.callEvent(new ChallengerDisconnectEvent(challenger));
 			}
 		}
 
@@ -93,8 +132,10 @@ public class Challenger {
 		private void onPlayerJoin(PlayerJoinEvent event) {
 			Player player = event.getPlayer();
 			Challenger challenger = challengerMap.get(player.getUniqueId());
+
 			if(challenger != null)
-				challenger.player = player;
+				Bukkit.getPluginManager()
+						.callEvent(new ChallengerJoinEvent(Challenger.of(player)));
 		}
 
 	}

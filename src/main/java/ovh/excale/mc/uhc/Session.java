@@ -46,26 +46,30 @@ public class Session implements Listener {
 
 	public Optional<World> generateWorld() {
 		Optional<World> optional = new WorldManager(System.currentTimeMillis() + ".xkuhc").generate();
-		optional.ifPresent(world -> this.world = world);
+		optional.ifPresent(world -> {
+			this.world = world;
+
+			WorldBorder border = world.getWorldBorder();
+			border.setCenter(0, 0);
+			border.setSize(2000);
+		});
+
 		return optional;
 	}
 
 	public void start() {
-		WorldBorder worldBorder = world.getWorldBorder();
-
-		worldBorder.setCenter(0, 0);
-		worldBorder.setSize(2000);
-
 		Team.getAll()
-				.forEach(team -> team.players()
-						.forEach(player -> {
-							players.add(Challenger.of(player));
-							player.setGameMode(GameMode.SURVIVAL);
-							player.setFoodLevel(20);
-							player.setHealth(20);
-							player.setLevel(0);
-							player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 5, false, false, false));
-						}));
+				.stream()
+				.flatMap(team -> team.players()
+						.stream())
+				.forEach(player -> {
+					players.add(Challenger.of(player));
+					player.setGameMode(GameMode.SURVIVAL);
+					player.setFoodLevel(20);
+					player.setHealth(20);
+					player.setLevel(0);
+					player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 5, false, false, false));
+				}));
 
 		ConsoleCommandSender console = Bukkit.getConsoleSender();
 		Bukkit.getServer()
@@ -73,29 +77,35 @@ public class Session implements Listener {
 		Bukkit.getServer()
 				.dispatchCommand(console, "spreadplayers 0 0 150 1000 true @a");
 
-		AtomicReference<BukkitTask> taskReference = new AtomicReference<>();
 		AtomicInteger seconds = new AtomicInteger(5);
+		AtomicReference<BukkitTask> taskReference = new AtomicReference<>();
 
 		taskReference.set(Bukkit.getScheduler()
 				.runTaskTimerAsynchronously(UHC.plugin(), () -> {
+
 					if(seconds.get() > 0)
 						broadcast(seconds + " left...");
+
 					else {
 						broadcast("UHC start!");
 
 						BukkitScheduler scheduler = Bukkit.getScheduler();
-						scheduler.cancelTask(taskReference.get()
-								.getTaskId());
+						taskReference.get()
+								.cancel();
 						scheduler.runTaskTimerAsynchronously(UHC.plugin(), this::run, 100, 20);
 					}
 
 					seconds.getAndDecrement();
 				}, 0, 20));
-
 	}
 
 	public void run() {
 
+		switch(minutes--) {
+
+			case
+
+		}
 
 	}
 
