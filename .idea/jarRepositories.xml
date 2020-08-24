@@ -27,6 +27,11 @@
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="commandapi" />
+      <option name="name" value="commandapi" />
+      <option name="url" value="https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="mccommandapi" />
       <option name="name" value="mccommandapi" />
       <option name="url" value="https://raw.githubusercontent.com/JorelAli/1.13-Command-API/mvn-repo/1.13CommandAPI/" />

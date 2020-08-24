@@ -2,17 +2,14 @@ package ovh.excale.mc.uhc.commands;
 
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import dev.jorel.commandapi.executors.CommandExecutor;
 import dev.jorel.commandapi.executors.PlayerCommandExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Session;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -26,7 +23,10 @@ public enum UhcCommand {
 	CLEANUP;
 
 	public static String[] stringValues() {
-		return Stream.of(values()).map(Enum::toString).map(String::toLowerCase).toArray(String[]::new);
+		return Stream.of(values())
+				.map(Enum::toString)
+				.map(String::toLowerCase)
+				.toArray(String[]::new);
 	}
 
 	public static class Executor implements PlayerCommandExecutor {
@@ -56,14 +56,19 @@ public enum UhcCommand {
 
 				case GENERATE:
 					player.sendMessage("Generating world...");
-					Bukkit.getScheduler().runTaskAsynchronously(UHC.plugin(), () -> {
-						Optional<World> world = Session.by(player).generateWorld();
-						if(world.isPresent()) {
-							player.sendMessage("World generated! Teleporting.");
-							player.teleport(world.get().getSpawnLocation());
-							player.sendMessage("This world's id is " + world.get().getName().split("\\.")[0]);
-						}
-					});
+					Bukkit.getScheduler()
+							.runTaskAsynchronously(UHC.plugin(), () -> {
+								Optional<World> world = Session.by(player)
+										.generateWorld();
+								if(world.isPresent()) {
+									player.sendMessage("World generated! Teleporting.");
+									player.teleport(world.get()
+											.getSpawnLocation());
+									player.sendMessage("This world's id is " + world.get()
+											.getName()
+											.split("\\.")[0]);
+								}
+							});
 					break;
 
 				case CLEANUP:
@@ -82,7 +87,8 @@ public enum UhcCommand {
 				try {
 					return UhcCommand.valueOf(string.toUpperCase());
 				} catch(IllegalArgumentException e) {
-					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput().appendHere());
+					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput()
+							.appendHere());
 				}
 			});
 		}

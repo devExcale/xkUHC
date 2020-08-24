@@ -35,7 +35,8 @@ public class Team {
 		this.name = name;
 		if(scoreboard == null)
 			//noinspection ConstantConditions
-			scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+			scoreboard = Bukkit.getScoreboardManager()
+					.getNewScoreboard();
 		vanillaTeam = scoreboard.registerNewTeam(name);
 		vanillaTeam.setPrefix("[" + name + "]");
 		vanillaTeam.setDisplayName(name);
@@ -60,7 +61,8 @@ public class Team {
 	public boolean add(Challenger challenger) {
 		boolean b = challenger.getTeam() == null;
 		if(b) {
-			vanillaTeam.addEntry(challenger.vanilla().getName());
+			vanillaTeam.addEntry(challenger.vanilla()
+					.getName());
 			members.add(challenger);
 			challenger.setTeam(this);
 		}
@@ -70,41 +72,49 @@ public class Team {
 	public boolean add(Player player) {
 		Challenger challenger = Challenger.of(player);
 		boolean b = challenger.getTeam() == null;
+
 		if(b) {
 			vanillaTeam.addEntry(player.getName());
 			members.add(challenger);
 			challenger.setTeam(this);
 		}
+
 		return b;
 	}
 
 	public boolean remove(Challenger challenger) {
 		boolean b = challenger.getTeam() != null;
+
 		if(b) {
 			challenger.setTeam(null);
-			vanillaTeam.removeEntry(challenger.vanilla().getName());
+			vanillaTeam.removeEntry(challenger.vanilla()
+					.getName());
 			members.remove(challenger);
 		}
-		return b;
 
+		return b;
 	}
 
 	public boolean remove(Player player) {
 		Challenger challenger = Challenger.of(player);
 		boolean b = challenger.getTeam() != null;
+
 		if(b) {
 			challenger.setTeam(null);
 			vanillaTeam.removeEntry(player.getName());
 			members.remove(challenger);
 		}
+
 		return b;
 	}
 
 	public void unregister() {
 		vanillaTeam.unregister();
 		teamMap.remove(name);
+
 		for(Challenger challenger : members)
 			challenger.setTeam(null);
+
 		members.clear();
 	}
 

@@ -27,8 +27,7 @@ public enum TeamCommand {
 				try {
 					return TeamCommand.valueOf(string.toUpperCase());
 				} catch(IllegalArgumentException e) {
-					throw new CustomArgumentException(new MessageBuilder("Unknown op: ")
-							.appendArgInput()
+					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput()
 							.appendHere());
 				}
 			});

@@ -1,8 +1,10 @@
 package ovh.excale.mc.uhc;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,14 +66,27 @@ public class Challenger {
 		return team;
 	}
 
-	public static class Listener implements org.bukkit.event.Listener {
+	public static class DisconnectListener implements org.bukkit.event.Listener {
 
-		private static final Listener instance = new Listener();
+		private static final DisconnectListener instance = new DisconnectListener();
 
-		private Listener() { }
+		private static final Set<UUID> disconnectPool = Collections.synchronizedSet(new HashSet<>());
 
-		public static Listener getInstance() {
+		private DisconnectListener() { }
+
+		public static DisconnectListener getInstance() {
 			return instance;
+		}
+
+		@EventHandler
+		private void onPlayerDisconnect(PlayerQuitEvent event) {
+			Player player = event.getPlayer();
+			Challenger challenger = Challenger.get(player);
+
+			if(challenger != null) {
+				disconnectPool.add(player.getUniqueId());
+				Bukkit.getPluginManager().callEvent(new ChallengerDisconnectEvent(challenger));
+			}
 		}
 
 		@EventHandler

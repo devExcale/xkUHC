@@ -21,8 +21,7 @@ public class WorldManager {
 		Optional<World> optional = Optional.empty();
 		try {
 			optional = Optional.ofNullable(Bukkit.getScheduler()
-					.callSyncMethod(UHC.plugin(), new WorldCreator(worldName).seed(worldName
-							.hashCode())::createWorld)
+					.callSyncMethod(UHC.plugin(), new WorldCreator(worldName).seed(worldName.hashCode())::createWorld)
 					.get());
 		} catch(Exception ignored) {
 		}
@@ -33,17 +32,20 @@ public class WorldManager {
 
 	public static void cleanUpWorlds(Runnable andThen) {
 
-		Bukkit.getScheduler().runTaskAsynchronously(UHC.plugin(), () -> {
-			Bukkit.getWorlds().forEach(world1 -> {
+		Bukkit.getScheduler()
+				.runTaskAsynchronously(UHC.plugin(), () -> {
+					Bukkit.getWorlds()
+							.forEach(world1 -> {
 
-				String[] split = world1.getName().split("\\.");
+								String[] split = world1.getName()
+										.split("\\.");
 
-				if(split[split.length - 1].equals("xkuhc"))
-					deleteFile(world1.getWorldFolder());
-			});
+								if(split[split.length - 1].equals("xkuhc"))
+									deleteFile(world1.getWorldFolder());
+							});
 
-			andThen.run();
-		});
+					andThen.run();
+				});
 
 	}
 

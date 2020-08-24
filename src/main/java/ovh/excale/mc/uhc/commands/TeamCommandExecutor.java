@@ -76,12 +76,15 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 					teamName = team1.getName();
 					ClickEvent click = new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName);
 					HoverEvent hover = new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-							new ComponentBuilder("Edit team ").append(teamName, FormatRetention.NONE).bold(true).create());
+							new ComponentBuilder("Edit team ").append(teamName, FormatRetention.NONE)
+									.bold(true)
+									.create());
 
 					menuBuilder.insert(teamName, hover, click);
 				}
 
-				player.spigot().sendMessage(menuBuilder.build());
+				player.spigot()
+						.sendMessage(menuBuilder.build());
 				break;
 
 			// TEAMS LIST
@@ -100,7 +103,8 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 						.insert("Delete", DELETE_HOVER, new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " delete"))
 						.last(backText);
 
-				player.spigot().sendMessage(menuBuilder.build());
+				player.spigot()
+						.sendMessage(menuBuilder.build());
 				break;
 
 			// TEAM MANAGEMENT
@@ -123,17 +127,20 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 
 					case DELETE:
 						team.unregister();
-						menuBuilder.info("Team deleted.").last(backText);
+						menuBuilder.info("Team deleted.")
+								.last(backText);
 						break;
 
 					case ADD:
-						Set<Player> players = new HashSet<>(Bukkit.getServer().getOnlinePlayers());
+						Set<Player> players = new HashSet<>(Bukkit.getServer()
+								.getOnlinePlayers());
 						players.removeAll(team.players());
 
 						backText = new TextComponent(backText);
 						backText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName));
 
-						menuBuilder.info("Choose the player you want to add:").last(backText);
+						menuBuilder.info("Choose the player you want to add:")
+								.last(backText);
 						for(Player player1 : players) {
 							String playerName = player1.getDisplayName();
 							menuBuilder.insert(playerName,
@@ -152,7 +159,8 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 						backText = new TextComponent(BACK);
 						backText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName));
 
-						menuBuilder.info("Choose the player you want to remove:").last(backText);
+						menuBuilder.info("Choose the player you want to remove:")
+								.last(backText);
 						for(Player player1 : team.players()) {
 							String playerName = player1.getDisplayName();
 							menuBuilder.insert(playerName,
@@ -181,7 +189,8 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 
 				}
 
-				player.spigot().sendMessage(menuBuilder.build());
+				player.spigot()
+						.sendMessage(menuBuilder.build());
 				break;
 
 			// FULL TEAM OP
@@ -215,7 +224,8 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 						menuBuilder.info("You shouldn't be here. Get lost.");
 				}
 
-				player.spigot().sendMessage(menuBuilder.build());
+				player.spigot()
+						.sendMessage(menuBuilder.build());
 				break;
 
 		}

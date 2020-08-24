@@ -12,7 +12,6 @@ import org.bukkit.scheduler.BukkitTask;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class PlayerResponseListener implements Listener {
 
@@ -29,8 +28,7 @@ public class PlayerResponseListener implements Listener {
 	public void await(Player player, BiConsumer<Player, String> then) {
 		Queue<BiConsumer<Player, String>> queue = queueMap.computeIfAbsent(player, k -> new LinkedList<>());
 		AtomicReference<BukkitTask> timeoutTaskReference = new AtomicReference<>();
-		BiConsumer<Player, String> consumer = then.andThen((player1, s) -> timeoutTaskReference
-				.get()
+		BiConsumer<Player, String> consumer = then.andThen((player1, s) -> timeoutTaskReference.get()
 				.cancel());
 		queue.offer(consumer);
 

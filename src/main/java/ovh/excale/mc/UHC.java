@@ -35,7 +35,7 @@ public class UHC extends JavaPlugin {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
 
-		pluginManager.registerEvents(Challenger.Listener.getInstance(), this);
+		pluginManager.registerEvents(Challenger.DisconnectListener.getInstance(), this);
 		pluginManager.registerEvents(responseListener, this);
 
 
@@ -98,7 +98,8 @@ public class UHC extends JavaPlugin {
 					player.sendMessage(ChatColor.RED + "Illegal characters in name. Only alphanumeric characters, square brackets, dots, hashes and @s are permitted.");
 
 			});
-		}).register();
+		})
+				.register();
 
 		arguments = new LinkedHashMap<>();
 		arguments.put("team", new TeamCommand.Argument());
@@ -111,7 +112,8 @@ public class UHC extends JavaPlugin {
 					team.setColor(color);
 
 					commandSender.spigot()
-							.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name()).build());
+							.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
+									.build());
 
 				})
 				.register();
@@ -123,7 +125,8 @@ public class UHC extends JavaPlugin {
 				player.sendMessage("You're in team " + team.getName() + ".");
 			else
 				player.sendMessage("You're not in a team.");
-		}).register();
+		})
+				.register();
 
 	}
 
