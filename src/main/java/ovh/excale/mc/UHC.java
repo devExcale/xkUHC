@@ -2,16 +2,15 @@ package ovh.excale.mc;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.Argument;
-import dev.jorel.commandapi.arguments.ChatColorArgument;
-import dev.jorel.commandapi.arguments.CustomArgument;
-import dev.jorel.commandapi.arguments.PlayerArgument;
+import dev.jorel.commandapi.arguments.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.uhc.Challenger;
 import ovh.excale.mc.uhc.Team;
+import ovh.excale.mc.uhc.WorldManager;
 import ovh.excale.mc.uhc.commands.TeamCommand;
 import ovh.excale.mc.uhc.commands.TeamCommandExecutor;
 import ovh.excale.mc.uhc.commands.UhcCommand;
@@ -19,7 +18,6 @@ import ovh.excale.mc.uhc.commands.UhcCommand;
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 
-@SuppressWarnings("unused")
 public class UHC extends JavaPlugin {
 
 	private static UHC instance;
@@ -32,16 +30,38 @@ public class UHC extends JavaPlugin {
 	public void onEnable() {
 		super.onEnable();
 		instance = this;
-		PluginManager pluginManager = Bukkit.getPluginManager();
+
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
+		Bukkit.getPluginManager()
+				.registerEvents(responseListener, this);
 
-		pluginManager.registerEvents(Challenger.DisconnectListener.getInstance(), this);
-		pluginManager.registerEvents(responseListener, this);
+		LinkedHashMap<String, Argument> a = new LinkedHashMap<>();
+		a.put("worldname", new StringArgument());
+		new CommandAPICommand("worldtp").withArguments(a)
+				.withPermission(CommandPermission.OP)
+				.executesPlayer((player, objects) -> {
+					World world = Bukkit.getWorld((String) objects[0]);
+					if(world != null)
+						player.teleport(world.getSpawnLocation());
+					else
+						player.sendMessage("Couldn't load world.");
+				})
+				.register();
 
+		new CommandAPICommand("oceancheck").withPermission(CommandPermission.OP)
+				.executesPlayer((player, objects) -> {
+					World world = player.getWorld();
+					Location location = player.getLocation();
+					boolean isOcean = WorldManager.isOcean(world.getBiome((int) location.getX(), (int) location.getZ()));
+
+					player.sendMessage("Ocean: " + isOcean);
+				})
+				.register();
 
 		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
 		arguments.put("op", new UhcCommand.Argument().overrideSuggestions(UhcCommand.stringValues()));
 		new CommandAPICommand("xkuhc").withPermission(CommandPermission.OP)
+				.withArguments(arguments)
 				.executesPlayer(new UhcCommand.Executor())
 				.withAliases("uhc")
 				.register();

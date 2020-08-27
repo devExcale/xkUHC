@@ -11,6 +11,8 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.UHC;
 
 import java.util.*;
@@ -21,37 +23,54 @@ public class Session implements Listener {
 
 	private static final Map<Challenger, Session> sessionMap = Collections.synchronizedMap(new HashMap<>());
 
-	public static Session by(Player player) {
+	public static @Nullable Session by(Player player) {
 		return by(Challenger.of(player));
 	}
 
-	public static Session by(Challenger challenger) {
-		Session session = sessionMap.get(challenger);
-		if(session == null)
-			session = new Session(challenger);
-		sessionMap.put(challenger, session);
+	public static @Nullable Session by(Challenger challenger) {
+		return sessionMap.get(challenger);
+	}
+
+	public static @NotNull Session create(Player player) {
+		return create(Challenger.of(player));
+	}
+
+	public static @NotNull Session create(Challenger challenger) {
+		Session session = new Session(challenger);
+
+		Session oldSession = sessionMap.put(challenger, session);
+		if(oldSession != null)
+			oldSession.purge();
+
 		return session;
 	}
 
-	private Challenger parent;
+	private final Challenger mod;
+	private final Set<Challenger> players;
+
 	private World world;
+	private String worldId;
+	private WorldBorder worldBorder;
 	private BukkitTask task;
-	private Set<Challenger> players;
 	private int minutes;
 
-	private Session(Challenger challenger) {
-		parent = challenger;
+	private Session(@NotNull Challenger mod) {
+		this.mod = Objects.requireNonNull(mod);
 		players = Collections.synchronizedSet(new HashSet<>());
+		worldId = "-1";
 	}
 
 	public Optional<World> generateWorld() {
-		Optional<World> optional = new WorldManager(System.currentTimeMillis() + ".xkuhc").generate();
+		String millis = String.valueOf(System.currentTimeMillis());
+
+		Optional<World> optional = new WorldManager(millis + ".xkuhc").generate();
 		optional.ifPresent(world -> {
 			this.world = world;
+			worldId = millis;
 
-			WorldBorder border = world.getWorldBorder();
-			border.setCenter(0, 0);
-			border.setSize(2000);
+			worldBorder = world.getWorldBorder();
+			worldBorder.setCenter(0, 0);
+			worldBorder.setSize(2000);
 		});
 
 		return optional;
@@ -62,20 +81,29 @@ public class Session implements Listener {
 				.stream()
 				.flatMap(team -> team.players()
 						.stream())
-				.forEach(player -> {
-					players.add(Challenger.of(player));
-					player.setGameMode(GameMode.SURVIVAL);
-					player.setFoodLevel(20);
-					player.setHealth(20);
-					player.setLevel(0);
-					player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 5, false, false, false));
-				}));
+				.forEach(player -> players.add(Challenger.of(player)));
+
+		if(world == null) {
+			mod.vanilla()
+					.sendMessage("World not generated, generate a world first.");
+			return;
+		}
+
+		players.forEach(challenger -> {
+			Player player = challenger.vanilla();
+			player.setGameMode(GameMode.SURVIVAL);
+			player.setFoodLevel(20);
+			player.setHealth(20);
+			player.setLevel(0);
+			player.addPotionEffect(new PotionEffect(PotionEffectType.BLINDNESS, 100, 5, false, false, false));
+			player.addScoreboardTag(worldId);
+		});
 
 		ConsoleCommandSender console = Bukkit.getConsoleSender();
 		Bukkit.getServer()
-				.dispatchCommand(console, "advancement revoke @a everything");
+				.dispatchCommand(console, "advancement revoke @a[tag=" + worldId + "] everything");
 		Bukkit.getServer()
-				.dispatchCommand(console, "spreadplayers 0 0 150 1000 true @a");
+				.dispatchCommand(console, "spreadplayers 0 0 150 1000 true @a[tag=" + worldId + "]");
 
 		AtomicInteger seconds = new AtomicInteger(5);
 		AtomicReference<BukkitTask> taskReference = new AtomicReference<>();
@@ -84,28 +112,46 @@ public class Session implements Listener {
 				.runTaskTimerAsynchronously(UHC.plugin(), () -> {
 
 					if(seconds.get() > 0)
-						broadcast(seconds + " left...");
+						broadcast("UHC - " + seconds);
 
 					else {
-						broadcast("UHC start!");
+						broadcast("UHC - Start!");
 
 						BukkitScheduler scheduler = Bukkit.getScheduler();
 						taskReference.get()
 								.cancel();
-						scheduler.runTaskTimerAsynchronously(UHC.plugin(), this::run, 100, 20);
+						task = scheduler.runTaskTimerAsynchronously(UHC.plugin(), this::run, 100, 20);
 					}
 
 					seconds.getAndDecrement();
 				}, 0, 20));
 	}
 
-	public void run() {
+	public void stop() {
 
-		switch(minutes--) {
+		task.cancel();
 
-			case
+	}
 
-		}
+	private void run() {
+
+		task.cancel();
+
+	}
+
+	public void purge() {
+
+		if(task != null)
+			if(!task.isCancelled())
+				task.cancel();
+
+		World defWorld = Bukkit.getWorlds()
+				.get(0);
+		world.getPlayers()
+				.forEach(player -> player.teleport(defWorld.getSpawnLocation()));
+
+		Bukkit.getServer()
+				.unloadWorld(world, false);
 
 	}
 
@@ -113,6 +159,25 @@ public class Session implements Listener {
 		for(Challenger challenger : players)
 			challenger.vanilla()
 					.sendMessage(message);
+	}
+
+	public String debug() {
+
+		String worldName = (world != null) ? world.getName() : "undefined-world";
+		String mod = this.mod.vanilla()
+				.getDisplayName();
+		String taskId = (task != null) ? String.valueOf(task.getTaskId()) : "-1";
+		String running = (task != null) ? (task.isCancelled() ? "stopped" : "running") : "stopped";
+
+		String s = "[" + worldName + "]\n Mod: " + mod + "\n WorldId: " + worldId + "\n Task: " + taskId + " " + running + "\n Minutes: " + minutes + "\n Players: ";
+		String[] names = players.stream()
+				.map(challenger -> challenger.vanilla()
+						.getDisplayName())
+				.toArray(String[]::new);
+		s += Arrays.toString(names);
+
+		return s;
+
 	}
 
 }

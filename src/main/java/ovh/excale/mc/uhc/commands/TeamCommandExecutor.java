@@ -207,16 +207,18 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 				switch(op) {
 
 					case ADD:
-						if(team.add(target))
+						if(team.add(target)) {
 							menuBuilder.info("Added " + target.getDisplayName() + " to the team.");
-						else
+							target.sendMessage("You've been added to team " + teamName);
+						} else
 							menuBuilder.info("Failed to add " + target.getDisplayName() + " to the team.");
 						break;
 
 					case REMOVE:
-						if(team.remove(target))
+						if(team.remove(target)) {
 							menuBuilder.info("Removed " + target.getDisplayName() + " from the team.");
-						else
+							target.sendMessage("You've been removed from team " + teamName);
+						} else
 							menuBuilder.info("Failed to remove " + target.getDisplayName() + " from the team.");
 						break;
 
