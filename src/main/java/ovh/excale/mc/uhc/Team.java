@@ -6,10 +6,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unused")
 public class Team {
 
 	private static final Map<String, Team> teamMap = Collections.synchronizedMap(new HashMap<>());
@@ -28,6 +26,21 @@ public class Team {
 
 	public static Set<Team> getAll() {
 		return new HashSet<>(teamMap.values());
+	}
+
+	public static void clear() {
+		for(Team team : teamMap.values())
+			team.disband();
+		teamMap.clear();
+
+		if(scoreboard == null)
+			//noinspection ConstantConditions
+			scoreboard = Bukkit.getScoreboardManager()
+					.getNewScoreboard();
+
+		for(org.bukkit.scoreboard.Team team : scoreboard.getTeams()) {
+			team.unregister();
+		}
 	}
 
 	private Team(String name) {
@@ -51,7 +64,11 @@ public class Team {
 	public Set<Player> players() {
 		return members.stream()
 				.map(Challenger::vanilla)
-				.collect(Collectors.toSet());
+				.collect(Collectors.toCollection(HashSet::new));
+	}
+
+	public Set<Challenger> challengers() {
+		return new HashSet<>(members);
 	}
 
 	public int size() {
@@ -108,7 +125,7 @@ public class Team {
 		return b;
 	}
 
-	public void unregister() {
+	public void disband() {
 		vanillaTeam.unregister();
 		teamMap.remove(name);
 
@@ -116,13 +133,6 @@ public class Team {
 			challenger.setTeam(null);
 
 		members.clear();
-	}
-
-	public void doAllAlive(Consumer<Player> consumer) {
-		for(Challenger challenger : members)
-			if(challenger.isAlive())
-				consumer.accept(challenger.vanilla());
-
 	}
 
 	public void setColor(ChatColor color) {

@@ -17,35 +17,47 @@ import ovh.excale.mc.uhc.commands.UhcCommand;
 
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class UHC extends JavaPlugin {
 
-	private static UHC instance;
+	public static boolean DEBUG_MODE = false;
 
 	public static UHC plugin() {
 		return instance;
 	}
+
+	private static UHC instance;
 
 	@Override
 	public void onEnable() {
 		super.onEnable();
 		instance = this;
 
+		// REMOVE ALL PREVIOUS VANILLA INSTANCES OF TEAMS ON RELOAD
+		Team.clear();
+
+
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
 		Bukkit.getPluginManager()
 				.registerEvents(responseListener, this);
 
-		LinkedHashMap<String, Argument> a = new LinkedHashMap<>();
-		a.put("worldname", new StringArgument());
-		new CommandAPICommand("worldtp").withArguments(a)
-				.withPermission(CommandPermission.OP)
-				.executesPlayer((player, objects) -> {
-					World world = Bukkit.getWorld((String) objects[0]);
-					if(world != null)
-						player.teleport(world.getSpawnLocation());
-					else
-						player.sendMessage("Couldn't load world.");
+		LinkedHashMap<String, Argument> helpmepls = new LinkedHashMap<>();
+		helpmepls.put("mode", new BooleanArgument());
+		new CommandAPICommand("uhc-debug").withArguments(helpmepls)
+				.executes((sender, args) -> {
+					DEBUG_MODE = (boolean) args[0];
+					sender.sendMessage("Debug Mode changed to " + DEBUG_MODE + "!");
 				})
+				.register();
+
+		new CommandAPICommand("unbounds").executes((commandSender, objects) -> {
+			commandSender.sendMessage("[" + Challenger.teamUnbound()
+					.stream()
+					.map(challenger -> challenger.vanilla()
+							.getDisplayName())
+					.collect(Collectors.joining(", ")) + "]");
+		})
 				.register();
 
 		new CommandAPICommand("oceancheck").withPermission(CommandPermission.OP)

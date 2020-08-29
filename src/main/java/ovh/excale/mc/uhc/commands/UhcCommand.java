@@ -85,12 +85,9 @@ public enum UhcCommand {
 
 							Optional<World> world = session.generateWorld();
 
-							if(world.isPresent()) {
-								player.sendMessage("World generated! Teleporting.");
-								scheduler.runTask(UHC.plugin(),
-										() -> player.teleport(world.get()
-												.getSpawnLocation()));
-							} else
+							if(world.isPresent())
+								player.sendMessage("World generated!");
+							else
 								player.sendMessage("Couldn't generate world.");
 						});
 					}
