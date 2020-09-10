@@ -1,9 +1,9 @@
 package ovh.excale.mc.uhc;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
+import ovh.excale.mc.UHC;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 public class Team {
 
 	private static final Map<String, Team> teamMap = Collections.synchronizedMap(new HashMap<>());
-	private static Scoreboard scoreboard;
 
 	private final String name;
 	private final Set<Challenger> members;
@@ -33,11 +32,7 @@ public class Team {
 			team.disband();
 		teamMap.clear();
 
-		if(scoreboard == null)
-			//noinspection ConstantConditions
-			scoreboard = Bukkit.getScoreboardManager()
-					.getNewScoreboard();
-
+		Scoreboard scoreboard = UHC.scoreboard();
 		for(org.bukkit.scoreboard.Team team : scoreboard.getTeams()) {
 			team.unregister();
 		}
@@ -46,15 +41,13 @@ public class Team {
 	private Team(String name) {
 		this.members = Collections.synchronizedSet(new HashSet<>());
 		this.name = name;
-		if(scoreboard == null)
-			//noinspection ConstantConditions
-			scoreboard = Bukkit.getScoreboardManager()
-					.getNewScoreboard();
-		vanillaTeam = scoreboard.registerNewTeam(name);
+
+		vanillaTeam = UHC.scoreboard()
+				.registerNewTeam(name);
 		vanillaTeam.setPrefix("[" + name + "]");
 		vanillaTeam.setDisplayName(name);
-		vanillaTeam.setCanSeeFriendlyInvisibles(false);
-		vanillaTeam.setAllowFriendlyFire(true);
+		vanillaTeam.setCanSeeFriendlyInvisibles(true);
+		vanillaTeam.setAllowFriendlyFire(false);
 	}
 
 	public String getName() {

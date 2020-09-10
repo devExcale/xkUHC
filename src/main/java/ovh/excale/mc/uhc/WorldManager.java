@@ -10,6 +10,7 @@ import ovh.excale.mc.UHC;
 
 import java.io.File;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class WorldManager {
 
@@ -60,17 +61,18 @@ public class WorldManager {
 		return optional;
 	}
 
-	public static void cleanUpWorlds(@Nullable Runnable andThen) {
+	public static void cleanUpWorlds(@Nullable Consumer<Boolean> andThen) {
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.plugin(), () -> {
 					File[] worlds = Bukkit.getWorldContainer()
 							.listFiles((dir, name) -> name.endsWith(".xkuhc"));
 
+					boolean b = true;
 					for(File world : worlds)
-						deleteFile(world, world);
+						b &= deleteFile(world, world);
 
 					if(andThen != null)
-						andThen.run();
+						andThen.accept(b);
 				});
 
 	}
@@ -88,7 +90,9 @@ public class WorldManager {
 		if(files != null)
 			for(File file1 : files)
 				if(!deleteFile(master, file1))
-					System.out.println("[xkUHC cleanup] Can't delete " + file1.getName() + " from " + master.getName());
+					UHC.plugin()
+							.getLogger()
+							.warning("Can't delete file " + file1.getName() + " from world " + master.getName());
 		return file.delete();
 	}
 

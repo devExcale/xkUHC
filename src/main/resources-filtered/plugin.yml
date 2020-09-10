@@ -1,10 +1,11 @@
-name: xkUHC
-version: 2.0.0
-description: A simple single-instance UHC plugin
+name: ${project.name}
+version: ${project.version}
+description: ${project.description}
 main: ovh.excale.mc.UHC
 authors:
   - Excale
   - Cr4zy5ky_U
+  - dev_excale@hotmail.com
 depend:
   - CommandAPI
 api-version: "1.13"

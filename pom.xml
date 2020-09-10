@@ -6,7 +6,11 @@
 
 	<groupId>ovh.excale.mc</groupId>
 	<artifactId>xkuhc</artifactId>
-	<version>2.0.0-DEVELOP</version>
+	<version>2.1.0-DEVELOP</version>
+
+	<name>xkUHC</name>
+	<description>A simple single-instance UHC plugin</description>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -19,6 +23,17 @@
 				</configuration>
 			</plugin>
 		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources-filtered</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
 
 	<properties>

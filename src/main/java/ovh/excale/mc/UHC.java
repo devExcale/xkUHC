@@ -3,11 +3,17 @@ package ovh.excale.mc;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.*;
+import dev.jorel.commandapi.executors.CommandExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
 import ovh.excale.mc.uhc.Team;
 import ovh.excale.mc.uhc.WorldManager;
@@ -21,18 +27,35 @@ import java.util.stream.Collectors;
 
 public class UHC extends JavaPlugin {
 
+	private static final String LIST_HEALTH = "listHealth";
+	private static final String NAME_HEALTH = "nameHealth";
+
 	public static boolean DEBUG_MODE = false;
 
 	public static UHC plugin() {
 		return instance;
 	}
 
+	public static Scoreboard scoreboard() {
+		if(scoreboard == null)
+			//noinspection ConstantConditions
+			scoreboard = Bukkit.getScoreboardManager()
+					.getNewScoreboard();
+
+		return scoreboard;
+	}
+
 	private static UHC instance;
+	private static Scoreboard scoreboard;
 
 	@Override
 	public void onEnable() {
 		super.onEnable();
 		instance = this;
+
+		//noinspection ConstantConditions
+		scoreboard = Bukkit.getScoreboardManager()
+				.getNewScoreboard();
 
 		// REMOVE ALL PREVIOUS VANILLA INSTANCES OF TEAMS ON RELOAD
 		Team.clear();
@@ -146,7 +169,6 @@ public class UHC extends JavaPlugin {
 					commandSender.spigot()
 							.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
 									.build());
-
 				})
 				.register();
 
@@ -160,6 +182,35 @@ public class UHC extends JavaPlugin {
 		})
 				.register();
 
+		arguments = new LinkedHashMap<>();
+		arguments.put("show", new BooleanArgument());
+		new CommandAPICommand("showhealth").executes((CommandExecutor) (commandSender, objects) -> showHealth((boolean) objects[0]))
+				.withPermission(CommandPermission.OP)
+				.withArguments(arguments)
+				.register();
+
+	}
+
+	public static void showHealth(boolean show) {
+		Objective listHealth = scoreboard.getObjective(LIST_HEALTH);
+		Objective nameHealth = scoreboard.getObjective(NAME_HEALTH);
+
+		if(listHealth == null && show) {
+			scoreboard.registerNewObjective(LIST_HEALTH, "health", "Health", RenderType.HEARTS)
+					.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+			scoreboard.registerNewObjective(NAME_HEALTH, "health", " / 20", RenderType.INTEGER)
+					.setDisplaySlot(DisplaySlot.BELOW_NAME);
+
+			for(Player online : Bukkit.getOnlinePlayers()) {
+				online.setScoreboard(scoreboard);
+				online.damage(Double.MIN_VALUE);
+			}
+
+		} else if(listHealth != null && !show) {
+			listHealth.unregister();
+			if(nameHealth != null)
+				nameHealth.unregister();
+		}
 	}
 
 }
