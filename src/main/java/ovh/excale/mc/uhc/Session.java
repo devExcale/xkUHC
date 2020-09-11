@@ -13,6 +13,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.UHC;
@@ -53,6 +54,7 @@ public class Session implements Listener {
 	private final Map<Challenger, TeamInstance> teams;
 	private final boolean debug;
 
+	private Scoreboard scoreboard;
 	private World world;
 	private String worldId;
 	private WorldBorder worldBorder;
@@ -62,6 +64,9 @@ public class Session implements Listener {
 
 	private Session(@NotNull Challenger mod) {
 		this.mod = Objects.requireNonNull(mod);
+		//noinspection ConstantConditions
+		scoreboard = Bukkit.getScoreboardManager()
+				.getNewScoreboard();
 		debug = UHC.DEBUG_MODE;
 		teams = Collections.synchronizedMap(new HashMap<>());
 		minutes = 0;
@@ -115,7 +120,7 @@ public class Session implements Listener {
 								player.addScoreboardTag(worldId);
 
 								player.setGameMode(GameMode.SURVIVAL);
-								player.setFoodLevel(20);
+								player.setFoodLevel(15);
 								player.setHealth(20);
 								player.setLevel(0);
 

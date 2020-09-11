@@ -181,36 +181,6 @@ public class UHC extends JavaPlugin {
 				player.sendMessage("You're not in a team.");
 		})
 				.register();
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("show", new BooleanArgument());
-		new CommandAPICommand("showhealth").executes((CommandExecutor) (commandSender, objects) -> showHealth((boolean) objects[0]))
-				.withPermission(CommandPermission.OP)
-				.withArguments(arguments)
-				.register();
-
-	}
-
-	public static void showHealth(boolean show) {
-		Objective listHealth = scoreboard.getObjective(LIST_HEALTH);
-		Objective nameHealth = scoreboard.getObjective(NAME_HEALTH);
-
-		if(listHealth == null && show) {
-			scoreboard.registerNewObjective(LIST_HEALTH, "health", "Health", RenderType.HEARTS)
-					.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-			scoreboard.registerNewObjective(NAME_HEALTH, "health", " / 20", RenderType.INTEGER)
-					.setDisplaySlot(DisplaySlot.BELOW_NAME);
-
-			for(Player online : Bukkit.getOnlinePlayers()) {
-				online.setScoreboard(scoreboard);
-				online.damage(Double.MIN_VALUE);
-			}
-
-		} else if(listHealth != null && !show) {
-			listHealth.unregister();
-			if(nameHealth != null)
-				nameHealth.unregister();
-		}
 	}
 
 }
