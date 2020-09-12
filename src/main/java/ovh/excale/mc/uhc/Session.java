@@ -13,6 +13,9 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -54,7 +57,10 @@ public class Session implements Listener {
 	private final Map<Challenger, TeamInstance> teams;
 	private final boolean debug;
 
-	private Scoreboard scoreboard;
+	// Scoreboard related
+	private final Scoreboard scoreboard;
+	private final Objective healthObjective;
+
 	private World world;
 	private String worldId;
 	private WorldBorder worldBorder;
@@ -67,8 +73,12 @@ public class Session implements Listener {
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
-		debug = UHC.DEBUG_MODE;
+
+		healthObjective = scoreboard.registerNewObjective("tab_health", "health", "Health", RenderType.HEARTS);
+		healthObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+
 		teams = Collections.synchronizedMap(new HashMap<>());
+		debug = UHC.DEBUG_MODE;
 		minutes = 0;
 		worldId = "0";
 	}
