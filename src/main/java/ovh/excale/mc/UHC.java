@@ -2,46 +2,101 @@ package ovh.excale.mc;
 
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.Argument;
-import dev.jorel.commandapi.arguments.ChatColorArgument;
-import dev.jorel.commandapi.arguments.CustomArgument;
-import dev.jorel.commandapi.arguments.PlayerArgument;
+import dev.jorel.commandapi.arguments.*;
+import dev.jorel.commandapi.executors.CommandExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.plugin.PluginManager;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
 import ovh.excale.mc.uhc.Team;
+import ovh.excale.mc.uhc.WorldManager;
 import ovh.excale.mc.uhc.commands.TeamCommand;
 import ovh.excale.mc.uhc.commands.TeamCommandExecutor;
 import ovh.excale.mc.uhc.commands.UhcCommand;
 
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-@SuppressWarnings("unused")
 public class UHC extends JavaPlugin {
 
-	private static UHC instance;
+	private static final String LIST_HEALTH = "listHealth";
+	private static final String NAME_HEALTH = "nameHealth";
+
+	public static boolean DEBUG_MODE = false;
 
 	public static UHC plugin() {
 		return instance;
 	}
 
+	public static Scoreboard scoreboard() {
+		if(scoreboard == null)
+			//noinspection ConstantConditions
+			scoreboard = Bukkit.getScoreboardManager()
+					.getNewScoreboard();
+
+		return scoreboard;
+	}
+
+	private static UHC instance;
+	private static Scoreboard scoreboard;
+
 	@Override
 	public void onEnable() {
 		super.onEnable();
 		instance = this;
-		PluginManager pluginManager = Bukkit.getPluginManager();
+
+		//noinspection ConstantConditions
+		scoreboard = Bukkit.getScoreboardManager()
+				.getNewScoreboard();
+
+		// REMOVE ALL PREVIOUS VANILLA INSTANCES OF TEAMS ON RELOAD
+		Team.clear();
+
+
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
+		Bukkit.getPluginManager()
+				.registerEvents(responseListener, this);
 
-		pluginManager.registerEvents(Challenger.DisconnectListener.getInstance(), this);
-		pluginManager.registerEvents(responseListener, this);
+		LinkedHashMap<String, Argument> helpmepls = new LinkedHashMap<>();
+		helpmepls.put("mode", new BooleanArgument());
+		new CommandAPICommand("uhc-debug").withArguments(helpmepls)
+				.executes((sender, args) -> {
+					DEBUG_MODE = (boolean) args[0];
+					sender.sendMessage("Debug Mode changed to " + DEBUG_MODE + "!");
+				})
+				.register();
 
+		new CommandAPICommand("unbounds").executes((commandSender, objects) -> {
+			commandSender.sendMessage("[" + Challenger.teamUnbound()
+					.stream()
+					.map(challenger -> challenger.vanilla()
+							.getDisplayName())
+					.collect(Collectors.joining(", ")) + "]");
+		})
+				.register();
+
+		new CommandAPICommand("oceancheck").withPermission(CommandPermission.OP)
+				.executesPlayer((player, objects) -> {
+					World world = player.getWorld();
+					Location location = player.getLocation();
+					boolean isOcean = WorldManager.isOcean(world.getBiome((int) location.getX(), (int) location.getZ()));
+
+					player.sendMessage("Ocean: " + isOcean);
+				})
+				.register();
 
 		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
 		arguments.put("op", new UhcCommand.Argument().overrideSuggestions(UhcCommand.stringValues()));
 		new CommandAPICommand("xkuhc").withPermission(CommandPermission.OP)
+				.withArguments(arguments)
 				.executesPlayer(new UhcCommand.Executor())
 				.withAliases("uhc")
 				.register();
@@ -114,7 +169,6 @@ public class UHC extends JavaPlugin {
 					commandSender.spigot()
 							.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
 									.build());
-
 				})
 				.register();
 
@@ -127,7 +181,6 @@ public class UHC extends JavaPlugin {
 				player.sendMessage("You're not in a team.");
 		})
 				.register();
-
 	}
 
 }

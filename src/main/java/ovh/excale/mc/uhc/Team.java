@@ -1,19 +1,16 @@
 package ovh.excale.mc.uhc;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
+import ovh.excale.mc.UHC;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unused")
 public class Team {
 
 	private static final Map<String, Team> teamMap = Collections.synchronizedMap(new HashMap<>());
-	private static Scoreboard scoreboard;
 
 	private final String name;
 	private final Set<Challenger> members;
@@ -30,18 +27,27 @@ public class Team {
 		return new HashSet<>(teamMap.values());
 	}
 
+	public static void clear() {
+		for(Team team : teamMap.values())
+			team.disband();
+		teamMap.clear();
+
+		Scoreboard scoreboard = UHC.scoreboard();
+		for(org.bukkit.scoreboard.Team team : scoreboard.getTeams()) {
+			team.unregister();
+		}
+	}
+
 	private Team(String name) {
 		this.members = Collections.synchronizedSet(new HashSet<>());
 		this.name = name;
-		if(scoreboard == null)
-			//noinspection ConstantConditions
-			scoreboard = Bukkit.getScoreboardManager()
-					.getNewScoreboard();
-		vanillaTeam = scoreboard.registerNewTeam(name);
+
+		vanillaTeam = UHC.scoreboard()
+				.registerNewTeam(name);
 		vanillaTeam.setPrefix("[" + name + "]");
 		vanillaTeam.setDisplayName(name);
-		vanillaTeam.setCanSeeFriendlyInvisibles(false);
-		vanillaTeam.setAllowFriendlyFire(true);
+		vanillaTeam.setCanSeeFriendlyInvisibles(true);
+		vanillaTeam.setAllowFriendlyFire(false);
 	}
 
 	public String getName() {
@@ -51,7 +57,11 @@ public class Team {
 	public Set<Player> players() {
 		return members.stream()
 				.map(Challenger::vanilla)
-				.collect(Collectors.toSet());
+				.collect(Collectors.toCollection(HashSet::new));
+	}
+
+	public Set<Challenger> challengers() {
+		return new HashSet<>(members);
 	}
 
 	public int size() {
@@ -108,7 +118,7 @@ public class Team {
 		return b;
 	}
 
-	public void unregister() {
+	public void disband() {
 		vanillaTeam.unregister();
 		teamMap.remove(name);
 
@@ -116,13 +126,6 @@ public class Team {
 			challenger.setTeam(null);
 
 		members.clear();
-	}
-
-	public void doAllAlive(Consumer<Player> consumer) {
-		for(Challenger challenger : members)
-			if(challenger.isAlive())
-				consumer.accept(challenger.vanilla());
-
 	}
 
 	public void setColor(ChatColor color) {

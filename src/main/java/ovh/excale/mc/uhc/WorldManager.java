@@ -4,12 +4,28 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.block.Biome;
+import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.UHC;
 
 import java.io.File;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class WorldManager {
+
+	private static final Biome[] OCEANS = new Biome[] {
+			Biome.OCEAN,
+			Biome.COLD_OCEAN,
+			Biome.WARM_OCEAN,
+			Biome.FROZEN_OCEAN,
+			Biome.LUKEWARM_OCEAN,
+			Biome.DEEP_OCEAN,
+			Biome.DEEP_COLD_OCEAN,
+			Biome.DEEP_WARM_OCEAN,
+			Biome.DEEP_FROZEN_OCEAN,
+			Biome.DEEP_LUKEWARM_OCEAN
+	};
 
 	private final String worldName;
 
@@ -19,42 +35,64 @@ public class WorldManager {
 
 	public Optional<World> generate() {
 		Optional<World> optional = Optional.empty();
+
 		try {
 			optional = Optional.ofNullable(Bukkit.getScheduler()
 					.callSyncMethod(UHC.plugin(), new WorldCreator(worldName).seed(worldName.hashCode())::createWorld)
 					.get());
+
+			if(optional.isPresent()) {
+				World world = optional.get();
+				world.setGameRule(GameRule.NATURAL_REGENERATION, false);
+				int[] coords = new int[] { -48, -32, -16, 0, 16, 32, 48 };
+
+				outer:
+				for(int x : coords)
+					for(int z : coords)
+						if(isOcean(world.getBiome(x, z))) {
+							optional = Optional.empty();
+							break outer;
+						}
+			}
+
 		} catch(Exception ignored) {
 		}
 
-		optional.ifPresent(world1 -> world1.setGameRule(GameRule.NATURAL_REGENERATION, false));
 		return optional;
 	}
 
-	public static void cleanUpWorlds(Runnable andThen) {
-
+	public static void cleanUpWorlds(@Nullable Consumer<Boolean> andThen) {
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.plugin(), () -> {
-					Bukkit.getWorlds()
-							.forEach(world1 -> {
+					File[] worlds = Bukkit.getWorldContainer()
+							.listFiles((dir, name) -> name.endsWith(".xkuhc"));
 
-								String[] split = world1.getName()
-										.split("\\.");
+					boolean b = true;
+					for(File world : worlds)
+						b &= deleteFile(world, world);
 
-								if(split[split.length - 1].equals("xkuhc"))
-									deleteFile(world1.getWorldFolder());
-							});
-
-					andThen.run();
+					if(andThen != null)
+						andThen.accept(b);
 				});
 
 	}
 
-	private static boolean deleteFile(File file) {
+	public static boolean isOcean(Biome biome) {
+		boolean isOcean = false;
+		for(int i = 0; i < OCEANS.length && !isOcean; i++)
+			isOcean = biome.equals(OCEANS[i]);
+
+		return isOcean;
+	}
+
+	private static boolean deleteFile(File master, File file) {
 		File[] files = file.listFiles();
 		if(files != null)
 			for(File file1 : files)
-				if(!deleteFile(file))
-					System.out.println("[xkUHC cleanup] Can't delete " + file1.getName());
+				if(!deleteFile(master, file1))
+					UHC.plugin()
+							.getLogger()
+							.warning("Can't delete file " + file1.getName() + " from world " + master.getName());
 		return file.delete();
 	}
 

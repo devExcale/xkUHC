@@ -3,7 +3,6 @@ package ovh.excale.mc.uhc;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -14,6 +13,7 @@ import ovh.excale.mc.uhc.events.ChallengerDisconnectEvent;
 import ovh.excale.mc.uhc.events.ChallengerJoinEvent;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Challenger {
 
@@ -47,6 +47,17 @@ public class Challenger {
 
 	public static boolean is(Player player) {
 		return challengerMap.containsKey(player.getUniqueId());
+	}
+
+	public static Set<Challenger> teamUnbound() {
+		return challengerMap.values()
+				.stream()
+				.filter(challenger -> challenger.team == null)
+				.collect(Collectors.toCollection(HashSet::new));
+	}
+
+	public void alive() {
+		alive = true;
 	}
 
 	public void die() {
@@ -88,32 +99,28 @@ public class Challenger {
 			return instance;
 		}
 
-		public static void start() {
-			instance.listening = true;
-			Bukkit.getPluginManager()
-					.registerEvent(PlayerQuitEvent.class,
-							instance,
-							EventPriority.HIGH,
-							(listener, event) -> ((DisconnectListener) listener).onPlayerDisconnect((PlayerQuitEvent) event),
-							UHC.plugin());
-			Bukkit.getPluginManager()
-					.registerEvent(PlayerJoinEvent.class,
-							instance,
-							EventPriority.HIGH,
-							(listener, event) -> ((DisconnectListener) listener).onPlayerJoin((PlayerJoinEvent) event),
-							UHC.plugin());
+		public void start() {
+			if(!listening) {
+				listening = true;
+
+				Bukkit.getPluginManager()
+						.registerEvents(this, UHC.plugin());
+			}
 		}
 
-		public static void stop() {
-			instance.listening = false;
-			PlayerQuitEvent.getHandlerList()
-					.unregister(instance);
-			PlayerJoinEvent.getHandlerList()
-					.unregister(instance);
+		public void stop() {
+			if(listening) {
+				listening = false;
+
+				PlayerQuitEvent.getHandlerList()
+						.unregister(instance);
+				PlayerJoinEvent.getHandlerList()
+						.unregister(instance);
+			}
 		}
 
-		public static boolean isListening() {
-			return instance.listening;
+		public boolean isListening() {
+			return listening;
 		}
 
 		@EventHandler
