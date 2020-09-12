@@ -45,10 +45,6 @@ public class Challenger {
 		return challengerMap.get(player.getUniqueId());
 	}
 
-	public static boolean is(Player player) {
-		return challengerMap.containsKey(player.getUniqueId());
-	}
-
 	public static Set<Challenger> teamUnbound() {
 		return challengerMap.values()
 				.stream()
@@ -56,12 +52,8 @@ public class Challenger {
 				.collect(Collectors.toCollection(HashSet::new));
 	}
 
-	public void alive() {
-		alive = true;
-	}
-
-	public void die() {
-		alive = false;
+	public void setAlive(boolean alive) {
+		this.alive = alive;
 	}
 
 	public @NotNull Player vanilla() {
@@ -82,6 +74,11 @@ public class Challenger {
 
 	public Team getTeam() {
 		return team;
+	}
+
+	public boolean is(Player player) {
+		return player.getUniqueId()
+				.equals(uuid);
 	}
 
 	public static class DisconnectListener implements Listener {

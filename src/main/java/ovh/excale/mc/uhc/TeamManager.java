@@ -14,6 +14,7 @@ public class TeamManager {
 	private final Map<String, Team> teams;
 	private final Scoreboard scoreboard;
 
+	// TODO: SET PLAYER SCOREBOARD ON TEAM ADD
 	public TeamManager(Scoreboard scoreboard) {
 		teams = Collections.synchronizedMap(new HashMap<>());
 		this.scoreboard = scoreboard;

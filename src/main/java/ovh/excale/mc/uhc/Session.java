@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +23,6 @@ import ovh.excale.mc.UHC;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 public class Session implements Listener {
 
@@ -53,9 +51,8 @@ public class Session implements Listener {
 	}
 
 	private final Challenger mod;
-	//	private final Set<Challenger> players;
-//	private final Map<Challenger, TeamInstance> teams;
 	private final TeamManager teamManager;
+	private final Set<Challenger> players;
 	private final boolean debug;
 
 	// Scoreboard related
@@ -75,6 +72,7 @@ public class Session implements Listener {
 		scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
 
+		players = new HashSet<>();
 		teamManager = new TeamManager(scoreboard);
 		healthObjective = scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS);
 		healthObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
@@ -109,6 +107,9 @@ public class Session implements Listener {
 			return;
 		}
 
+		for(Team team : teamManager.getTeams())
+			players.addAll(team.challengers());
+
 		Bukkit.getScheduler()
 				.runTask(UHC.plugin(), () -> {
 
@@ -117,32 +118,29 @@ public class Session implements Listener {
 					PotionEffect saturation = new PotionEffect(PotionEffectType.SATURATION, 2400, 100, false, false, false);
 					PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 2400, 100, false, false, false);
 
-					teams.keySet()
-							.forEach(challenger -> {
-								Player player = challenger.vanilla();
-								player.addScoreboardTag(worldId);
+					players.forEach(challenger -> {
+						Player player = challenger.vanilla();
+						player.addScoreboardTag(worldId);
 
-								player.setGameMode(GameMode.SURVIVAL);
-								player.setFoodLevel(15);
-								player.setHealthScale(40);
-								player.setHealth(40);
-								player.setLevel(0);
+						player.setGameMode(GameMode.SURVIVAL);
+						player.setFoodLevel(15);
+						player.setHealthScale(40);
+						player.setHealth(40);
+						player.setLevel(0);
 
-								player.addPotionEffect(resistance);
-								player.addPotionEffect(regeneration);
-								player.addPotionEffect(saturation);
-								player.addPotionEffect(blindness);
-							});
+						player.addPotionEffect(resistance);
+						player.addPotionEffect(regeneration);
+						player.addPotionEffect(saturation);
+						player.addPotionEffect(blindness);
+					});
 				});
 
 		Bukkit.getServer()
-				.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a everything");
+				.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a[tag=" + worldId + "] everything");
 		PlayerSpreadder spreadder = new PlayerSpreadder(world, worldSize);
-		teams.values()
-				.forEach(teamInstance -> spreadder.spread(teamInstance.getAlive()
-						.stream()
-						.map(Challenger::vanilla)
-						.toArray(Player[]::new)));
+		teamManager.getTeams()
+				.forEach(team -> spreadder.spread(team.players()
+						.toArray(new Player[0])));
 
 		AtomicInteger seconds = new AtomicInteger(5);
 		AtomicReference<BukkitTask> taskReference = new AtomicReference<>();
@@ -158,7 +156,7 @@ public class Session implements Listener {
 						BukkitScheduler scheduler = Bukkit.getScheduler();
 
 						scheduler.runTask(UHC.plugin(), () -> {
-							for(Challenger challenger : teams.keySet()) {
+							for(Challenger challenger : players) {
 								Player player = challenger.vanilla();
 
 								for(PotionEffect potionEffect : player.getActivePotionEffects())
@@ -256,18 +254,15 @@ public class Session implements Listener {
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
-		Set<Player> playersAlive = teams.keySet()
-				.stream()
-				.filter(Challenger::isAlive)
-				.map(Challenger::vanilla)
-				.collect(Collectors.toCollection(HashSet::new));
 
-		boolean isChallenger = playersAlive.contains(player);
+		boolean isChallenger = players.stream()
+				.filter(Challenger::isAlive)
+				.anyMatch(challenger -> challenger.is(player));
 
 		if(isChallenger) {
 
 			Challenger challenger = Challenger.of(player);
-			TeamInstance team = teams.get(challenger);
+			Team team = challenger.getTeam();
 
 			broadcast("Challenger " + player.getDisplayName() + " has died!");
 			Bukkit.getScheduler()
@@ -279,13 +274,13 @@ public class Session implements Listener {
 						player.teleport(world.getSpawnLocation());
 					}, 1);
 
-			team.die(challenger);
+			challenger.setAlive(false);
 			if(team.isEliminated())
 				broadcast("Team " + team.getName() + " has been eliminated!");
 
-			int teamsLeft = (int) teams.values()
+			int teamsLeft = (int) teamManager.getTeams()
 					.stream()
-					.filter(TeamInstance::isAlive)
+					.filter(Team::isAlive)
 					.count();
 
 			if(teamsLeft == 1) {
@@ -317,7 +312,7 @@ public class Session implements Listener {
 	}
 
 	public void broadcast(String message) {
-		for(Challenger challenger : teams.keySet())
+		for(Challenger challenger : players)
 			challenger.vanilla()
 					.sendMessage(message);
 	}
@@ -331,15 +326,13 @@ public class Session implements Listener {
 		String running = (task != null) ? (task.isCancelled() ? "stopped" : "running") : "stopped";
 
 		String s = "[" + worldName + "]\n Mod: " + mod + "\n WorldId: " + worldId + "\n Task: " + taskId + " " + running + "\n Debug: " + debug + "\n Minutes: " + minutes + "\n Players: ";
-		String[] names = teams.keySet()
-				.stream()
+		String[] names = players.stream()
 				.map(challenger -> challenger.vanilla()
 						.getDisplayName())
 				.toArray(String[]::new);
 		s += Arrays.toString(names);
 
 		return s;
-
 	}
 
 }

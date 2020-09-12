@@ -15,15 +15,15 @@ import java.util.stream.Stream;
 public class Team {
 
 	private final String name;
-	private final Set<Challenger> playersAlive;
-	private final Set<Challenger> playersDead;
+	private final Set<Challenger> players;
 	private final org.bukkit.scoreboard.Team vanillaTeam;
 	private ChatColor color;
+	private boolean eliminated;
 
 	public Team(@NotNull String name, @NotNull Scoreboard scoreboard) {
-		playersAlive = Collections.synchronizedSet(new HashSet<>());
-		playersDead = Collections.synchronizedSet(new HashSet<>());
+		players = Collections.synchronizedSet(new HashSet<>());
 		this.name = Objects.requireNonNull(name);
+		eliminated = false;
 
 		vanillaTeam = scoreboard.registerNewTeam(name);
 		vanillaTeam.setCanSeeFriendlyInvisibles(true);
@@ -35,14 +35,13 @@ public class Team {
 	}
 
 	public Set<Player> players() {
-		return playersAlive.stream()
+		return players.stream()
 				.map(Challenger::vanilla)
 				.collect(Collectors.toCollection(HashSet::new));
 	}
 
 	public Set<Challenger> challengers() {
-		return Stream.concat(playersAlive.stream(), playersDead.stream())
-				.collect(Collectors.toCollection(HashSet::new));
+		return new HashSet<>(players);
 	}
 
 	public boolean add(Player player) {
@@ -51,8 +50,8 @@ public class Team {
 
 		if(b) {
 			vanillaTeam.addEntry(player.getName());
-			challenger.alive();
-			playersAlive.add(challenger);
+			players.add(challenger);
+			challenger.setAlive(true);
 			challenger.setTeam(this);
 		}
 
@@ -60,41 +59,41 @@ public class Team {
 	}
 
 	public boolean remove(Challenger challenger) {
-		boolean b = challenger.getTeam() != null;
+		boolean b = equals(challenger.getTeam());
 
 		if(b) {
 			challenger.setTeam(null);
 			vanillaTeam.removeEntry(challenger.vanilla()
 					.getName());
-			playersAlive.remove(challenger);
+			players.remove(challenger);
 		}
 
 		return b;
 	}
 
-	public boolean remove(Player player) {
-		Challenger challenger = Challenger.of(player);
-		boolean b = challenger.getTeam() != null;
+	public boolean isEliminated() {
+		if(!eliminated)
+			eliminated = players.stream()
+					.noneMatch(Challenger::isAlive);
 
-		if(b) {
-			challenger.setTeam(null);
-			vanillaTeam.removeEntry(player.getName());
-			playersAlive.remove(challenger);
-		}
+		return eliminated;
+	}
 
-		return b;
+	public boolean isAlive() {
+		if(!eliminated)
+			eliminated = players.stream()
+					.noneMatch(Challenger::isAlive);
+
+		return !eliminated;
 	}
 
 	public void unregister() {
 		vanillaTeam.unregister();
 
-		for(Challenger challenger : playersAlive)
-			challenger.setTeam(null);
-		for(Challenger challenger : playersDead)
+		for(Challenger challenger : players)
 			challenger.setTeam(null);
 
-		playersAlive.clear();
-		playersDead.clear();
+		players.clear();
 	}
 
 	public ChatColor getColor() {
