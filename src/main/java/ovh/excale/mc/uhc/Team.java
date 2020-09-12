@@ -3,6 +3,7 @@ package ovh.excale.mc.uhc;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
 
 import java.util.*;
@@ -15,6 +16,7 @@ public class Team {
 	private final String name;
 	private final Set<Challenger> members;
 	private final org.bukkit.scoreboard.Team vanillaTeam;
+	private ChatColor color;
 
 	public static Team of(String name) {
 		Team team = teamMap.get(name);
@@ -29,7 +31,7 @@ public class Team {
 
 	public static void clear() {
 		for(Team team : teamMap.values())
-			team.disband();
+			team.unregister();
 		teamMap.clear();
 
 		Scoreboard scoreboard = UHC.scoreboard();
@@ -46,6 +48,15 @@ public class Team {
 				.registerNewTeam(name);
 		vanillaTeam.setPrefix("[" + name + "]");
 		vanillaTeam.setDisplayName(name);
+		vanillaTeam.setCanSeeFriendlyInvisibles(true);
+		vanillaTeam.setAllowFriendlyFire(false);
+	}
+
+	public Team(@NotNull String name, @NotNull Scoreboard scoreboard) {
+		members = Collections.synchronizedSet(new HashSet<>());
+		this.name = Objects.requireNonNull(name);
+		vanillaTeam = scoreboard.registerNewTeam(name);
+
 		vanillaTeam.setCanSeeFriendlyInvisibles(true);
 		vanillaTeam.setAllowFriendlyFire(false);
 	}
@@ -118,7 +129,7 @@ public class Team {
 		return b;
 	}
 
-	public void disband() {
+	public void unregister() {
 		vanillaTeam.unregister();
 		teamMap.remove(name);
 
@@ -128,7 +139,12 @@ public class Team {
 		members.clear();
 	}
 
-	public void setColor(ChatColor color) {
+	public ChatColor getColor() {
+		return color;
+	}
+
+	public void setColor(@NotNull ChatColor color) {
+		this.color = Objects.requireNonNull(color);
 		vanillaTeam.setColor(color);
 	}
 

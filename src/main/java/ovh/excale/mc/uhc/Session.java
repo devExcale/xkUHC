@@ -56,6 +56,7 @@ public class Session implements Listener {
 	//	private final Set<Challenger> players;
 	private final Map<Challenger, TeamInstance> teams;
 	private final boolean debug;
+	private final TeamManager teamManager;
 
 	// Scoreboard related
 	private final Scoreboard scoreboard;
@@ -74,7 +75,8 @@ public class Session implements Listener {
 		scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
 
-		healthObjective = scoreboard.registerNewObjective("tab_health", "health", "Health", RenderType.HEARTS);
+		teamManager = new TeamManager(scoreboard);
+		healthObjective = scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS);
 		healthObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
 		teams = Collections.synchronizedMap(new HashMap<>());

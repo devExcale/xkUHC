@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
+import ovh.excale.mc.uhc.Playground;
 import ovh.excale.mc.uhc.Team;
 import ovh.excale.mc.uhc.WorldManager;
 import ovh.excale.mc.uhc.commands.TeamCommand;
