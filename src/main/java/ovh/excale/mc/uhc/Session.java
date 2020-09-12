@@ -54,9 +54,9 @@ public class Session implements Listener {
 
 	private final Challenger mod;
 	//	private final Set<Challenger> players;
-	private final Map<Challenger, TeamInstance> teams;
-	private final boolean debug;
+//	private final Map<Challenger, TeamInstance> teams;
 	private final TeamManager teamManager;
+	private final boolean debug;
 
 	// Scoreboard related
 	private final Scoreboard scoreboard;
@@ -79,7 +79,6 @@ public class Session implements Listener {
 		healthObjective = scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS);
 		healthObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-		teams = Collections.synchronizedMap(new HashMap<>());
 		debug = UHC.DEBUG_MODE;
 		minutes = 0;
 		worldId = "0";
@@ -103,14 +102,6 @@ public class Session implements Listener {
 	}
 
 	public void start() {
-		for(Team team : Team.getAll()) {
-			TeamInstance teamInstance = new TeamInstance(team);
-
-			for(Challenger challenger : team.challengers()) {
-				teams.put(challenger, teamInstance);
-				challenger.alive();
-			}
-		}
 
 		if(world == null) {
 			mod.vanilla()
@@ -133,7 +124,8 @@ public class Session implements Listener {
 
 								player.setGameMode(GameMode.SURVIVAL);
 								player.setFoodLevel(15);
-								player.setHealth(20);
+								player.setHealthScale(40);
+								player.setHealth(40);
 								player.setLevel(0);
 
 								player.addPotionEffect(resistance);
@@ -143,9 +135,8 @@ public class Session implements Listener {
 							});
 				});
 
-		ConsoleCommandSender console = Bukkit.getConsoleSender();
 		Bukkit.getServer()
-				.dispatchCommand(console, "advancement revoke @a[tag=" + worldId + "] everything");
+				.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a everything");
 		PlayerSpreadder spreadder = new PlayerSpreadder(world, worldSize);
 		teams.values()
 				.forEach(teamInstance -> spreadder.spread(teamInstance.getAlive()

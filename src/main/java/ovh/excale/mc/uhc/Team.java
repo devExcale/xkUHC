@@ -4,59 +4,28 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.mc.UHC;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Team {
 
-	private static final Map<String, Team> teamMap = Collections.synchronizedMap(new HashMap<>());
-
 	private final String name;
-	private final Set<Challenger> members;
+	private final Set<Challenger> playersAlive;
+	private final Set<Challenger> playersDead;
 	private final org.bukkit.scoreboard.Team vanillaTeam;
 	private ChatColor color;
 
-	public static Team of(String name) {
-		Team team = teamMap.get(name);
-		if(team == null)
-			teamMap.put(name, team = new Team(name));
-		return team;
-	}
-
-	public static Set<Team> getAll() {
-		return new HashSet<>(teamMap.values());
-	}
-
-	public static void clear() {
-		for(Team team : teamMap.values())
-			team.unregister();
-		teamMap.clear();
-
-		Scoreboard scoreboard = UHC.scoreboard();
-		for(org.bukkit.scoreboard.Team team : scoreboard.getTeams()) {
-			team.unregister();
-		}
-	}
-
-	private Team(String name) {
-		this.members = Collections.synchronizedSet(new HashSet<>());
-		this.name = name;
-
-		vanillaTeam = UHC.scoreboard()
-				.registerNewTeam(name);
-		vanillaTeam.setPrefix("[" + name + "]");
-		vanillaTeam.setDisplayName(name);
-		vanillaTeam.setCanSeeFriendlyInvisibles(true);
-		vanillaTeam.setAllowFriendlyFire(false);
-	}
-
 	public Team(@NotNull String name, @NotNull Scoreboard scoreboard) {
-		members = Collections.synchronizedSet(new HashSet<>());
+		playersAlive = Collections.synchronizedSet(new HashSet<>());
+		playersDead = Collections.synchronizedSet(new HashSet<>());
 		this.name = Objects.requireNonNull(name);
-		vanillaTeam = scoreboard.registerNewTeam(name);
 
+		vanillaTeam = scoreboard.registerNewTeam(name);
 		vanillaTeam.setCanSeeFriendlyInvisibles(true);
 		vanillaTeam.setAllowFriendlyFire(false);
 	}
@@ -66,28 +35,14 @@ public class Team {
 	}
 
 	public Set<Player> players() {
-		return members.stream()
+		return playersAlive.stream()
 				.map(Challenger::vanilla)
 				.collect(Collectors.toCollection(HashSet::new));
 	}
 
 	public Set<Challenger> challengers() {
-		return new HashSet<>(members);
-	}
-
-	public int size() {
-		return members.size();
-	}
-
-	public boolean add(Challenger challenger) {
-		boolean b = challenger.getTeam() == null;
-		if(b) {
-			vanillaTeam.addEntry(challenger.vanilla()
-					.getName());
-			members.add(challenger);
-			challenger.setTeam(this);
-		}
-		return b;
+		return Stream.concat(playersAlive.stream(), playersDead.stream())
+				.collect(Collectors.toCollection(HashSet::new));
 	}
 
 	public boolean add(Player player) {
@@ -96,7 +51,8 @@ public class Team {
 
 		if(b) {
 			vanillaTeam.addEntry(player.getName());
-			members.add(challenger);
+			challenger.alive();
+			playersAlive.add(challenger);
 			challenger.setTeam(this);
 		}
 
@@ -110,7 +66,7 @@ public class Team {
 			challenger.setTeam(null);
 			vanillaTeam.removeEntry(challenger.vanilla()
 					.getName());
-			members.remove(challenger);
+			playersAlive.remove(challenger);
 		}
 
 		return b;
@@ -123,7 +79,7 @@ public class Team {
 		if(b) {
 			challenger.setTeam(null);
 			vanillaTeam.removeEntry(player.getName());
-			members.remove(challenger);
+			playersAlive.remove(challenger);
 		}
 
 		return b;
@@ -131,12 +87,14 @@ public class Team {
 
 	public void unregister() {
 		vanillaTeam.unregister();
-		teamMap.remove(name);
 
-		for(Challenger challenger : members)
+		for(Challenger challenger : playersAlive)
+			challenger.setTeam(null);
+		for(Challenger challenger : playersDead)
 			challenger.setTeam(null);
 
-		members.clear();
+		playersAlive.clear();
+		playersDead.clear();
 	}
 
 	public ChatColor getColor() {
