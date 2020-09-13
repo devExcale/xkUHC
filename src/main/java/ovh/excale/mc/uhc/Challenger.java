@@ -69,8 +69,6 @@ public class Challenger {
 	}
 
 	public void setTeam(@Nullable Team team) {
-		if(this.team != null)
-			this.team.remove(player);
 		this.team = team;
 	}
 

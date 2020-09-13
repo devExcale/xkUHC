@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-// TODO: TEAM REMOVE PLAYER STACK OVERFLOW
 public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG_MODE = false;
