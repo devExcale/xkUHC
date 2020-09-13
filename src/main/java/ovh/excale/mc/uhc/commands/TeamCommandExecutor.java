@@ -4,7 +4,6 @@ import dev.jorel.commandapi.executors.PlayerCommandExecutor;
 import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.MenuBuilder;
 import ovh.excale.mc.uhc.Challenger;
@@ -239,7 +238,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 							for(String color : COLORS) {
 								menuBuilder.insert(color,
 										null,
-										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " color " + color));
+										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/teamcolor " + teamName + " " + color));
 							}
 							break;
 

@@ -3,6 +3,10 @@ package ovh.excale.mc;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.*;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -142,10 +146,18 @@ public class UHC extends JavaPlugin {
 								.getTeam(((String) objects[0]));
 
 						if(team != null) {
-
 							team.setColor(color);
+
+							final TextComponent BACK = new TextComponent("BACK");
+							BACK.setUnderlined(true);
+							BACK.setBold(true);
+							BACK.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + team.getName()));
+							BACK.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {
+									new TextComponent("Go back")
+							}));
 							player.spigot()
 									.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
+											.last(BACK)
 											.build());
 
 						}
