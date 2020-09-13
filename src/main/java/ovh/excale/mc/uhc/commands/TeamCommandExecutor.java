@@ -157,7 +157,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 							break;
 
 						case DELETE:
-							team.unregister();
+							teamManager.unregisterTeam(teamName);
 							menuBuilder.info("Team deleted.")
 									.last(backText);
 							break;

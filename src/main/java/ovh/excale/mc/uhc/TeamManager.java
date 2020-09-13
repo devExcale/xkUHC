@@ -33,6 +33,11 @@ public class TeamManager {
 		return team;
 	}
 
+	public void unregisterTeam(@NotNull String name) {
+		Optional.ofNullable(teams.remove(name))
+				.ifPresent(Team::unregister);
+	}
+
 	public @Nullable Team getTeam(String name) {
 		return teams.get(name);
 	}
