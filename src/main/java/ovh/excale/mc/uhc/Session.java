@@ -82,6 +82,10 @@ public class Session implements Listener {
 		worldId = "0";
 	}
 
+	public TeamManager getTeamManager() {
+		return teamManager;
+	}
+
 	public Optional<World> generateWorld() {
 		String millis = String.valueOf(System.currentTimeMillis());
 
@@ -139,7 +143,7 @@ public class Session implements Listener {
 				.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a[tag=" + worldId + "] everything");
 		PlayerSpreadder spreadder = new PlayerSpreadder(world, worldSize);
 		teamManager.getTeams()
-				.forEach(team -> spreadder.spread(team.players()
+				.forEach(team -> spreadder.spread(team.members()
 						.toArray(new Player[0])));
 
 		AtomicInteger seconds = new AtomicInteger(5);
@@ -267,15 +271,15 @@ public class Session implements Listener {
 			broadcast("Challenger " + player.getDisplayName() + " has died!");
 			Bukkit.getScheduler()
 					.runTaskLater(UHC.plugin(), () -> {
-
-						player.setHealth(20d);
-						player.setFoodLevel(20);
+						player.setHealthScale(20);
+						player.setHealth(20);
+						player.setFoodLevel(15);
 						player.setGameMode(GameMode.SPECTATOR);
 						player.teleport(world.getSpawnLocation());
 					}, 1);
 
 			challenger.setAlive(false);
-			if(team.isEliminated())
+			if(team != null && team.isEliminated())
 				broadcast("Team " + team.getName() + " has been eliminated!");
 
 			int teamsLeft = (int) teamManager.getTeams()

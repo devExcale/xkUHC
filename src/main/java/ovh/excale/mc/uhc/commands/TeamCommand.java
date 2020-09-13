@@ -4,7 +4,6 @@ import dev.jorel.commandapi.arguments.CustomArgument;
 
 import java.util.stream.Stream;
 
-@SuppressWarnings("unused")
 public enum TeamCommand {
 
 	ADD,

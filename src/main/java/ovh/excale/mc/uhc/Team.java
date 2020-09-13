@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Team {
 
@@ -34,7 +33,7 @@ public class Team {
 		return name;
 	}
 
-	public Set<Player> players() {
+	public Set<Player> members() {
 		return players.stream()
 				.map(Challenger::vanilla)
 				.collect(Collectors.toCollection(HashSet::new));
@@ -49,23 +48,23 @@ public class Team {
 		boolean b = challenger.getTeam() == null;
 
 		if(b) {
-			vanillaTeam.addEntry(player.getName());
-			players.add(challenger);
 			challenger.setAlive(true);
 			challenger.setTeam(this);
+			players.add(challenger);
+			vanillaTeam.addEntry(player.getName());
 		}
 
 		return b;
 	}
 
-	public boolean remove(Challenger challenger) {
+	public boolean remove(Player player) {
+		Challenger challenger = Challenger.of(player);
 		boolean b = equals(challenger.getTeam());
 
 		if(b) {
 			challenger.setTeam(null);
-			vanillaTeam.removeEntry(challenger.vanilla()
-					.getName());
 			players.remove(challenger);
+			vanillaTeam.removeEntry(player.getName());
 		}
 
 		return b;

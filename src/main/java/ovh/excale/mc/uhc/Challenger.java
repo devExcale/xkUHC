@@ -68,12 +68,18 @@ public class Challenger {
 		return alive;
 	}
 
-	public void setTeam(Team team) {
+	public void setTeam(@Nullable Team team) {
+		if(this.team != null)
+			this.team.remove(player);
 		this.team = team;
 	}
 
-	public Team getTeam() {
+	public @Nullable Team getTeam() {
 		return team;
+	}
+
+	public boolean hasTeam() {
+		return team != null;
 	}
 
 	public boolean is(Player player) {

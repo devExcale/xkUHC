@@ -3,19 +3,13 @@ package ovh.excale.mc;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.*;
-import dev.jorel.commandapi.executors.CommandExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
-import ovh.excale.mc.uhc.Playground;
 import ovh.excale.mc.uhc.Team;
 import ovh.excale.mc.uhc.WorldManager;
 import ovh.excale.mc.uhc.commands.TeamCommand;
@@ -57,10 +51,6 @@ public class UHC extends JavaPlugin {
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
-
-		// REMOVE ALL PREVIOUS VANILLA INSTANCES OF TEAMS ON RELOAD
-		Team.clear();
-
 
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
 		Bukkit.getPluginManager()
@@ -111,11 +101,7 @@ public class UHC extends JavaPlugin {
 				.register();
 
 		arguments = new LinkedHashMap<>();
-		arguments.put("name",
-				new CustomArgument<>(Team::of).overrideSuggestions(commandSender -> Team.getAll()
-						.stream()
-						.map(Team::getName)
-						.toArray(String[]::new)));
+		arguments.put("name", new StringArgument());
 
 		// TEAMS 1 ARGS
 		new CommandAPICommand("uhc-team").withPermission(CommandPermission.OP)
@@ -124,7 +110,7 @@ public class UHC extends JavaPlugin {
 				.withAliases("teams")
 				.register();
 
-		arguments.put("op", new TeamCommand.Argument().overrideSuggestions("add", "remove", "list", "delete"));
+		arguments.put("op", new TeamCommand.Argument().overrideSuggestions(TeamCommand.stringValues()));
 
 		// TEAMS 2 ARGS
 		new CommandAPICommand("uhc-team").withPermission(CommandPermission.OP)

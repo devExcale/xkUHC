@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,10 +21,20 @@ public class TeamManager {
 		this.scoreboard = scoreboard;
 	}
 
-	public Team registerNewTeam(@NotNull String name) {
+	public @NotNull Team registerNewTeam(@NotNull String name) {
+		Team old = teams.get(name);
+
+		if(old != null)
+			old.unregister();
+
 		Team team = new Team(name, scoreboard);
 		teams.put(name, team);
+
 		return team;
+	}
+
+	public @Nullable Team getTeam(String name) {
+		return teams.get(name);
 	}
 
 	public Set<String> getTeamsList() {
