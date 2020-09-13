@@ -197,6 +197,12 @@ public class Session implements Listener {
 				broadcast("The border is shrinking from 2000 blocks to 1400!\nYou have 10 minutes to get to the center.");
 				break;
 
+			case 17:
+			case 31:
+			case 51:
+				broadcast("The border has stopped shrinking.");
+				break;
+
 			case 24:
 				worldBorder.setSize(800, 600);
 				broadcast("The border is shrinking from 1400 blocks to 800!\nYou have 10 minutes to get to the center.");
@@ -213,12 +219,12 @@ public class Session implements Listener {
 				break;
 
 			case 68:
-				broadcast("You now have 5 minutes to fight! The border will resume shrinking to 1 block then.");
+				broadcast("The border has stopped shrinking. It will resume shrinking to 1 block in 5 minutes.");
 				break;
 
 			case 73:
 				worldBorder.setSize(1, 600);
-				broadcast("The border has resumed shrinking to its minimum. It's deadmatch time!");
+				broadcast("The border has resumed shrinking to its minimum. Deadmatch time!");
 				break;
 
 		}
