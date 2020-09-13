@@ -313,6 +313,8 @@ public class Session implements Listener {
 			Bukkit.getServer()
 					.unloadWorld(world, false);
 		}
+
+		sessionMap.remove(mod);
 	}
 
 	public void broadcast(String message) {
