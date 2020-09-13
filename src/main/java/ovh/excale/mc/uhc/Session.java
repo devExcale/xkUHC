@@ -4,6 +4,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldBorder;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -126,11 +128,16 @@ public class Session implements Listener {
 						Player player = challenger.vanilla();
 						player.addScoreboardTag(worldId);
 
+						player.setScoreboard(scoreboard);
 						player.setGameMode(GameMode.SURVIVAL);
-						player.setFoodLevel(15);
-						player.setHealthScale(40);
+						player.setFoodLevel(20);
+						//noinspection ConstantConditions
+						player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+								.setBaseValue(40);
 						player.setHealth(40);
 						player.setLevel(0);
+						player.getInventory()
+								.clear();
 
 						player.addPotionEffect(resistance);
 						player.addPotionEffect(regeneration);
@@ -277,9 +284,11 @@ public class Session implements Listener {
 			broadcast("Challenger " + player.getDisplayName() + " has died!");
 			Bukkit.getScheduler()
 					.runTaskLater(UHC.plugin(), () -> {
-						player.setHealthScale(20);
+						AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+						//noinspection ConstantConditions
+						attribute.setBaseValue(attribute.getDefaultValue());
 						player.setHealth(20);
-						player.setFoodLevel(15);
+						player.setFoodLevel(20);
 						player.setGameMode(GameMode.SPECTATOR);
 						player.teleport(world.getSpawnLocation());
 					}, 1);
@@ -310,6 +319,9 @@ public class Session implements Listener {
 			if(!task.isCancelled())
 				task.cancel();
 
+		PlayerDeathEvent.getHandlerList()
+				.unregister(this);
+
 		if(world != null) {
 			World defWorld = Bukkit.getWorlds()
 					.get(0);
@@ -318,6 +330,20 @@ public class Session implements Listener {
 
 			Bukkit.getServer()
 					.unloadWorld(world, false);
+		}
+
+		for(Challenger challenger : players) {
+			Player player = challenger.vanilla();
+			try {
+				//noinspection ConstantConditions
+				player.setScoreboard(Bukkit.getScoreboardManager()
+						.getMainScoreboard());
+
+				AttributeInstance attribute = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+				//noinspection ConstantConditions
+				attribute.setBaseValue(attribute.getDefaultValue());
+			} catch(Exception ignored) {
+			}
 		}
 
 		sessionMap.remove(mod);

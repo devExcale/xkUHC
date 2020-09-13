@@ -8,6 +8,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
+import ovh.excale.mc.uhc.Session;
 import ovh.excale.mc.uhc.Team;
 import ovh.excale.mc.uhc.commands.TeamCommand;
 import ovh.excale.mc.uhc.commands.TeamCommandExecutor;
@@ -114,7 +115,6 @@ public class UHC extends JavaPlugin {
 				.withAliases("teams")
 				.register();
 
-
 		new CommandAPICommand("xkuhcnewteam").executesPlayer((player, objects) -> {
 			player.sendMessage("Insert the new team's name.");
 			responseListener.await(player, (player1, message) -> {
@@ -129,18 +129,27 @@ public class UHC extends JavaPlugin {
 				.register();
 
 		arguments = new LinkedHashMap<>();
-		arguments.put("team", new TeamCommand.Argument());
+		arguments.put("team", new StringArgument());
 		arguments.put("color", new ChatColorArgument());
 		new CommandAPICommand("teamcolor").withArguments(arguments)
 				.withPermission(CommandPermission.OP)
-				.executes((commandSender, objects) -> {
-					Team team = (Team) objects[0];
+				.executesPlayer((player, objects) -> {
+					Session session = Session.by(player);
 					ChatColor color = (ChatColor) objects[1];
-					team.setColor(color);
 
-					commandSender.spigot()
-							.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
-									.build());
+					if(session != null) {
+						Team team = session.getTeamManager()
+								.getTeam(((String) objects[0]));
+
+						if(team != null) {
+
+							team.setColor(color);
+							player.spigot()
+									.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
+											.build());
+
+						}
+					}
 				})
 				.register();
 

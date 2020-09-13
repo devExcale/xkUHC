@@ -26,6 +26,25 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 	private final static HoverEvent LIST_HOVER;
 	private final static HoverEvent DELETE_HOVER;
 
+	private final static String[] COLORS = new String[] {
+			"aqua",
+			"black",
+			"blue",
+			"dark_aqua",
+			"dark_blue",
+			"dark_grey",
+			"dark_green",
+			"dark_purple",
+			"dark_red",
+			"gold",
+			"grey",
+			"green",
+			"light_purple",
+			"red",
+			"white",
+			"yellow"
+	};
+
 	static {
 
 		BACK = new TextComponent("BACK");
@@ -167,7 +186,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 									.stream()
 									.filter(player1 -> {
 										Challenger challenger = Challenger.get(player1);
-										return challenger != null && !challenger.hasTeam();
+										return challenger == null || !challenger.hasTeam();
 									})
 									.collect(Collectors.toCollection(HashSet::new));
 
@@ -215,11 +234,13 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 							backText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName));
 
 							menuBuilder.info("Select the team color:")
-									.insert("Black",
-											null,
-											new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-													"/teamcolor " + teamName + " " + ChatColor.BLACK.name()))
 									.last(backText);
+
+							for(String color : COLORS) {
+								menuBuilder.insert(color,
+										null,
+										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " color " + color));
+							}
 							break;
 
 					}
