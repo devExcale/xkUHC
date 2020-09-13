@@ -15,7 +15,6 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
@@ -57,9 +56,7 @@ public class Session implements Listener {
 	private final Set<Challenger> players;
 	private final boolean debug;
 
-	// Scoreboard related
 	private final Scoreboard scoreboard;
-	private final Objective healthObjective;
 
 	private World world;
 	private String worldId;
@@ -76,8 +73,8 @@ public class Session implements Listener {
 
 		players = new HashSet<>();
 		teamManager = new TeamManager(scoreboard);
-		healthObjective = scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS);
-		healthObjective.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+		scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS)
+				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
 		debug = UHC.DEBUG_MODE;
 		minutes = 0;
@@ -125,10 +122,10 @@ public class Session implements Listener {
 					PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 2400, 100, false, false, false);
 
 					players.forEach(challenger -> {
+						challenger.setScoreboard(scoreboard);
 						Player player = challenger.vanilla();
 						player.addScoreboardTag(worldId);
 
-						player.setScoreboard(scoreboard);
 						player.setGameMode(GameMode.SURVIVAL);
 						player.setFoodLevel(20);
 						//noinspection ConstantConditions
@@ -334,6 +331,8 @@ public class Session implements Listener {
 
 		for(Challenger challenger : players) {
 			Player player = challenger.vanilla();
+			player.getInventory()
+					.clear();
 			try {
 				//noinspection ConstantConditions
 				player.setScoreboard(Bukkit.getScoreboardManager()

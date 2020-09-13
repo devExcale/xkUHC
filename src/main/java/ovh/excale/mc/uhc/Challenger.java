@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.UHC;
@@ -20,6 +21,7 @@ public class Challenger {
 	private static final Map<UUID, Challenger> challengerMap = Collections.synchronizedMap(new HashMap<>());
 
 	private final UUID uuid;
+	private Scoreboard scoreboard;
 	private Player player;
 	private Team team;
 	private boolean alive;
@@ -29,6 +31,9 @@ public class Challenger {
 		this.player = player;
 		alive = true;
 		team = null;
+		//noinspection ConstantConditions
+		scoreboard = Bukkit.getScoreboardManager()
+				.getMainScoreboard();
 	}
 
 	public static @NotNull Challenger of(Player player) {
@@ -66,6 +71,19 @@ public class Challenger {
 
 	public boolean isAlive() {
 		return alive;
+	}
+
+	public void setScoreboard(@Nullable Scoreboard scoreboard) {
+		if(scoreboard == null) {
+			//noinspection ConstantConditions
+			this.scoreboard = Bukkit.getScoreboardManager()
+					.getMainScoreboard();
+			player.setScoreboard(this.scoreboard);
+		}
+	}
+
+	public void updateScoreboard() {
+		player.setScoreboard(scoreboard);
 	}
 
 	public void setTeam(@Nullable Team team) {
@@ -141,9 +159,12 @@ public class Challenger {
 			Player player = event.getPlayer();
 			Challenger challenger = challengerMap.get(player.getUniqueId());
 
-			if(challenger != null)
+			// TODO: REMOVE USELESS CHALLENGER EVENT
+			if(challenger != null) {
 				Bukkit.getPluginManager()
-						.callEvent(new ChallengerJoinEvent(Challenger.of(player)));
+						.callEvent(new ChallengerJoinEvent(challenger = Challenger.of(player)));
+				challenger.updateScoreboard();
+			}
 		}
 
 	}
