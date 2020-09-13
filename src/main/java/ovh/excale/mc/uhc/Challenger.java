@@ -45,7 +45,7 @@ public class Challenger {
 		return challengerMap.get(player.getUniqueId());
 	}
 
-	public static Set<Challenger> teamUnbound() {
+	public static Set<Challenger> teamUnbounds() {
 		return challengerMap.values()
 				.stream()
 				.filter(challenger -> challenger.team == null)

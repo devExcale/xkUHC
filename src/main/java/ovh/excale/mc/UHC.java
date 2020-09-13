@@ -5,13 +5,10 @@ import dev.jorel.commandapi.CommandPermission;
 import dev.jorel.commandapi.arguments.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
 import ovh.excale.mc.uhc.Team;
-import ovh.excale.mc.uhc.WorldManager;
 import ovh.excale.mc.uhc.commands.TeamCommand;
 import ovh.excale.mc.uhc.commands.TeamCommandExecutor;
 import ovh.excale.mc.uhc.commands.UhcCommand;
@@ -21,9 +18,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class UHC extends JavaPlugin {
-
-	private static final String LIST_HEALTH = "listHealth";
-	private static final String NAME_HEALTH = "nameHealth";
 
 	public static boolean DEBUG_MODE = false;
 
@@ -56,9 +50,9 @@ public class UHC extends JavaPlugin {
 		Bukkit.getPluginManager()
 				.registerEvents(responseListener, this);
 
-		LinkedHashMap<String, Argument> helpmepls = new LinkedHashMap<>();
-		helpmepls.put("mode", new BooleanArgument());
-		new CommandAPICommand("uhc-debug").withArguments(helpmepls)
+		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
+		arguments.put("mode", new BooleanArgument());
+		new CommandAPICommand("uhc-debug").withArguments(arguments)
 				.executes((sender, args) -> {
 					DEBUG_MODE = (boolean) args[0];
 					sender.sendMessage("Debug Mode changed to " + DEBUG_MODE + "!");
@@ -66,7 +60,7 @@ public class UHC extends JavaPlugin {
 				.register();
 
 		new CommandAPICommand("unbounds").executes((commandSender, objects) -> {
-			commandSender.sendMessage("[" + Challenger.teamUnbound()
+			commandSender.sendMessage("[" + Challenger.teamUnbounds()
 					.stream()
 					.map(challenger -> challenger.vanilla()
 							.getDisplayName())
@@ -74,17 +68,7 @@ public class UHC extends JavaPlugin {
 		})
 				.register();
 
-		new CommandAPICommand("oceancheck").withPermission(CommandPermission.OP)
-				.executesPlayer((player, objects) -> {
-					World world = player.getWorld();
-					Location location = player.getLocation();
-					boolean isOcean = WorldManager.isOcean(world.getBiome((int) location.getX(), (int) location.getZ()));
-
-					player.sendMessage("Ocean: " + isOcean);
-				})
-				.register();
-
-		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
+		arguments = new LinkedHashMap<>();
 		arguments.put("op", new UhcCommand.Argument().overrideSuggestions(UhcCommand.stringValues()));
 		new CommandAPICommand("xkuhc").withPermission(CommandPermission.OP)
 				.withArguments(arguments)
