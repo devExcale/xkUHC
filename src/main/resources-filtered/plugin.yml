@@ -9,5 +9,5 @@ authors:
 depend:
   - CommandAPI
 api-version: "1.13"
-website: http://mc.excale.ovh/
+website: ${project.url}
 load: POSTWORLD
