@@ -12,6 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.Challenger;
+import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.Session;
 import ovh.excale.mc.uhc.Team;
 import ovh.excale.mc.uhc.commands.TeamCommand;
@@ -31,17 +32,9 @@ public class UHC extends JavaPlugin {
 		return instance;
 	}
 
-	public static Scoreboard scoreboard() {
-		if(scoreboard == null)
-			//noinspection ConstantConditions
-			scoreboard = Bukkit.getScoreboardManager()
-					.getNewScoreboard();
-
-		return scoreboard;
-	}
-
 	private static UHC instance;
-	private static Scoreboard scoreboard;
+
+	private Game game;
 
 	@Override
 	public void onEnable() {
@@ -49,8 +42,9 @@ public class UHC extends JavaPlugin {
 		instance = this;
 
 		//noinspection ConstantConditions
-		scoreboard = Bukkit.getScoreboardManager()
+		Scoreboard scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
+
 
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
 		Bukkit.getPluginManager()
