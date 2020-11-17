@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc.commands;
+package ovh.excale.mc.commands;
 
 import dev.jorel.commandapi.executors.PlayerCommandExecutor;
 import net.md_5.bungee.api.chat.*;
@@ -6,10 +6,10 @@ import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.MenuBuilder;
-import ovh.excale.mc.uhc.Challenger;
-import ovh.excale.mc.uhc.Session;
-import ovh.excale.mc.uhc.Team;
-import ovh.excale.mc.uhc.TeamManager;
+import ovh.excale.mc.Session;
+import ovh.excale.mc.TeamManager;
+import ovh.excale.mc.Challenger;
+import ovh.excale.mc.Team;
 
 import java.util.HashSet;
 import java.util.Set;

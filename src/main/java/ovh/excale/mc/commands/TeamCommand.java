@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc.commands;
+package ovh.excale.mc.commands;
 
 import dev.jorel.commandapi.arguments.CustomArgument;
 

@@ -1,6 +1,6 @@
-package ovh.excale.mc.uhc.exceptions;
+package ovh.excale.mc.exceptions;
 
-import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.Game;
 
 public class GamePrepareException extends GameException {
 

@@ -1,6 +1,8 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,6 +12,18 @@ import java.util.stream.Collectors;
 public class Challenger {
 
 	private static final Map<UUID, Challenger> challengerMap = Collections.synchronizedMap(new HashMap<>());
+
+	public static void resetMapping() {
+
+		//noinspection ConstantConditions
+		Scoreboard mainScoreboard = Bukkit.getScoreboardManager()
+				.getMainScoreboard();
+
+		for(Challenger challenger : challengerMap.values()) {
+			Player player = challenger.vanilla();
+			player.setScoreboard(mainScoreboard);
+		}
+	}
 
 	private final UUID uuid;
 	private Player player;

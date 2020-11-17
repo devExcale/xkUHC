@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc.commands;
+package ovh.excale.mc.commands;
 
 import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
@@ -7,9 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
+import ovh.excale.mc.Session;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.uhc.Session;
-import ovh.excale.mc.uhc.WorldManager;
+import ovh.excale.mc.WorldManager;
 
 import java.util.Optional;
 import java.util.stream.Stream;

@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;

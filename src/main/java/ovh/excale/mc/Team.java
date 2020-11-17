@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -16,13 +16,15 @@ public class Team {
 	private final String name;
 	private final Set<Challenger> players;
 	private final org.bukkit.scoreboard.Team vanillaTeam;
-	private Scoreboard scoreboard;
+	private final Scoreboard scoreboard;
 	private ChatColor color;
 	private boolean eliminated;
 
-	public Team(@NotNull String name, @NotNull Scoreboard scoreboard, boolean friendlyFire) {
+	protected Team(@NotNull String name, @NotNull Scoreboard scoreboard, boolean friendlyFire) throws IllegalArgumentException {
 		players = Collections.synchronizedSet(new HashSet<>());
 		this.name = Objects.requireNonNull(name);
+		this.scoreboard = scoreboard;
+		color = ChatColor.WHITE;
 		eliminated = false;
 
 		vanillaTeam = scoreboard.registerNewTeam(name);

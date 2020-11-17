@@ -1,12 +1,12 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.uhc.exceptions.GameException;
-import ovh.excale.mc.uhc.exceptions.GamePrepareException;
+import ovh.excale.mc.exceptions.GameException;
+import ovh.excale.mc.exceptions.GamePrepareException;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -14,15 +14,17 @@ import java.util.stream.Collectors;
 
 public class UHCGame implements TeamedGame {
 
-	private final Set<Challenger> players;
+	private final Map<UUID, Challenger> players;
 	private final Map<String, Team> teams;
 	private final Scoreboard scoreboard;
+	private final Map<UUID, Challenger> disconnectPool;
 
 	private State state;
 
 	public UHCGame() {
-		players = Collections.synchronizedSet(new HashSet<>());
+		players = Collections.synchronizedMap(new HashMap<>());
 		teams = Collections.synchronizedMap(new HashMap<>());
+		disconnectPool = Collections.synchronizedMap(new HashMap<>());
 
 		state = State.PREPARE;
 
@@ -50,20 +52,33 @@ public class UHCGame implements TeamedGame {
 	}
 
 	@Override
+	public Set<Player> unregisterTeam(String name) {
+		Set<Player> members = new HashSet<>();
+
+		if(teams.containsKey(name))
+			members.addAll(teams.remove(name)
+					.members());
+
+		return members;
+	}
+
+	@Override
 	public Scoreboard getScoreboard() {
 		return scoreboard;
 	}
 
 	@Override
 	public Set<Player> getPlayers() {
-		return players.stream()
+		return players.values()
+				.stream()
 				.map(Challenger::vanilla)
 				.collect(Collectors.toSet());
 	}
 
 	@Override
 	public Set<Player> getPlayersAlive() {
-		return players.stream()
+		return players.values()
+				.stream()
 				.filter(Challenger::isAlive)
 				.map(Challenger::vanilla)
 				.collect(Collectors.toSet());
@@ -71,7 +86,8 @@ public class UHCGame implements TeamedGame {
 
 	@Override
 	public Set<Player> getPlayersDead() {
-		return players.stream()
+		return players.values()
+				.stream()
 				.filter(Challenger::isDead)
 				.map(Challenger::vanilla)
 				.collect(Collectors.toSet());

@@ -1,12 +1,13 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
 import org.bukkit.entity.Player;
-import ovh.excale.mc.uhc.exceptions.GameException;
-import ovh.excale.mc.uhc.exceptions.GamePrepareException;
+import ovh.excale.mc.exceptions.GameException;
+import ovh.excale.mc.exceptions.GamePrepareException;
 
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+// TODO: DEBUG MODE
 public interface Game {
 
 	Set<Player> getPlayers();

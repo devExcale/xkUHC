@@ -9,15 +9,12 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
-import ovh.excale.mc.uhc.Challenger;
-import ovh.excale.mc.uhc.Game;
-import ovh.excale.mc.uhc.Session;
-import ovh.excale.mc.uhc.Team;
-import ovh.excale.mc.uhc.commands.TeamCommand;
-import ovh.excale.mc.uhc.commands.TeamCommandExecutor;
-import ovh.excale.mc.uhc.commands.UhcCommand;
+import ovh.excale.mc.commands.TeamCommand;
+import ovh.excale.mc.commands.TeamCommandExecutor;
+import ovh.excale.mc.commands.UhcCommand;
 
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
@@ -27,14 +24,13 @@ import java.util.stream.Collectors;
 public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG_MODE = false;
+	private static Plugin instance;
 
-	public static UHC plugin() {
+	public static Plugin plugin() {
 		return instance;
 	}
 
-	private static UHC instance;
-
-	private Game game;
+	private TeamedGame game;
 
 	@Override
 	public void onEnable() {

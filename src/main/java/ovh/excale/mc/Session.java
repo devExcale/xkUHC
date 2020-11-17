@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -19,7 +19,6 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.UHC;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -123,7 +122,7 @@ public class Session implements Listener {
 					PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 2400, 100, false, false, false);
 
 					players.forEach(challenger -> {
-						challenger.setScoreboard(scoreboard);
+//						challenger.setScoreboard(scoreboard);
 						Player player = challenger.vanilla();
 						player.addScoreboardTag(worldId);
 
@@ -173,8 +172,8 @@ public class Session implements Listener {
 							}
 						});
 
-						Challenger.DisconnectListener.getInstance()
-								.start();
+//						Challenger.DisconnectListener.getInstance()
+//								.start();
 						Bukkit.getPluginManager()
 								.registerEvents(this, UHC.plugin());
 

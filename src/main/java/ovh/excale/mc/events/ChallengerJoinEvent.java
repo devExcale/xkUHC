@@ -1,16 +1,16 @@
-package ovh.excale.mc.uhc.events;
+package ovh.excale.mc.events;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.mc.uhc.Challenger;
+import ovh.excale.mc.Challenger;
 
-public final class ChallengerDisconnectEvent extends Event {
+public class ChallengerJoinEvent extends Event {
 
 	private static final HandlerList handlers = new HandlerList();
 	private final Challenger challenger;
 
-	public ChallengerDisconnectEvent(Challenger challenger) {
+	public ChallengerJoinEvent(Challenger challenger) {
 		this.challenger = challenger;
 	}
 

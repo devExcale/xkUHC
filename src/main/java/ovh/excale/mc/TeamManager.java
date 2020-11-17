@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc;
+package ovh.excale.mc;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -27,7 +27,7 @@ public class TeamManager {
 		if(old != null)
 			old.unregister();
 
-		Team team = new Team(name, scoreboard);
+		Team team = new Team(name, scoreboard, false);
 		teams.put(name, team);
 
 		return team;
