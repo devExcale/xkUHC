@@ -64,7 +64,7 @@ public class Session implements Listener {
 	private int worldSize;
 	private int minutes;
 
-	// TODO: FIX: SCOREBOARD DOESN'T SHOW
+	// FIXME: SCOREBOARD DOESN'T SHOW
 	private Session(@NotNull Challenger mod) {
 		this.mod = Objects.requireNonNull(mod);
 		//noinspection ConstantConditions
