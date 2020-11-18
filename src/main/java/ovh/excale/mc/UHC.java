@@ -12,11 +12,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 import ovh.excale.mc.commands.TeamCommand;
 import ovh.excale.mc.commands.TeamCommandExecutor;
 import ovh.excale.mc.commands.UhcCommand;
 
 import java.util.LinkedHashMap;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -37,10 +39,14 @@ public class UHC extends JavaPlugin {
 		super.onEnable();
 		instance = this;
 
-		//noinspection ConstantConditions
+		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+
+		if(scoreboardManager == null) {
+			getLogger().log();
+		}
+
 		Scoreboard scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
-
 
 		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
 		Bukkit.getPluginManager()
