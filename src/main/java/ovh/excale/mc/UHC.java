@@ -11,14 +11,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 import ovh.excale.mc.commands.TeamCommand;
 import ovh.excale.mc.commands.TeamCommandExecutor;
 import ovh.excale.mc.commands.UhcCommand;
 
 import java.util.LinkedHashMap;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -39,18 +36,12 @@ public class UHC extends JavaPlugin {
 		super.onEnable();
 		instance = this;
 
-		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
+		if(Bukkit.getScoreboardManager() == null)
+			throw new RuntimeException("Coudln't get ScoreboardManager, the plugin needs to load POST_WORLD.");
 
-		if(scoreboardManager == null) {
-			getLogger().log();
-		}
-
-		Scoreboard scoreboard = Bukkit.getScoreboardManager()
-				.getNewScoreboard();
-
-		PlayerResponseListener responseListener = new PlayerResponseListener(this, 8);
+		PlayerResponseListener playerResponseListener = new PlayerResponseListener(this, 8);
 		Bukkit.getPluginManager()
-				.registerEvents(responseListener, this);
+				.registerEvents(playerResponseListener, this);
 
 		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
 		arguments.put("mode", new BooleanArgument());
@@ -117,7 +108,7 @@ public class UHC extends JavaPlugin {
 
 		new CommandAPICommand("xkuhcnewteam").executesPlayer((player, objects) -> {
 			player.sendMessage("Insert the new team's name.");
-			responseListener.await(player, (player1, message) -> {
+			playerResponseListener.await(player, message -> {
 
 				if(Pattern.matches("^[\\w\\[\\]\\-#@.]+$", message))
 					player.performCommand("uhc-team " + message);
