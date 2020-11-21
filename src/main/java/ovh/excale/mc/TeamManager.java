@@ -1,33 +1,27 @@
 package ovh.excale.mc;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ovh.excale.mc.api.Team;
+import ovh.excale.mc.api.TeamedGame;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class TeamManager {
 
 	private final Map<String, Team> teams;
-	private final Scoreboard scoreboard;
+	private final TeamedGame game;
 
 	// TODO: SET PLAYER SCOREBOARD ON TEAM ADD
-	public TeamManager(Scoreboard scoreboard) {
+	public TeamManager(TeamedGame game) {
 		teams = Collections.synchronizedMap(new HashMap<>());
-		this.scoreboard = scoreboard;
+		this.game = game;
 	}
 
 	public @NotNull Team registerNewTeam(@NotNull String name) {
-		Team old = teams.get(name);
+		unregisterTeam(name);
 
-		if(old != null)
-			old.unregister();
-
-		Team team = new Team(name, scoreboard, false);
+		Team team = new UhcTeam(name, game);
 		teams.put(name, team);
 
 		return team;
@@ -42,33 +36,25 @@ public class TeamManager {
 		return teams.get(name);
 	}
 
-	public Set<String> getTeamNames() {
-		return teams.values()
-				.stream()
-				.map(Team::getName)
-				.collect(Collectors.toCollection(HashSet::new));
+	public @NotNull Set<String> getTeamNames() {
+		Set<String> names = new HashSet<>();
+
+		for(Team team : teams.values())
+			names.add(team.getName());
+
+		return names;
 	}
 
-	public Set<Team> getTeams() {
+	public @NotNull Set<Team> getTeams() {
 		return new HashSet<>(teams.values());
 	}
 
-	public void purge() {
-		for(String entry : scoreboard.getEntries()) {
-			Player player = Bukkit.getPlayer(entry);
+	public void unregisterAll() {
 
-			if(player != null)
-				//noinspection ConstantConditions
-				player.setScoreboard(Bukkit.getScoreboardManager()
-						.getMainScoreboard());
-		}
-
-		for(org.bukkit.scoreboard.Team team : scoreboard.getTeams()) {
+		for(Team team : teams.values())
 			team.unregister();
-		}
+		teams.clear();
 
-		for(DisplaySlot slot : DisplaySlot.values())
-			scoreboard.clearSlot(slot);
 	}
 
 }

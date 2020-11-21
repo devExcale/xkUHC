@@ -17,6 +17,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.utils.PlayerSpreadder;
@@ -52,7 +53,7 @@ public class Session implements Listener {
 	}
 
 	private final Challenger mod;
-	private final TeamManager teamManager;
+	private TeamManager teamManager;
 	private final Set<Challenger> players;
 	private final boolean debug;
 
@@ -73,7 +74,7 @@ public class Session implements Listener {
 				.getNewScoreboard();
 
 		players = new HashSet<>();
-		teamManager = new TeamManager(scoreboard);
+//		teamManager = new TeamManager(scoreboard);
 		scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS)
 				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
@@ -111,8 +112,8 @@ public class Session implements Listener {
 			return;
 		}
 
-		for(Team team : teamManager.getTeams())
-			players.addAll(team.challengers());
+//		for(UhcTeam team : teamManager.getTeams())
+//			players.addAll(team.challengers());
 
 		Bukkit.getScheduler()
 				.runTask(UHC.plugin(), () -> {
@@ -293,11 +294,11 @@ public class Session implements Listener {
 
 			challenger.setAlive(false);
 			if(team != null && team.isEliminated())
-				broadcast("Team " + team.getName() + " has been eliminated!");
+				broadcast("UhcTeam " + team.getName() + " has been eliminated!");
 
 			int teamsLeft = (int) teamManager.getTeams()
 					.stream()
-					.filter(Team::isAlive)
+					.filter(ovh.excale.mc.api.Team::isAlive)
 					.count();
 
 			if(teamsLeft == 1) {

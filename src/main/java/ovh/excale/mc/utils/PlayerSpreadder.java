@@ -16,6 +16,7 @@ public class PlayerSpreadder {
 	public PlayerSpreadder(World world, int size) {
 		this.world = world;
 		this.size = size;
+		// TODO: CHANGE RANDOM SEED TO CURRENT TIME MILLIS
 		random = new Random(world.getSeed());
 	}
 

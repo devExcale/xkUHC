@@ -11,6 +11,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import ovh.excale.mc.api.Team;
+import ovh.excale.mc.api.TeamedGame;
 import ovh.excale.mc.commands.TeamCommand;
 import ovh.excale.mc.commands.TeamCommandExecutor;
 import ovh.excale.mc.commands.UhcCommand;

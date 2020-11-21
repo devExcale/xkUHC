@@ -1,6 +1,6 @@
 package ovh.excale.mc.exceptions;
 
-import ovh.excale.mc.Game;
+import ovh.excale.mc.api.Game;
 
 public class GameException extends Exception {
 

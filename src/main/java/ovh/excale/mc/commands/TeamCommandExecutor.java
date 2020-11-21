@@ -7,8 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.Challenger;
 import ovh.excale.mc.Session;
-import ovh.excale.mc.Team;
+import ovh.excale.mc.UhcTeam;
 import ovh.excale.mc.TeamManager;
+import ovh.excale.mc.api.Team;
 import ovh.excale.mc.utils.MenuBuilder;
 
 import java.util.HashSet;
@@ -128,7 +129,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 					if(teamManager.getTeam(teamName) == null)
 						teamManager.registerNewTeam(teamName);
 
-					menuBuilder = new MenuBuilder("Team: " + teamName);
+					menuBuilder = new MenuBuilder("UhcTeam: " + teamName);
 					menuBuilder.insert("Add player",
 							ADD_PLAYER_HOVER,
 							new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " add"))
@@ -161,7 +162,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 						team = teamManager.registerNewTeam(teamName);
 
 					op = (TeamCommand) objects[1];
-					menuBuilder = new MenuBuilder("Team: " + teamName);
+					menuBuilder = new MenuBuilder("UhcTeam: " + teamName);
 
 					switch(op) {
 
@@ -176,7 +177,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 
 						case DELETE:
 							teamManager.unregisterTeam(teamName);
-							menuBuilder.info("Team deleted.")
+							menuBuilder.info("UhcTeam deleted.")
 									.last(backText);
 							break;
 
