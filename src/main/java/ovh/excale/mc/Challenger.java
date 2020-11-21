@@ -39,6 +39,7 @@ public class Challenger {
 
 	public static @NotNull Challenger of(Player player) {
 		Challenger challenger = challengerMap.get(player.getUniqueId());
+
 		if(challenger == null)
 			challengerMap.put(player.getUniqueId(), challenger = new Challenger(player));
 		else
@@ -47,8 +48,8 @@ public class Challenger {
 		return challenger;
 	}
 
-	public static @Nullable Challenger get(Player player) {
-		return challengerMap.get(player.getUniqueId());
+	public static @Nullable Challenger get(UUID uuid) {
+		return challengerMap.get(uuid);
 	}
 
 	public static Set<Challenger> teamUnbounds() {

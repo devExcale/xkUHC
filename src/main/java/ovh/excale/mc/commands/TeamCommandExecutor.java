@@ -5,11 +5,11 @@ import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import ovh.excale.mc.utils.MenuBuilder;
-import ovh.excale.mc.Session;
-import ovh.excale.mc.TeamManager;
 import ovh.excale.mc.Challenger;
+import ovh.excale.mc.Session;
 import ovh.excale.mc.Team;
+import ovh.excale.mc.TeamManager;
+import ovh.excale.mc.utils.MenuBuilder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -184,7 +184,7 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 							Set<Player> players = Bukkit.getOnlinePlayers()
 									.stream()
 									.filter(player1 -> {
-										Challenger challenger = Challenger.get(player1);
+										Challenger challenger = Challenger.get(player1.getUniqueId());
 										return challenger == null || !challenger.hasTeam();
 									})
 									.collect(Collectors.toCollection(HashSet::new));

@@ -15,51 +15,44 @@ import java.util.stream.Collectors;
 public class UHCGame implements TeamedGame {
 
 	private final Map<UUID, Challenger> players;
-	private final Map<String, Team> teams;
 	private final Scoreboard scoreboard;
+	private final TeamManager teamManager;
 	private final Map<UUID, Challenger> disconnectPool;
 
 	private State state;
 
 	public UHCGame() {
-		players = Collections.synchronizedMap(new HashMap<>());
-		teams = Collections.synchronizedMap(new HashMap<>());
-		disconnectPool = Collections.synchronizedMap(new HashMap<>());
-
-		state = State.PREPARE;
-
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
+
+		players = Collections.synchronizedMap(new HashMap<>());
+		disconnectPool = Collections.synchronizedMap(new HashMap<>());
+		teamManager = new TeamManager(scoreboard);
+
+		state = State.PREPARE;
+
 		// TODO: SCOREBOARD DISPLAYSLOT LIST
 	}
 
 	@Override
 	public Set<Team> getTeams() {
-		return new HashSet<>(teams.values());
+		return teamManager.getTeams();
 	}
 
 	@Override
 	public @Nullable Team getTeam(String name) {
-		return teams.get(name);
+		return teamManager.getTeam(name);
 	}
 
 	@Override
 	public Team createTeam(@NotNull String name) {
-		Team team = new Team(name, scoreboard, false);
-		teams.put(team.getName(), team);
-		return team;
+		return teamManager.registerNewTeam(name);
 	}
 
 	@Override
-	public Set<Player> unregisterTeam(String name) {
-		Set<Player> members = new HashSet<>();
-
-		if(teams.containsKey(name))
-			members.addAll(teams.remove(name)
-					.members());
-
-		return members;
+	public void unregisterTeam(String name) {
+		teamManager.unregisterTeam(name);
 	}
 
 	@Override

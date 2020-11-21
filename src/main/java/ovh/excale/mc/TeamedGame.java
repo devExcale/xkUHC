@@ -23,7 +23,7 @@ public interface TeamedGame extends Game {
 	 * @return A set which containts the members of that team,
 	 * or an empty set if the team doesn't exist.
 	 */
-	Set<Player> unregisterTeam(String name);
+	void unregisterTeam(String name);
 
 	Scoreboard getScoreboard();
 
