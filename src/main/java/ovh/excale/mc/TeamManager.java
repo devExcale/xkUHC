@@ -42,7 +42,7 @@ public class TeamManager {
 		return teams.get(name);
 	}
 
-	public Set<String> getTeamsList() {
+	public Set<String> getTeamNames() {
 		return teams.values()
 				.stream()
 				.map(Team::getName)

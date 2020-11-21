@@ -17,11 +17,10 @@ public interface TeamedGame extends Game {
 	Team createTeam(@NotNull String name) throws GamePrepareException;
 
 	/**
-	 * Unregisters a team.
+	 * Unregisters a team.<br/>
+	 * If the team doesn't exist, it does nothing.
 	 *
-	 * @param name Team's name
-	 * @return A set which containts the members of that team,
-	 * or an empty set if the team doesn't exist.
+	 * @param name The team's name
 	 */
 	void unregisterTeam(String name);
 
