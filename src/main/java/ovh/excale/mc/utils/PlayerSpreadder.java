@@ -1,4 +1,4 @@
-package ovh.excale.mc;
+package ovh.excale.mc.utils;
 
 import org.bukkit.Location;
 import org.bukkit.World;

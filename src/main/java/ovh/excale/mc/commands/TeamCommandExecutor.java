@@ -5,7 +5,7 @@ import net.md_5.bungee.api.chat.*;
 import net.md_5.bungee.api.chat.ComponentBuilder.FormatRetention;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import ovh.excale.mc.MenuBuilder;
+import ovh.excale.mc.utils.MenuBuilder;
 import ovh.excale.mc.Session;
 import ovh.excale.mc.TeamManager;
 import ovh.excale.mc.Challenger;

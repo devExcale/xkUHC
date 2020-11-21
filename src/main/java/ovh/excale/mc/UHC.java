@@ -14,6 +14,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.commands.TeamCommand;
 import ovh.excale.mc.commands.TeamCommandExecutor;
 import ovh.excale.mc.commands.UhcCommand;
+import ovh.excale.mc.utils.MenuBuilder;
+import ovh.excale.mc.utils.PlayerResponseListener;
 
 import java.util.LinkedHashMap;
 import java.util.regex.Pattern;
@@ -37,9 +39,9 @@ public class UHC extends JavaPlugin {
 		instance = this;
 
 		if(Bukkit.getScoreboardManager() == null)
-			throw new RuntimeException("Coudln't get ScoreboardManager, the plugin needs to load POST_WORLD.");
+			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
 
-		PlayerResponseListener playerResponseListener = new PlayerResponseListener(this, 8);
+		PlayerResponseListener playerResponseListener = new PlayerResponseListener(this, 10);
 		Bukkit.getPluginManager()
 				.registerEvents(playerResponseListener, this);
 

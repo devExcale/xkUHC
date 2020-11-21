@@ -19,6 +19,7 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ovh.excale.mc.utils.PlayerSpreadder;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
