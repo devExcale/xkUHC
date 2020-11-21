@@ -94,7 +94,7 @@ public enum UhcCommand {
 					break;
 
 				case CLEANUP:
-					WorldManager.cleanUpWorlds(null);
+					WorldManager.cleanUpWorlds();
 					break;
 
 				case DEBUG:

@@ -18,6 +18,7 @@ import ovh.excale.mc.utils.MenuBuilder;
 import ovh.excale.mc.utils.PlayerResponseListener;
 
 import java.util.LinkedHashMap;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,10 @@ public class UHC extends JavaPlugin {
 		return instance;
 	}
 
+	public static Logger logger() {
+		return instance != null ? instance.getLogger() : Bukkit.getLogger();
+	}
+
 	private TeamedGame game;
 
 	@Override
@@ -40,6 +45,8 @@ public class UHC extends JavaPlugin {
 
 		if(Bukkit.getScoreboardManager() == null)
 			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
+
+		WorldManager.cleanUpWorlds();
 
 		PlayerResponseListener playerResponseListener = new PlayerResponseListener(this, 10);
 		Bukkit.getPluginManager()
