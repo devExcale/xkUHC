@@ -110,19 +110,19 @@ public enum UhcCommand {
 
 	}
 
-	public static class Argument extends CustomArgument<UhcCommand> {
-
-		public Argument() {
-			super(string -> {
-				try {
-					return UhcCommand.valueOf(string.toUpperCase());
-				} catch(IllegalArgumentException e) {
-					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput()
-							.appendHere());
-				}
-			});
-		}
-
-	}
+//	public static class Argument extends CustomArgument<UhcCommand> {
+//
+//		public Argument() {
+//			super(string -> {
+//				try {
+//					return UhcCommand.valueOf(string.toUpperCase());
+//				} catch(IllegalArgumentException e) {
+//					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput()
+//							.appendHere());
+//				}
+//			});
+//		}
+//
+//	}
 
 }

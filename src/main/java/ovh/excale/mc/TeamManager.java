@@ -27,9 +27,14 @@ public class TeamManager {
 		return team;
 	}
 
-	public void unregisterTeam(@NotNull String name) {
-		Optional.ofNullable(teams.remove(name))
-				.ifPresent(Team::unregister);
+	public boolean unregisterTeam(@NotNull String name) {
+		Team team = teams.remove(name);
+		boolean b = team != null;
+
+		if(b)
+			team.unregister();
+
+		return b;
 	}
 
 	public @Nullable Team getTeam(String name) {

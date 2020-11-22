@@ -58,18 +58,22 @@ public class UhcGame implements TeamedGame {
 	}
 
 	@Override
-	public void unregisterTeam(String name) throws IllegalStateException {
+	public boolean unregisterTeam(String name) throws IllegalStateException {
 
 		if(!state.isEditable())
 			throw new IllegalStateException("Game is past preparation phase");
 
 		// TODO: REMOVE CHALLENGERS FROM CHAL_MANAGER ON SET_TEAM NULL
-		teamManager.unregisterTeam(name);
+		return teamManager.unregisterTeam(name);
 	}
 
 	@Override
 	public @NotNull Scoreboard getScoreboard() {
 		return scoreboard;
+	}
+
+	public @NotNull TeamManager getTeamManager() {
+		return teamManager;
 	}
 
 	public @NotNull ChallengerManager getChallengerManager() {

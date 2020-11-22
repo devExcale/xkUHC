@@ -24,6 +24,6 @@ public interface TeamedGame extends Game {
 	 *
 	 * @param name The team's name
 	 */
-	void unregisterTeam(String name) throws IllegalStateException;
+	boolean unregisterTeam(String name) throws IllegalStateException;
 
 }

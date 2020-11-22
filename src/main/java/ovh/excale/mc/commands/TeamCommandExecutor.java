@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 
 public class TeamCommandExecutor implements PlayerCommandExecutor {
 
-	private final static TextComponent BACK;
-	private final static TextComponent NEW_TEAM;
-	private final static HoverEvent ADD_PLAYER_HOVER;
-	private final static HoverEvent REMOVE_PLAYER_HOVER;
-	private final static HoverEvent COLOR_HOVER;
-	private final static HoverEvent LIST_HOVER;
-	private final static HoverEvent DELETE_HOVER;
+	public final static TextComponent BACK;
+	public final static TextComponent NEW_TEAM;
+	public final static HoverEvent ADD_PLAYER_HOVER;
+	public final static HoverEvent REMOVE_PLAYER_HOVER;
+	public final static HoverEvent COLOR_HOVER;
+	public final static HoverEvent LIST_HOVER;
+	public final static HoverEvent DELETE_HOVER;
 
 	private final static String[] COLORS = new String[] {
 			"aqua",
@@ -158,8 +158,8 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 					teamName = (String) objects[0];
 					team = teamManager.getTeam(teamName);
 
-					if(team == null)
-						team = teamManager.registerNewTeam(teamName);
+//					if(team == null)
+//						team = teamManager.registerNewTeam(teamName);
 
 					op = (TeamCommand) objects[1];
 					menuBuilder = new MenuBuilder("UhcTeam: " + teamName);
@@ -171,8 +171,8 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 							backText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName));
 
 							menuBuilder.last(backText);
-							for(Player player1 : team.members())
-								menuBuilder.insert(player1.getDisplayName(), null, null);
+//							for(Player player1 : team.members())
+//								menuBuilder.insert(player1.getDisplayName(), null, null);
 							break;
 
 						case DELETE:
@@ -182,32 +182,32 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 							break;
 
 						case ADD:
-							Set<Player> players = Bukkit.getOnlinePlayers()
-									.stream()
-									.filter(player1 -> {
-										Challenger challenger = Challenger.get(player1.getUniqueId());
-										return challenger == null || !challenger.hasTeam();
-									})
-									.collect(Collectors.toCollection(HashSet::new));
-
-							backText = new TextComponent(backText);
-							backText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName));
-
-							menuBuilder.info("Choose the player you want to add:")
-									.last(backText);
-							for(Player player1 : players) {
-								String playerName = player1.getDisplayName();
-								menuBuilder.insert(playerName,
-										new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-												new ComponentBuilder("Add ").append(playerName, FormatRetention.NONE)
-														.bold(true)
-														.append(" to team ", FormatRetention.NONE)
-														.append(teamName, FormatRetention.NONE)
-														.bold(true)
-														.create()),
-										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " add " + playerName));
-							}
-							break;
+//							Set<Player> players = Bukkit.getOnlinePlayers()
+//									.stream()
+//									.filter(player1 -> {
+//										Challenger challenger = Challenger.get(player1.getUniqueId());
+//										return challenger == null || !challenger.hasTeam();
+//									})
+//									.collect(Collectors.toCollection(HashSet::new));
+//
+//							backText = new TextComponent(backText);
+//							backText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName));
+//
+//							menuBuilder.info("Choose the player you want to add:")
+//									.last(backText);
+//							for(Player player1 : players) {
+//								String playerName = player1.getDisplayName();
+//								menuBuilder.insert(playerName,
+//										new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+//												new ComponentBuilder("Add ").append(playerName, FormatRetention.NONE)
+//														.bold(true)
+//														.append(" to team ", FormatRetention.NONE)
+//														.append(teamName, FormatRetention.NONE)
+//														.bold(true)
+//														.create()),
+//										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " add " + playerName));
+//							}
+//							break;
 
 						case REMOVE:
 							backText = new TextComponent(BACK);
@@ -215,18 +215,18 @@ public class TeamCommandExecutor implements PlayerCommandExecutor {
 
 							menuBuilder.info("Choose the player you want to remove:")
 									.last(backText);
-							for(Player player1 : team.members()) {
-								String playerName = player1.getDisplayName();
-								menuBuilder.insert(playerName,
-										new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-												new ComponentBuilder("Remove ").append(playerName, FormatRetention.NONE)
-														.bold(true)
-														.append(" from team ", FormatRetention.NONE)
-														.append(teamName, FormatRetention.NONE)
-														.bold(true)
-														.create()),
-										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " remove " + playerName));
-							}
+//							for(Player player1 : team.members()) {
+//								String playerName = player1.getDisplayName();
+//								menuBuilder.insert(playerName,
+//										new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+//												new ComponentBuilder("Remove ").append(playerName, FormatRetention.NONE)
+//														.bold(true)
+//														.append(" from team ", FormatRetention.NONE)
+//														.append(teamName, FormatRetention.NONE)
+//														.bold(true)
+//														.create()),
+//										new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + teamName + " remove " + playerName));
+//							}
 							break;
 
 						case COLOR:

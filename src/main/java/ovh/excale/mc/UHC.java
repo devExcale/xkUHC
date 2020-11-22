@@ -1,34 +1,18 @@
 package ovh.excale.mc;
 
-import dev.jorel.commandapi.CommandAPICommand;
-import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.*;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
-import ovh.excale.mc.commands.TeamCommand;
-import ovh.excale.mc.commands.TeamCommandExecutor;
-import ovh.excale.mc.commands.UhcCommand;
-import ovh.excale.mc.utils.MenuBuilder;
 import ovh.excale.mc.utils.PlayerResponseListener;
 
-import java.util.LinkedHashMap;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 // TODO: CHECK PlayerDeathEvent LISTENER IN SESSION RUN
 public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG_MODE = false;
-	private static Plugin instance;
+	private static UHC instance;
 
 	public static Plugin plugin() {
 		return instance;
@@ -39,6 +23,14 @@ public class UHC extends JavaPlugin {
 	}
 
 	private TeamedGame game;
+
+	public void setGame(TeamedGame game) {
+		this.game = game;
+	}
+
+	public TeamedGame getGame() {
+		return game;
+	}
 
 	@Override
 	public void onEnable() {
@@ -54,124 +46,10 @@ public class UHC extends JavaPlugin {
 		Bukkit.getPluginManager()
 				.registerEvents(playerResponseListener, this);
 
-		LinkedHashMap<String, Argument> arguments = new LinkedHashMap<>();
-		arguments.put("mode", new BooleanArgument());
-		new CommandAPICommand("uhc-debug").withArguments(arguments)
-				.executes((sender, args) -> {
-					DEBUG_MODE = (boolean) args[0];
-					sender.sendMessage("Debug Mode changed to " + DEBUG_MODE + "!");
-				})
-				.register();
+		// REGISTER COMMANDS
+		Commands.TEAMS.register();
+		Commands.XKUHC.register();
 
-		new CommandAPICommand("unbounds").executes((commandSender, objects) -> {
-			commandSender.sendMessage("[" + Challenger.teamUnbounds()
-					.stream()
-					.map(challenger -> challenger.vanilla()
-							.getDisplayName())
-					.collect(Collectors.joining(", ")) + "]");
-		})
-				.register();
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("op", new UhcCommand.Argument().overrideSuggestions(UhcCommand.stringValues()));
-		new CommandAPICommand("xkuhc").withPermission(CommandPermission.OP)
-				.withArguments(arguments)
-				.executesPlayer(new UhcCommand.Executor())
-				.withAliases("uhc")
-				.register();
-
-		TeamCommandExecutor teamCommandExecutor = new TeamCommandExecutor();
-
-		// TEAMS NO ARGS
-		new CommandAPICommand("uhc-team").withPermission(CommandPermission.OP)
-				.executesPlayer(teamCommandExecutor)
-				.withAliases("teams")
-				.register();
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("name", new StringArgument());
-
-		// TEAMS 1 ARGS
-		new CommandAPICommand("uhc-team").withPermission(CommandPermission.OP)
-				.withArguments(new LinkedHashMap<>(arguments))
-				.executesPlayer(teamCommandExecutor)
-				.withAliases("teams")
-				.register();
-
-		arguments.put("op", new TeamCommand.Argument().overrideSuggestions(TeamCommand.stringValues()));
-
-		// TEAMS 2 ARGS
-		new CommandAPICommand("uhc-team").withPermission(CommandPermission.OP)
-				.withArguments(new LinkedHashMap<>(arguments))
-				.executesPlayer(teamCommandExecutor)
-				.withAliases("teams")
-				.register();
-
-		arguments.put("op", new TeamCommand.Argument().overrideSuggestions("add", "remove"));
-		arguments.put("target", new PlayerArgument());
-
-		// TEAMS 3 ARGS
-		new CommandAPICommand("uhc-team").withPermission(CommandPermission.OP)
-				.withArguments(new LinkedHashMap<>(arguments))
-				.executesPlayer(teamCommandExecutor)
-				.withAliases("teams")
-				.register();
-
-		new CommandAPICommand("xkuhcnewteam").executesPlayer((player, objects) -> {
-			player.sendMessage("Insert the new team's name.");
-			playerResponseListener.await(player, message -> {
-
-				if(Pattern.matches("^[\\w\\[\\]\\-#@.]+$", message))
-					player.performCommand("uhc-team " + message);
-				else
-					player.sendMessage(ChatColor.RED + "Illegal characters in name. Only alphanumeric characters, square brackets, dots, hashes and @s are permitted.");
-
-			});
-		})
-				.register();
-
-		arguments = new LinkedHashMap<>();
-		arguments.put("team", new StringArgument());
-		arguments.put("color", new ChatColorArgument());
-		new CommandAPICommand("teamcolor").withArguments(arguments)
-				.withPermission(CommandPermission.OP)
-				.executesPlayer((player, objects) -> {
-					Session session = Session.by(player);
-					ChatColor color = (ChatColor) objects[1];
-
-					if(session != null) {
-						Team team = session.getTeamManager()
-								.getTeam(((String) objects[0]));
-
-						if(team != null) {
-							team.setColor(color);
-
-							final TextComponent BACK = new TextComponent("BACK");
-							BACK.setUnderlined(true);
-							BACK.setBold(true);
-							BACK.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/uhc-team " + team.getName()));
-							BACK.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[] {
-									new TextComponent("Go back")
-							}));
-							player.spigot()
-									.sendMessage(new MenuBuilder(team.getName() + ": color").info("Changed color to " + color.name())
-											.last(BACK)
-											.build());
-
-						}
-					}
-				})
-				.register();
-
-		new CommandAPICommand("teamcheck").executesPlayer((player, objects) -> {
-			Challenger challenger = Challenger.of(player);
-			Team team = challenger.getTeam();
-			if(team != null)
-				player.sendMessage("You're in team " + team.getName() + ".");
-			else
-				player.sendMessage("You're not in a team.");
-		})
-				.register();
 	}
 
 }

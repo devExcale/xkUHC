@@ -19,19 +19,19 @@ public enum TeamCommand {
 				.toArray(String[]::new);
 	}
 
-	public static class Argument extends CustomArgument<TeamCommand> {
-
-		public Argument() {
-			super(string -> {
-				try {
-					return TeamCommand.valueOf(string.toUpperCase());
-				} catch(IllegalArgumentException e) {
-					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput()
-							.appendHere());
-				}
-			});
-		}
-
-	}
+//	public static class Argument extends CustomArgument<TeamCommand> {
+//
+//		public Argument() {
+//			super(string -> {
+//				try {
+//					return TeamCommand.valueOf(string.toUpperCase());
+//				} catch(IllegalArgumentException e) {
+//					throw new CustomArgumentException(new MessageBuilder("Unknown op: ").appendArgInput()
+//							.appendHere());
+//				}
+//			});
+//		}
+//
+//	}
 
 }

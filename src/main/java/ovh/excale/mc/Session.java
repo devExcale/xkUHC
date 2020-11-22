@@ -17,9 +17,9 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ovh.excale.mc.api.Team;
 import ovh.excale.mc.utils.PlayerSpreadder;
 
 import java.util.*;
@@ -31,7 +31,8 @@ public class Session implements Listener {
 	private static final Map<Challenger, Session> sessionMap = Collections.synchronizedMap(new HashMap<>());
 
 	public static @Nullable Session by(Player player) {
-		return by(Challenger.of(player));
+//		return by(Challenger.of(player));
+		return null;
 	}
 
 	public static @Nullable Session by(Challenger challenger) {
@@ -39,7 +40,7 @@ public class Session implements Listener {
 	}
 
 	public static @NotNull Session create(Player player) {
-		return create(Challenger.of(player));
+		return create((Challenger) null);
 	}
 
 	public static @NotNull Session create(Challenger challenger) {
@@ -149,7 +150,7 @@ public class Session implements Listener {
 				.dispatchCommand(Bukkit.getConsoleSender(), "advancement revoke @a[tag=" + worldId + "] everything");
 		PlayerSpreadder spreadder = new PlayerSpreadder(world, worldSize);
 		teamManager.getTeams()
-				.forEach(team -> spreadder.spread(team.members()
+				.forEach(team -> spreadder.spread(team.getMembers()
 						.toArray(new Player[0])));
 
 		AtomicInteger seconds = new AtomicInteger(5);
@@ -277,7 +278,7 @@ public class Session implements Listener {
 
 		if(isChallenger) {
 
-			Challenger challenger = Challenger.of(player);
+			Challenger challenger = null;
 			Team team = challenger.getTeam();
 
 			broadcast("Challenger " + player.getDisplayName() + " has died!");
