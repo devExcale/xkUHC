@@ -3,20 +3,23 @@ package ovh.excale.mc.api;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 
 public interface Team {
 
-	boolean remove(Player player);
+	boolean remove(Player player) throws IllegalStateException;
 
-	boolean add(Player player);
+	boolean add(Player player) throws IllegalStateException;
 
-	void unregister();
+	void unregister() throws IllegalStateException;
 
-	void setColor(ChatColor color);
+	void setColor(@Nullable ChatColor color) throws IllegalStateException;
 
-	void setFriendlyFire(boolean friendlyFire);
+	void setFriendlyFire(boolean friendlyFire) throws IllegalStateException;
+
+	@NotNull TeamedGame getGame();
 
 	@NotNull String getName();
 

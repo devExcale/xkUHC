@@ -1,6 +1,5 @@
 package ovh.excale.mc.commands;
 
-import dev.jorel.commandapi.arguments.CustomArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import dev.jorel.commandapi.executors.PlayerCommandExecutor;
 import org.bukkit.Bukkit;
@@ -9,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 import ovh.excale.mc.Session;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.WorldManager;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -94,7 +92,7 @@ public enum UhcCommand {
 					break;
 
 				case CLEANUP:
-					WorldManager.cleanUpWorlds();
+//					WorldManager.cleanUpWorlds();
 					break;
 
 				case DEBUG:

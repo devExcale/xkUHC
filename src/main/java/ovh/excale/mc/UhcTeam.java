@@ -3,6 +3,7 @@ package ovh.excale.mc;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import ovh.excale.mc.api.Game;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
 
@@ -10,16 +11,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Level;
 
 public class UhcTeam implements Team {
 
 	private final String name;
 	private final Set<Challenger> players;
 	private final org.bukkit.scoreboard.Team vanillaTeam;
+	private final UhcGame game;
 	private ChatColor color;
 	private boolean eliminated;
-	private UhcGame game;
 
 	protected UhcTeam(@NotNull String name, @NotNull TeamedGame game) throws IllegalArgumentException {
 		players = Collections.synchronizedSet(new HashSet<>());
@@ -39,88 +39,82 @@ public class UhcTeam implements Team {
 		vanillaTeam.setAllowFriendlyFire(false);
 	}
 
+	private void checkState() throws IllegalStateException {
+
+		if(game.getState() == Game.State.RUNNING)
+			throw new IllegalStateException("Cannot edit team while game is running");
+
+	}
+
 	@Override
-	public boolean remove(Player player) {
+	public boolean remove(Player player) throws IllegalStateException {
+
+		checkState();
 		Challenger challenger = game.getChallengerManager()
 				.wrap(player);
-
 		boolean b = this.equals(challenger.getTeam());
 
-		if(b)
-			try {
-				vanillaTeam.removeEntry(player.getName());
-				players.remove(challenger);
-				challenger.setTeam(null);
-			} catch(IllegalStateException e) {
-				UHC.logger()
-						.log(Level.FINER, "Calling Team::removeEntry on an unregistered vanilla team", e);
-			}
+		if(b) {
+			vanillaTeam.removeEntry(player.getName());
+			players.remove(challenger);
+			challenger.setTeam(null);
+		}
 
 		return b;
 	}
 
 	@Override
-	public boolean add(Player player) {
+	public boolean add(Player player) throws IllegalStateException {
+
+		checkState();
 		Challenger challenger = game.getChallengerManager()
 				.wrap(player);
-
 		boolean b = challenger.getTeam() == null;
 
-		if(b)
-			try {
-				vanillaTeam.addEntry(player.getName());
-				players.add(challenger);
-				challenger.setAlive(true);
-				challenger.setTeam(this);
-			} catch(IllegalStateException e) {
-				UHC.logger()
-						.log(Level.FINER, "Calling Team::addEntry on an unregistered vanilla team", e);
-			}
+		if(b) {
+			vanillaTeam.addEntry(player.getName());
+			players.add(challenger);
+			challenger.setAlive(true);
+			challenger.setTeam(this);
+		}
 
 		return b;
 	}
 
 	@Override
-	public void unregister() {
+	public void unregister() throws IllegalStateException {
 
+		checkState();
 		for(Challenger challenger : players) {
 			challenger.setTeam(null);
 			challenger.vanilla()
 					.sendMessage("Your party has been disbanded.");
 		}
+
 		players.clear();
-
-		try {
-			vanillaTeam.unregister();
-		} catch(IllegalStateException e) {
-			UHC.logger()
-					.log(Level.FINER, "Calling Team::unregister on an unregistered vanilla team", e);
-		}
+		vanillaTeam.unregister();
 	}
 
 	@Override
-	public void setColor(ChatColor color) {
-		try {
+	public void setColor(ChatColor color) throws IllegalStateException {
 
-			this.color = (color != null) ? color : ChatColor.WHITE;
-			vanillaTeam.setColor(this.color);
+		checkState();
+		this.color = (color != null) ? color : ChatColor.WHITE;
+		vanillaTeam.setColor(this.color);
 
-		} catch(IllegalStateException e) {
-			UHC.logger()
-					.log(Level.FINER, "Calling Team::setColor on an unregistered vanilla team", e);
-		}
 	}
 
 	@Override
-	public void setFriendlyFire(boolean friendlyFire) {
-		try {
+	public void setFriendlyFire(boolean friendlyFire) throws IllegalStateException {
 
-			vanillaTeam.setAllowFriendlyFire(friendlyFire);
+		checkState();
+		vanillaTeam.setAllowFriendlyFire(friendlyFire);
 
-		} catch(IllegalStateException e) {
-			UHC.logger()
-					.log(Level.FINER, "Calling Team::setAllowFriendlyFire on an unregistered vanilla team", e);
-		}
+	}
+
+	@Override
+	public @NotNull TeamedGame getGame() {
+		return game;
 	}
 
 	@Override

@@ -27,7 +27,7 @@ public class TeamManager {
 		return team;
 	}
 
-	public boolean unregisterTeam(@NotNull String name) {
+	public boolean unregisterTeam(@NotNull String name) throws IllegalStateException {
 		Team team = teams.remove(name);
 		boolean b = team != null;
 
@@ -41,19 +41,11 @@ public class TeamManager {
 		return teams.get(name);
 	}
 
-	public @NotNull Set<String> getTeamNames() {
-		Set<String> names = new HashSet<>();
-
-		for(Team team : teams.values())
-			names.add(team.getName());
-
-		return names;
-	}
-
 	public @NotNull Set<Team> getTeams() {
 		return new HashSet<>(teams.values());
 	}
 
+	// TODO: IMPLEMENT METHOD
 	public void unregisterAll() {
 
 		for(Team team : teams.values())

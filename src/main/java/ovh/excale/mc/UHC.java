@@ -40,7 +40,7 @@ public class UHC extends JavaPlugin {
 		if(Bukkit.getScoreboardManager() == null)
 			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
 
-		WorldManager.cleanUpWorlds();
+		WorldManager.cleanUpWorlds(null);
 
 		PlayerResponseListener playerResponseListener = new PlayerResponseListener(this, 10);
 		Bukkit.getPluginManager()
