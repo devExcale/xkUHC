@@ -3,10 +3,7 @@ package ovh.excale.mc;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.CommandPermission;
-import dev.jorel.commandapi.arguments.Argument;
-import dev.jorel.commandapi.arguments.BooleanArgument;
-import dev.jorel.commandapi.arguments.EntitySelectorArgument;
-import dev.jorel.commandapi.arguments.StringArgument;
+import dev.jorel.commandapi.arguments.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.api.Game;
@@ -31,14 +28,45 @@ public class Commands {
 		teamPlayerArguments.add(new StringArgument("teamName"));
 		teamPlayerArguments.add(new EntitySelectorArgument("playerName", EntitySelectorArgument.EntitySelector.ONE_PLAYER));
 
+		UHC plugin = (UHC) UHC.plugin();
+		Argument teamArgument = new CustomArgument<Team>("team name", name -> {
+
+			TeamedGame game = plugin.getGame();
+			Team team;
+
+			if(game == null)
+				throw new CustomArgument.CustomArgumentException("There's no game instance");
+
+			team = game.getTeam(name);
+			if(team == null)
+				throw new CustomArgument.CustomArgumentException("No such team");
+
+			return team;
+
+		}).overrideSuggestions(commandSender -> {
+
+			TeamedGame game = plugin.getGame();
+			String[] suggestions;
+
+			if(game == null)
+				suggestions = new String[0];
+			else
+				suggestions = game.getTeams()
+						.stream()
+						.map(Team::getName)
+						.toArray(String[]::new);
+
+			return suggestions;
+		});
+
 		TEAMS.withPermission(CommandPermission.OP)
 				// ONLY GAME ADMIN CAN EXECUTE COMMAND
 				.withRequirement(commandSender -> {
 
 					Game game = ((UHC) UHC.plugin()).getGame();
-					boolean b = game != null;
+					boolean b = game == null;
 
-					if(b)
+					if(!b)
 						b = ((Player) commandSender).getUniqueId()
 								.equals(game.getAdminId());
 
@@ -49,8 +77,8 @@ public class Commands {
 						.withArguments(new StringArgument("teamName"))
 						.executesPlayer((player, args) -> {
 
-							TeamedGame game = ((UHC) UHC.plugin()).getGame();
-							String teamName = ((String) args[0]);
+							TeamedGame game = plugin.getGame();
+							String teamName = (String) args[0];
 
 							if(game != null) {
 
@@ -69,14 +97,10 @@ public class Commands {
 						.withArguments(new StringArgument("teamName"))
 						.executesPlayer((player, args) -> {
 
-							TeamedGame game = ((UHC) UHC.plugin()).getGame();
+							TeamedGame game = plugin.getGame();
 							String teamName = ((String) args[0]);
 
 							if(game != null) {
-
-								UUID adminId = game.getAdminId();
-								if(!adminId.equals(player.getUniqueId()))
-									CommandAPI.fail("You're not the admin of this game session.");
 
 								if(game.unregisterTeam(teamName))
 									player.sendMessage(String.format("Team %s unregistered successfully.", teamName));
@@ -87,15 +111,16 @@ public class Commands {
 								CommandAPI.fail("You have to create a game session first.");
 
 						}))
+				// TODO: LIST TEAMS
 				// LIST TEAM MEMBERS
 				.withSubcommand(new CommandAPICommand("list").withArguments(new StringArgument("teamName"))
 						.executesPlayer((player, args) -> {
 
-							TeamedGame game = ((UHC) UHC.plugin()).getGame();
+							TeamedGame game = plugin.getGame();
 
 							if(game != null) {
 
-								Team team = game.createTeam((String) args[0]);
+								Team team = game.getTeam((String) args[0]);
 
 								if(team == null)
 									CommandAPI.fail("There's no such team.");
@@ -116,7 +141,7 @@ public class Commands {
 				.withSubcommand(new CommandAPICommand("add").withArguments(teamPlayerArguments)
 						.executesPlayer((player, args) -> {
 
-							TeamedGame game = ((UHC) UHC.plugin()).getGame();
+							TeamedGame game = plugin.getGame();
 							String teamName = ((String) args[0]);
 							Player target = ((Player) args[1]);
 
@@ -144,7 +169,7 @@ public class Commands {
 				.withSubcommand(new CommandAPICommand("remove").withArguments(teamPlayerArguments)
 						.executesPlayer((player, args) -> {
 
-							TeamedGame game = ((UHC) UHC.plugin()).getGame();
+							TeamedGame game = plugin.getGame();
 							String teamName = ((String) args[0]);
 							Player target = ((Player) args[1]);
 
@@ -171,7 +196,7 @@ public class Commands {
 				// GET TEAM COLOR
 				.withSubcommand(new CommandAPICommand("color").executesPlayer((player, args) -> {
 
-					TeamedGame game = ((UHC) UHC.plugin()).getGame();
+					TeamedGame game = plugin.getGame();
 
 					if(game != null) {
 
@@ -200,9 +225,9 @@ public class Commands {
 				.withRequirement(commandSender -> {
 
 					Game game = ((UHC) UHC.plugin()).getGame();
-					boolean b = game != null;
+					boolean b = game == null;
 
-					if(b)
+					if(!b)
 						b = ((Player) commandSender).getUniqueId()
 								.equals(game.getAdminId());
 
@@ -269,6 +294,7 @@ public class Commands {
 				// GAME PREPARE
 				.withSubcommand(new CommandAPICommand("prepare").executesPlayer((player, args) -> {
 
+
 					// TODO: GAME PREPARE (WORLD GEN)
 					CommandAPI.fail("WIP");
 
@@ -289,11 +315,8 @@ public class Commands {
 
 						}))
 				// CLEAN UP WORLDS
-				.withSubcommand(new CommandAPICommand("clean").executesPlayer((player, args) -> {
-
-					// TODO: CLEAN UP WORLDS
-					CommandAPI.fail("WIP");
-
+				.withSubcommand(new CommandAPICommand("clean").executesPlayer((Player player, Object[] args) -> {
+					WorldManager.cleanUpWorlds(worlds -> player.sendMessage("UHC CleanUp: removed " + worlds + " worlds."));
 				}));
 
 	}

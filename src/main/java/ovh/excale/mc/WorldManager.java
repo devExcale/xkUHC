@@ -8,6 +8,7 @@ import org.bukkit.block.Biome;
 
 import java.io.File;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class WorldManager {
 
@@ -58,15 +59,20 @@ public class WorldManager {
 		return optional;
 	}
 
-	public static void cleanUpWorlds() {
+	public static void cleanUpWorlds(Consumer<Integer> then) {
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.plugin(), () -> {
 
 					File[] worlds = Bukkit.getWorldContainer()
-							.listFiles((dir, name) -> name.endsWith(".xkuhc"));
+							.listFiles((dir, name) -> name.endsWith(".xkuhc") && Bukkit.getWorld(name) == null);
 
+					int i = 0;
 					for(File world : worlds)
-						deleteFile(world, world);
+						if(deleteFile(world, world))
+							i++;
+
+					if(then != null)
+						then.accept(i);
 
 				});
 
