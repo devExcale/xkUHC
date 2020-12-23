@@ -92,7 +92,7 @@ public enum UhcCommand {
 					break;
 
 				case CLEANUP:
-//					WorldManager.cleanUpWorlds();
+//					RandomUhcWorldGenerator.cleanUpWorlds();
 					break;
 
 				case DEBUG:

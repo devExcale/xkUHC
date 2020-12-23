@@ -30,7 +30,7 @@ public class Commands {
 	private static Argument teamArgument() {
 		UHC plugin = (UHC) UHC.plugin();
 
-		return new CustomArgument<>("team name", name -> {
+		return new CustomArgument<>("teamName", name -> {
 
 			TeamedGame game = plugin.getGame();
 			Team team;
@@ -337,7 +337,7 @@ public class Commands {
 
 						}))
 				// CLEAN UP WORLDS
-				.withSubcommand(new CommandAPICommand("clean").executesPlayer((Player player, Object[] args) -> WorldManager.cleanUpWorlds(
+				.withSubcommand(new CommandAPICommand("clean").executesPlayer((Player player, Object[] args) -> RandomUhcWorldGenerator.purgeWorlds(
 						worlds -> player.sendMessage("UHC CleanUp: removed " + worlds + " worlds."))));
 
 	}

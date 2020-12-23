@@ -91,7 +91,7 @@ public class Session implements Listener {
 	public Optional<World> generateWorld() {
 		String millis = String.valueOf(System.currentTimeMillis());
 
-		Optional<World> optional = new WorldManager(millis + ".xkuhc").generate();
+		Optional<World> optional = new RandomUhcWorldGenerator(millis + ".xkuhc").generate();
 		optional.ifPresent(world -> {
 			this.world = world;
 			worldId = millis;

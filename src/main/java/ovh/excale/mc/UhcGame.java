@@ -1,6 +1,7 @@
 package ovh.excale.mc;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
@@ -18,10 +19,11 @@ public class UhcGame implements TeamedGame {
 	private final Scoreboard scoreboard;
 	private final TeamManager teamManager;
 	private final ChallengerManager challengerManager;
+	private final RandomUhcWorldGenerator worldGenerator;
 
 	private UUID adminId;
-
 	private State state;
+	private World world;
 
 	public UhcGame(@NotNull Player admin) {
 		//noinspection ConstantConditions
@@ -32,6 +34,7 @@ public class UhcGame implements TeamedGame {
 		teamManager = new TeamManager(this);
 		challengerManager = new ChallengerManager();
 		adminId = admin.getUniqueId();
+		worldGenerator = null;
 
 		state = State.PREPARE;
 
@@ -98,13 +101,28 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public void prepare() throws IllegalStateException {
 
-		// TODO: ASYNC WORLD GENERATION
+		if(!state.equals(State.PREPARE))
+			throw new IllegalStateException("The game doesn't need any more preparation.");
+
+		Optional<World> optional;
+
+		do {
+			optional = worldGenerator.generate();
+		} while(!optional.isPresent());
+
+		world = optional.get();
 
 		state = State.READY;
 	}
 
 	@Override
 	public void start() throws IllegalStateException {
+
+		if(!state.equals(State.READY))
+			throw new IllegalStateException("The game is not ready yet.");
+
+		if(players.size() < 2)
+			throw new IllegalStateException("There must be at least two players to start the game.");
 
 	}
 
