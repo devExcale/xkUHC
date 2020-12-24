@@ -6,8 +6,6 @@ authors:
   - Excale
   - Cr4zy5ky_U
   - dev_excale@hotmail.com
-depend:
-  - CommandAPI
 api-version: "1.13"
 website: ${project.url}
 load: POSTWORLD

@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import ovh.excale.mc.api.Game;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
+import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
 import java.util.Arrays;
 import java.util.LinkedList;

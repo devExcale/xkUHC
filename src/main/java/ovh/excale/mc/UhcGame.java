@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.api.Game;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
+import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
 import java.util.*;
 import java.util.function.BiConsumer;

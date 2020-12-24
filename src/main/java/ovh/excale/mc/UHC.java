@@ -1,17 +1,20 @@
 package ovh.excale.mc;
 
+import dev.jorel.commandapi.CommandAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.api.TeamedGame;
 import ovh.excale.mc.utils.PlayerResponseListener;
+import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 // TODO: CHECK PlayerDeathEvent LISTENER IN SESSION RUN
 public class UHC extends JavaPlugin {
 
-	public static boolean DEBUG_MODE = false;
+	public static boolean DEBUG;
 	private static UHC instance;
 
 	public static Plugin plugin() {
@@ -33,18 +36,28 @@ public class UHC extends JavaPlugin {
 	}
 
 	@Override
-	public void onEnable() {
-		super.onEnable();
+	public void onLoad() {
 		instance = this;
+
+		//noinspection ConstantConditions
+		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
+				.toString());
+
+		CommandAPI.onLoad(DEBUG);
+	}
+
+	@Override
+	public void onEnable() {
+		CommandAPI.onEnable(this);
 
 		if(Bukkit.getScoreboardManager() == null)
 			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
 
-		RandomUhcWorldGenerator.purgeWorlds(null);
+		RandomUhcWorldGenerator.purgeWorlds(worldCount -> logger().log(Level.INFO,
+				"Removed " + worldCount + " world from previous instances!"));
 
-		PlayerResponseListener playerResponseListener = new PlayerResponseListener(this, 10);
 		Bukkit.getPluginManager()
-				.registerEvents(playerResponseListener, this);
+				.registerEvents(new PlayerResponseListener(this, 10), this);
 
 		// REGISTER COMMANDS
 		Commands.TEAMS.register();

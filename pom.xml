@@ -14,6 +14,7 @@
 
 	<build>
 		<plugins>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -25,6 +26,37 @@
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.4</version>
+				<executions>
+					<execution>
+						<id>shade</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<filters>
+						<filter>
+							<artifact>annotations:*</artifact>
+							<excludes>
+								<exclude>META-INF/*.MF</exclude>
+							</excludes>
+						</filter>
+					</filters>
+					<relocations>
+						<relocation>
+							<pattern>dev.jorel.commandapi-shade</pattern>
+						</relocation>
+					</relocations>
+				</configuration>
+			</plugin>
+
 		</plugins>
 
 		<resources>
@@ -68,7 +100,7 @@
 
 		<dependency>
 			<groupId>dev.jorel</groupId>
-			<artifactId>commandapi-core</artifactId>
+			<artifactId>commandapi-shade</artifactId>
 			<version>5.2</version>
 			<scope>provided</scope>
 		</dependency>

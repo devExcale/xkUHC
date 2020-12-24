@@ -1,4 +1,4 @@
-package ovh.excale.mc;
+package ovh.excale.mc.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
@@ -6,6 +6,7 @@ import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Biome;
 import org.bukkit.plugin.Plugin;
+import ovh.excale.mc.UHC;
 
 import java.io.File;
 import java.time.Instant;

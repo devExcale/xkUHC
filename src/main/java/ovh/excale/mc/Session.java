@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.utils.PlayerSpreadder;
+import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -79,7 +80,7 @@ public class Session implements Listener {
 		scoreboard.registerNewObjective("tab_hearts", "health", "Health", RenderType.HEARTS)
 				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-		debug = UHC.DEBUG_MODE;
+		debug = UHC.DEBUG;
 		minutes = 0;
 		worldId = "0";
 	}
@@ -91,7 +92,7 @@ public class Session implements Listener {
 	public Optional<World> generateWorld() {
 		String millis = String.valueOf(System.currentTimeMillis());
 
-		Optional<World> optional = new RandomUhcWorldGenerator(millis + ".xkuhc").generate();
+		Optional<World> optional = new RandomUhcWorldGenerator(UHC.plugin(), System.currentTimeMillis()).generate();
 		optional.ifPresent(world -> {
 			this.world = world;
 			worldId = millis;
