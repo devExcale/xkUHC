@@ -43,7 +43,7 @@
 				<configuration>
 					<filters>
 						<filter>
-							<artifact>annotations:*</artifact>
+							<artifact>ovh.excale.mc:*</artifact>
 							<excludes>
 								<exclude>META-INF/*.MF</exclude>
 							</excludes>
