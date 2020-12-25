@@ -12,66 +12,9 @@
 	<description>A simple single-instance UHC plugin</description>
 	<url>http://mc.excale.ovh/</url>
 
-	<build>
-		<plugins>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<outputFileName>${project.name}-${project.version}</outputFileName>
-					<source>8</source>
-					<target>8</target>
-					<encoding>UTF-8</encoding>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
-				<executions>
-					<execution>
-						<id>shade</id>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<filters>
-						<filter>
-							<artifact>ovh.excale.mc:*</artifact>
-							<excludes>
-								<exclude>META-INF/*.MF</exclude>
-							</excludes>
-						</filter>
-					</filters>
-					<relocations>
-						<relocation>
-							<pattern>dev.jorel.commandapi-shade</pattern>
-						</relocation>
-					</relocations>
-				</configuration>
-			</plugin>
-
-		</plugins>
-
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>false</filtering>
-			</resource>
-			<resource>
-				<directory>src/main/resources-filtered</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
-	</build>
-
 	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -102,7 +45,6 @@
 			<groupId>dev.jorel</groupId>
 			<artifactId>commandapi-shade</artifactId>
 			<version>5.2</version>
-			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -113,5 +55,57 @@
 
 	</dependencies>
 
+	<build>
+		<finalName>${project.name}-${project.version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.4</version>
+				<executions>
+					<execution>
+						<id>shade</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<finalName>${project.name}</finalName>
+					<filters>
+						<filter>
+							<artifact>org.jetbrains:annotations</artifact>
+							<excludes>
+								<exclude>META-INF/*.MF</exclude>
+							</excludes>
+						</filter>
+						<filter>
+							<artifact>dev.jorel:commandapi-shade</artifact>
+							<excludes>
+								<exclude>META-INF/*.MF</exclude>
+							</excludes>
+						</filter>
+					</filters>
+					<relocations>
+						<relocation>
+							<pattern>dev.jorel.commandapi-shade</pattern>
+						</relocation>
+					</relocations>
+				</configuration>
+			</plugin>
+		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources-filtered</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
 
 </project>
