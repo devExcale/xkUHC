@@ -72,7 +72,7 @@
 					</execution>
 				</executions>
 				<configuration>
-					<finalName>${project.name}</finalName>
+					<outputFile>${project.build.directory}\${project.name}.jar</outputFile>
 					<filters>
 						<filter>
 							<artifact>org.jetbrains:annotations</artifact>

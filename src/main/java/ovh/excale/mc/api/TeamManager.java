@@ -1,9 +1,8 @@
-package ovh.excale.mc;
+package ovh.excale.mc.api;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.api.Team;
-import ovh.excale.mc.api.TeamedGame;
+import ovh.excale.mc.UhcTeam;
 
 import java.util.*;
 

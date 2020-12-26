@@ -7,20 +7,19 @@ import org.bukkit.entity.Player;
 
 import java.util.Random;
 
-public class PlayerSpreadder {
+public class PlayerSpreader {
 
 	private final Random random;
 	private final World world;
 	private final int size;
 
-	public PlayerSpreadder(World world, int size) {
+	public PlayerSpreader(World world, int size) {
 		this.world = world;
 		this.size = size;
-		// TODO: CHANGE RANDOM SEED TO CURRENT TIME MILLIS
-		random = new Random(world.getSeed());
+		random = new Random(System.currentTimeMillis());
 	}
 
-	public PlayerSpreadder spread(Player... players) {
+	public void spread(Player... players) {
 		int tries = 0;
 		Block block;
 		Location location;
@@ -39,8 +38,6 @@ public class PlayerSpreadder {
 
 		for(Player player : players)
 			player.teleport(location);
-
-		return this;
 	}
 
 }

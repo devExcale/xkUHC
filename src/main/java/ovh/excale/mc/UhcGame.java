@@ -1,19 +1,28 @@
 package ovh.excale.mc;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.World;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.api.Game;
 import ovh.excale.mc.api.Team;
+import ovh.excale.mc.api.TeamManager;
 import ovh.excale.mc.api.TeamedGame;
+import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.logging.Level;
 
+// TODO: RIGHT SCOREBOARD - TEAM & GAME INFO
 public class UhcGame implements TeamedGame {
 
 	private final Map<UUID, Challenger> players;
@@ -23,7 +32,7 @@ public class UhcGame implements TeamedGame {
 	private final RandomUhcWorldGenerator worldGenerator;
 
 	private UUID adminId;
-	private State state;
+	private Status status;
 	private World world;
 
 	public UhcGame(@NotNull Player admin) {
@@ -32,12 +41,12 @@ public class UhcGame implements TeamedGame {
 				.getNewScoreboard();
 
 		players = Collections.synchronizedMap(new HashMap<>());
-		teamManager = new TeamManager(this);
-		challengerManager = new ChallengerManager();
 		adminId = admin.getUniqueId();
-		worldGenerator = null;
+		teamManager = new TeamManager(this);
+		challengerManager = new ChallengerManager(this);
+		worldGenerator = new RandomUhcWorldGenerator(UHC.plugin(), System.currentTimeMillis());
 
-		state = State.PREPARE;
+		status = Status.PREPARE;
 
 		// TODO: SCOREBOARD DISPLAYSLOT LIST
 	}
@@ -55,7 +64,7 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public Team createTeam(@NotNull String name) throws IllegalStateException {
 
-		if(!state.isEditable())
+		if(!status.isEditable())
 			throw new IllegalStateException("Game is past preparation phase");
 
 		return teamManager.registerNewTeam(name);
@@ -64,7 +73,7 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public boolean unregisterTeam(String name) throws IllegalStateException {
 
-		if(!state.isEditable())
+		if(!status.isEditable())
 			throw new IllegalStateException("Game is past preparation phase");
 
 		// TODO: REMOVE CHALLENGERS FROM CHAL_MANAGER ON SET_TEAM NULL
@@ -102,28 +111,91 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public void prepare() throws IllegalStateException {
 
-		if(!state.equals(State.PREPARE))
+		if(!status.equals(Status.PREPARE))
 			throw new IllegalStateException("The game doesn't need any more preparation.");
 
 		Optional<World> optional;
 
-		do {
+		optional = worldGenerator.generate();
+		while(!optional.isPresent()) {
+			// TODO: MESSAGE BROADCAST ON PREPARE/STARTING
+			UHC.logger()
+					.log(Level.INFO, "UHC World failed to check requirements, generating again...");
 			optional = worldGenerator.generate();
-		} while(!optional.isPresent());
+		}
 
 		world = optional.get();
 
-		state = State.READY;
+		status = Status.READY;
 	}
 
 	@Override
 	public void start() throws IllegalStateException {
 
-		if(!state.equals(State.READY))
+		if(!status.equals(Status.READY))
 			throw new IllegalStateException("The game is not ready yet.");
 
 		if(players.size() < 2)
 			throw new IllegalStateException("There must be at least two players to start the game.");
+
+		status = Status.STARTING;
+
+		// DO ASYNC
+		Bukkit.getScheduler()
+				.runTaskAsynchronously(UHC.plugin(), () -> {
+
+					PotionEffect resistance = new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 2400, 100, false, false, false);
+					PotionEffect regeneration = new PotionEffect(PotionEffectType.REGENERATION, 2400, 100, false, false, false);
+					PotionEffect saturation = new PotionEffect(PotionEffectType.SATURATION, 2400, 100, false, false, false);
+					PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 2400, 100, false, false, false);
+
+					Set<Advancement> advancements = new HashSet<>();
+					Bukkit.advancementIterator()
+							.forEachRemaining(advancement -> {
+								if(advancement.getKey()
+										.getKey()
+										.contains("story"))
+									advancements.add(advancement);
+							});
+
+					PlayerSpreader spreader = new PlayerSpreader(world, 4000);
+					teamManager.getTeams()
+							.forEach(team -> spreader.spread(team.getMembersAsArray()));
+					teamManager.getTeams()
+							.stream()
+							.flatMap(team -> team.getMembers()
+									.stream())
+							.forEach(player -> {
+
+								player.sendTitle("Loading UHC...", null, 10, 70, 20);
+								player.addPotionEffect(resistance);
+								player.addPotionEffect(regeneration);
+								player.addPotionEffect(saturation);
+								player.addPotionEffect(blindness);
+
+								//noinspection ConstantConditions
+								player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+										.setBaseValue(40);
+								player.getInventory()
+										.clear();
+								player.setGameMode(GameMode.SURVIVAL);
+								player.setFoodLevel(20);
+								player.setHealth(40);
+								player.setLevel(0);
+
+								// REVOKE ALL STORY ADVANCEMENTS
+								for(Advancement advancement : advancements) {
+									AdvancementProgress progress = player.getAdvancementProgress(advancement);
+									progress.getRemainingCriteria()
+											.forEach(progress::revokeCriteria);
+								}
+
+							});
+				});
+
+	}
+
+	private void run() {
 
 	}
 
@@ -138,8 +210,8 @@ public class UhcGame implements TeamedGame {
 	}
 
 	@Override
-	public @NotNull State getState() {
-		return state;
+	public @NotNull Game.Status getStatus() {
+		return status;
 	}
 
 	@Override
@@ -158,21 +230,6 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public void setAdmin(Player player) {
 		adminId = player.getUniqueId();
-	}
-
-	@Override
-	public void setDisconnectListener(BiConsumer<Game, Player> onDisconnect) {
-
-	}
-
-	@Override
-	public void setReconnectListener(BiConsumer<Game, Player> onReconnect) {
-
-	}
-
-	@Override
-	public void resetListeners() {
-
 	}
 
 }

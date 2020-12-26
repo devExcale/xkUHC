@@ -3,7 +3,6 @@ package ovh.excale.mc;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.mc.api.Game;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
 
@@ -18,20 +17,21 @@ public class UhcTeam implements Team {
 	private final Set<Challenger> players;
 	private final org.bukkit.scoreboard.Team vanillaTeam;
 	private final UhcGame game;
+	private final ChallengerManager challengerManager;
 	private ChatColor color;
-	private boolean eliminated;
 
-	protected UhcTeam(@NotNull String name, @NotNull TeamedGame game) throws IllegalArgumentException {
+	private boolean eliminated;
+	private boolean unregistered;
+
+	public UhcTeam(@NotNull String name, TeamedGame game) throws IllegalArgumentException {
 		players = Collections.synchronizedSet(new HashSet<>());
 		this.name = Objects.requireNonNull(name);
 
 		color = ChatColor.WHITE;
 		eliminated = false;
 
-		if(!(Objects.requireNonNull(game) instanceof UhcGame))
-			throw new IllegalArgumentException("Game must be of Uhc type");
-
-		this.game = (UhcGame) game;
+		this.game = (UhcGame) Objects.requireNonNull(game);
+		challengerManager = this.game.getChallengerManager();
 
 		vanillaTeam = game.getScoreboard()
 				.registerNewTeam(name);
@@ -39,20 +39,20 @@ public class UhcTeam implements Team {
 		vanillaTeam.setAllowFriendlyFire(false);
 	}
 
-	private void checkState() throws IllegalStateException {
+	private void statusCheck() throws IllegalStateException {
 
-		if(game.getState() == Game.State.RUNNING)
-			throw new IllegalStateException("Cannot edit team while game is running");
+		if(!game.getStatus()
+				.isEditable())
+			throw new IllegalStateException("Cannot edit game right now");
 
 	}
 
 	@Override
 	public boolean remove(Player player) throws IllegalStateException {
 
-		checkState();
-		Challenger challenger = game.getChallengerManager()
-				.wrap(player);
-		boolean b = this.equals(challenger.getTeam());
+		statusCheck();
+		Challenger challenger = challengerManager.get(player.getUniqueId());
+		boolean b = challenger != null && this.equals(challenger.getTeam());
 
 		if(b) {
 			vanillaTeam.removeEntry(player.getName());
@@ -66,14 +66,16 @@ public class UhcTeam implements Team {
 	@Override
 	public boolean add(Player player) throws IllegalStateException {
 
-		checkState();
-		Challenger challenger = game.getChallengerManager()
-				.wrap(player);
-		boolean b = challenger.getTeam() == null;
+		statusCheck();
+		Challenger challenger = challengerManager.get(player.getUniqueId());
+		if(challenger == null)
+			challenger = challengerManager.register(player);
 
+		boolean b = this.equals(challenger.getTeam());
 		if(b) {
 			vanillaTeam.addEntry(player.getName());
 			players.add(challenger);
+			player.setScoreboard(game.getScoreboard());
 			challenger.setAlive(true);
 			challenger.setTeam(this);
 		}
@@ -84,7 +86,7 @@ public class UhcTeam implements Team {
 	@Override
 	public void unregister() throws IllegalStateException {
 
-		checkState();
+		statusCheck();
 		for(Challenger challenger : players) {
 			challenger.setTeam(null);
 			challenger.vanilla()
@@ -98,7 +100,7 @@ public class UhcTeam implements Team {
 	@Override
 	public void setColor(ChatColor color) throws IllegalStateException {
 
-		checkState();
+		statusCheck();
 		this.color = (color != null) ? color : ChatColor.WHITE;
 		vanillaTeam.setColor(this.color);
 
@@ -107,9 +109,16 @@ public class UhcTeam implements Team {
 	@Override
 	public void setFriendlyFire(boolean friendlyFire) throws IllegalStateException {
 
-		checkState();
+		statusCheck();
 		vanillaTeam.setAllowFriendlyFire(friendlyFire);
 
+	}
+
+	@Override
+	public void broadcast(String message) {
+		if(!unregistered)
+			players.forEach(challenger -> challenger.vanilla()
+					.sendMessage(message));
 	}
 
 	@Override
@@ -130,6 +139,23 @@ public class UhcTeam implements Team {
 			set.add(challenger.vanilla());
 
 		return set;
+	}
+
+	@Override
+	public @NotNull Set<Challenger> getChallengers() {
+		return new HashSet<>(players);
+	}
+
+	@Override
+	public @NotNull Player[] getMembersAsArray() {
+		return players.stream()
+				.map(Challenger::vanilla)
+				.toArray(Player[]::new);
+	}
+
+	@Override
+	public @NotNull Challenger[] getChallengersAsArray() {
+		return players.toArray(new Challenger[0]);
 	}
 
 	@Override

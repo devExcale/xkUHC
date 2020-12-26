@@ -1,11 +1,12 @@
 package ovh.excale.mc.api;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 
 // TODO: DEBUG MODE
 public interface Game {
@@ -29,7 +30,7 @@ public interface Game {
 
 	void stop();
 
-	@NotNull State getState();
+	@NotNull Status getStatus();
 
 	@NotNull UUID getAdminId();
 
@@ -37,23 +38,24 @@ public interface Game {
 
 	void setAdmin(Player player);
 
-	void setDisconnectListener(BiConsumer<Game, Player> onDisconnect);
+	default Scoreboard getScoreboard() {
+		//noinspection ConstantConditions
+		return Bukkit.getScoreboardManager()
+				.getMainScoreboard();
+	}
 
-	void setReconnectListener(BiConsumer<Game, Player> onReconnect);
-
-	void resetListeners();
-
-	enum State {
+	enum Status {
 
 		PREPARE(true),
 		READY(true),
+		STARTING(false),
 		RUNNING(false),
 		FINAL(false),
 		WORN(false);
 
 		private final boolean editable;
 
-		State(boolean editable) {
+		Status(boolean editable) {
 			this.editable = editable;
 		}
 

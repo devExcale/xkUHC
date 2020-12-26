@@ -263,7 +263,7 @@ public class Commands {
 					Game game = plugin.getGame();
 
 					if(game != null)
-						if(game.getState() == Game.State.RUNNING)
+						if(game.getStatus() == Game.Status.RUNNING)
 							CommandAPI.fail("A game is already running.");
 						else
 							game.reset();
@@ -278,7 +278,7 @@ public class Commands {
 					Game game = ((UHC) UHC.plugin()).getGame();
 
 					if(game != null)
-						if(game.getState() == Game.State.READY)
+						if(game.getStatus() == Game.Status.READY)
 							game.start();
 						else
 							CommandAPI.fail("Couldn't start game.");
@@ -292,7 +292,7 @@ public class Commands {
 					Game game = ((UHC) UHC.plugin()).getGame();
 
 					if(game != null)
-						if(game.getState() == Game.State.RUNNING)
+						if(game.getStatus() == Game.Status.RUNNING)
 							game.stop();
 						else
 							CommandAPI.fail("The game's not running.");
@@ -306,7 +306,7 @@ public class Commands {
 					Game game = ((UHC) UHC.plugin()).getGame();
 
 					if(game != null)
-						if(game.getState() != Game.State.RUNNING)
+						if(game.getStatus() != Game.Status.RUNNING)
 							game.reset();
 						else
 							CommandAPI.fail("The game's running.");
