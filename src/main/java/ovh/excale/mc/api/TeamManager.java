@@ -44,6 +44,15 @@ public class TeamManager {
 		return new HashSet<>(teams.values());
 	}
 
+	public void validate() {
+		for(Team team : teams.values()) {
+			team.validate();
+			if(team.getMembers()
+					.size() == 0)
+				unregisterTeam(team.getName());
+		}
+	}
+
 	// TODO: IMPLEMENT METHOD
 	public void unregisterAll() {
 

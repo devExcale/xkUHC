@@ -156,11 +156,12 @@ public class Commands {
 
 						}))
 				// ADD PLAYER TO TEAM
+				// FIXME: CAN'T ADD PLAYER TO TEAM
 				.withSubcommand(new CommandAPICommand("add").withArguments(teamPlayerArguments)
 						.executesPlayer((player, args) -> {
 
 							Team team = (Team) args[0];
-							Player target = ((Player) args[1]);
+							Player target = (Player) args[1];
 							TeamedGame game = team.getGame();
 
 							UUID adminId = game.getAdminId();
@@ -172,7 +173,7 @@ public class Commands {
 										team.getName(),
 										player.getDisplayName()));
 							else
-								CommandAPI.fail(String.format("Failed to add %s to team %s.", team.getName(), player.getDisplayName()));
+								CommandAPI.fail(String.format("Failed to add %s to team %s.", player.getDisplayName(), team.getName()));
 
 						}))
 				// REMOVE PLAYER FROM TEAM

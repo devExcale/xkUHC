@@ -19,6 +19,11 @@ public interface Team {
 
 	void setFriendlyFire(boolean friendlyFire) throws IllegalStateException;
 
+	/**
+	 * Removes all offline players from the team
+	 */
+	void validate();
+
 	void broadcast(String message);
 
 	@NotNull TeamedGame getGame();

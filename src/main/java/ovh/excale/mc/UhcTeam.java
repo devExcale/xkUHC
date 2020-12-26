@@ -117,6 +117,13 @@ public class UhcTeam implements Team {
 	}
 
 	@Override
+	public void validate() {
+		for(Challenger challenger : players)
+			if(!challenger.isOnline())
+				remove(challenger.vanilla());
+	}
+
+	@Override
 	public void broadcast(String message) {
 		if(!unregistered)
 			players.forEach(challenger -> challenger.vanilla()

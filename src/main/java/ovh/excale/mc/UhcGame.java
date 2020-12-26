@@ -17,7 +17,6 @@ import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
 import java.util.*;
-import java.util.logging.Level;
 
 // TODO: RIGHT SCOREBOARD - TEAM & GAME INFO
 public class UhcGame implements TeamedGame {
@@ -43,7 +42,7 @@ public class UhcGame implements TeamedGame {
 		challengerManager = new ChallengerManager(this);
 		worldGenerator = new RandomUhcWorldGenerator(UHC.plugin(), System.currentTimeMillis());
 
-		status = Status.PREPARE;
+		status = Status.READY;
 
 		// TODO: SCOREBOARD DISPLAYSLOT LIST
 	}
@@ -106,34 +105,15 @@ public class UhcGame implements TeamedGame {
 	}
 
 	@Override
-	public void prepare() throws IllegalStateException {
-
-		if(!status.equals(Status.PREPARE))
-			throw new IllegalStateException("The game doesn't need any more preparation.");
-
-		Optional<World> optional;
-
-		optional = worldGenerator.generate();
-		while(!optional.isPresent()) {
-			// TODO: MESSAGE BROADCAST ON PREPARE/STARTING
-			UHC.logger()
-					.log(Level.INFO, "UHC World failed to check requirements, generating again...");
-			optional = worldGenerator.generate();
-		}
-
-		world = optional.get();
-
-		status = Status.READY;
-	}
-
-	@Override
 	public void start() throws IllegalStateException {
 
 		if(!status.equals(Status.READY))
-			throw new IllegalStateException("The game is not ready yet.");
+			throw new IllegalStateException("Cannot run game in current state");
 
-		if(players.size() < 2)
-			throw new IllegalStateException("There must be at least two players to start the game.");
+		teamManager.validate();
+		if(teamManager.getTeams()
+				.size() < 2)
+			throw new IllegalStateException("The game cannot start without at least 2 teams");
 
 		status = Status.STARTING;
 
@@ -155,6 +135,16 @@ public class UhcGame implements TeamedGame {
 									advancements.add(advancement);
 							});
 
+					// WORLD GENERATION
+					Optional<World> optional = worldGenerator.generate();
+
+					while(!optional.isPresent()) {
+						for(Team team : teamManager.getTeams())
+							team.broadcast("World failed to check UHC requirements, generating again...");
+						optional = worldGenerator.generate();
+					}
+
+
 					PlayerSpreader spreader = new PlayerSpreader(world, 4000);
 					teamManager.getTeams()
 							.forEach(team -> spreader.spread(team.getMembersAsArray()));
@@ -164,7 +154,6 @@ public class UhcGame implements TeamedGame {
 									.stream())
 							.forEach(player -> {
 
-								player.sendTitle("Loading UHC...", null, 10, 70, 20);
 								player.addPotionEffect(resistance);
 								player.addPotionEffect(regeneration);
 								player.addPotionEffect(saturation);
@@ -188,6 +177,11 @@ public class UhcGame implements TeamedGame {
 								}
 
 							});
+
+					teamManager.getTeams()
+							.forEach(team -> team.broadcast("Game is now starting!"));
+					status = Status.RUNNING;
+
 				});
 
 	}

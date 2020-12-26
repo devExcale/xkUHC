@@ -15,15 +15,6 @@ public interface Game {
 
 	Set<Player> getSpectators();
 
-	/**
-	 * Prepares the game to be run.<br/>
-	 * <i>e.g.</i> A game that requires a new world needs
-	 * the world to be generated first.
-	 *
-	 * @throws IllegalStateException if something happens while preparing the game.
-	 */
-	void prepare() throws IllegalStateException;
-
 	void start() throws IllegalStateException;
 
 	void reset() throws IllegalStateException;
