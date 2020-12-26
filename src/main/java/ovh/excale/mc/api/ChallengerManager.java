@@ -1,4 +1,4 @@
-package ovh.excale.mc;
+package ovh.excale.mc.api;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.api.Game;
+import ovh.excale.mc.UHC;
 
 import java.util.Collections;
 import java.util.HashMap;

@@ -3,6 +3,8 @@ package ovh.excale.mc;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import ovh.excale.mc.api.Challenger;
+import ovh.excale.mc.api.ChallengerManager;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
 

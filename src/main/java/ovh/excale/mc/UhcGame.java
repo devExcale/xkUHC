@@ -12,10 +12,7 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.api.Game;
-import ovh.excale.mc.api.Team;
-import ovh.excale.mc.api.TeamManager;
-import ovh.excale.mc.api.TeamedGame;
+import ovh.excale.mc.api.*;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 

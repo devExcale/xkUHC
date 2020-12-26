@@ -7,6 +7,7 @@ import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.api.TeamedGame;
+import ovh.excale.mc.utils.Commands;
 import ovh.excale.mc.utils.PlayerResponseListener;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 

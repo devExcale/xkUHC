@@ -3,8 +3,6 @@ package ovh.excale.mc.api;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.UhcTeam;
-import ovh.excale.mc.exceptions.GamePrepareException;
 
 import java.util.Set;
 

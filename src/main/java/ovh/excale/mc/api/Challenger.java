@@ -1,4 +1,4 @@
-package ovh.excale.mc;
+package ovh.excale.mc.api;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -6,7 +6,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.api.Team;
 
 import java.util.UUID;
 
@@ -37,7 +36,7 @@ public class Challenger {
 		this.alive = alive;
 	}
 
-	protected void setOnline(boolean online) {
+	public void setOnline(boolean online) {
 		this.online = online;
 	}
 
