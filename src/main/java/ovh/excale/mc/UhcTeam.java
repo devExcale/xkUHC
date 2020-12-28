@@ -59,6 +59,7 @@ public class UhcTeam implements Team {
 		if(b) {
 			vanillaTeam.removeEntry(player.getName());
 			players.remove(challenger);
+			challenger.setScoreboard(null);
 			challenger.setTeam(null);
 		}
 
@@ -73,11 +74,13 @@ public class UhcTeam implements Team {
 		if(challenger == null)
 			challenger = challengerManager.register(player);
 
-		boolean b = this.equals(challenger.getTeam());
+		Team team = challenger.getTeam();
+		boolean b = team == null;
 		if(b) {
 			vanillaTeam.addEntry(player.getName());
 			players.add(challenger);
-			player.setScoreboard(game.getScoreboard());
+			player.sendMessage("You've been added to team " + getName() + ".");
+			challenger.setScoreboard(game.getScoreboard());
 			challenger.setAlive(true);
 			challenger.setTeam(this);
 		}
@@ -87,12 +90,19 @@ public class UhcTeam implements Team {
 
 	@Override
 	public void unregister() throws IllegalStateException {
+		unregister(true);
+	}
+
+	@Override
+	public void unregister(boolean silent) throws IllegalStateException {
 
 		statusCheck();
 		for(Challenger challenger : players) {
+			challenger.setScoreboard(null);
 			challenger.setTeam(null);
-			challenger.vanilla()
-					.sendMessage("Your party has been disbanded.");
+			if(!silent)
+				challenger.vanilla()
+						.sendMessage("Your party has been disbanded.");
 		}
 
 		players.clear();

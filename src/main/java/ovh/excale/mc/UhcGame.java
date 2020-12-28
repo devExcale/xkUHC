@@ -9,6 +9,9 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,9 +45,27 @@ public class UhcGame implements TeamedGame {
 		challengerManager = new ChallengerManager(this);
 		worldGenerator = new RandomUhcWorldGenerator(UHC.plugin(), System.currentTimeMillis());
 
-		status = Status.READY;
+		challengerManager.listenChanges();
+		scoreboard.registerNewObjective("health", "health", "health", RenderType.HEARTS)
+				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
 		// TODO: SCOREBOARD DISPLAYSLOT LIST
+		Objective rightTab = scoreboard.registerNewObjective("right_tab", "dummy", "excale's UHC", RenderType.INTEGER);
+		rightTab.setDisplaySlot(DisplaySlot.SIDEBAR);
+		rightTab.getScore(" ")
+				.setScore(6);
+		rightTab.getScore("Time: %dm  ")
+				.setScore(5);
+		rightTab.getScore("Players Alive: %n  ")
+				.setScore(4);
+		rightTab.getScore("Teams Alive: %n  ")
+				.setScore(3);
+		rightTab.getScore("  ")
+				.setScore(2);
+		rightTab.getScore("   ")
+				.setScore(1);
+
+		status = Status.READY;
 	}
 
 	@Override

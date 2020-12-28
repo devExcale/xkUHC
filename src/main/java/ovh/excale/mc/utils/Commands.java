@@ -20,9 +20,11 @@ import java.util.regex.Pattern;
 
 public class Commands {
 
-	public static final CommandAPICommand TEAMS = new CommandAPICommand("teams");
+	public static final CommandAPICommand TEAMS = new CommandAPICommand("teams").withAliases("team", "t");
+	private static final String[] TEAMS_ALIASES = new String[] { "team", "t" };
 
 	public static final CommandAPICommand XKUHC = new CommandAPICommand("uhc").withAliases("xkuhc");
+	private static final String[] UHC_ALIASES = new String[] { "xkuhc" };
 
 	public static final ChatColor[] COLORS = Arrays.stream(ChatColor.values())
 			.filter(ChatColor::isColor)
@@ -70,7 +72,8 @@ public class Commands {
 		teamPlayerArguments.add(Commands.teamArgument());
 		teamPlayerArguments.add(new EntitySelectorArgument("playerName", EntitySelectorArgument.EntitySelector.ONE_PLAYER));
 
-		TEAMS.withPermission(CommandPermission.OP)
+		TEAMS.withAliases(TEAMS_ALIASES)
+				.withPermission(CommandPermission.OP)
 				// ONLY GAME ADMIN CAN EXECUTE COMMAND
 				.withRequirement(commandSender -> {
 
@@ -83,6 +86,36 @@ public class Commands {
 								.equals(game.getAdminId());
 
 					return b;
+				})
+				// LIST TEAMS
+				.executes((commandSender, objects) -> {
+
+					UHC plugin = (UHC) UHC.plugin();
+					TeamedGame game = plugin.getGame();
+
+					if(game == null)
+						CommandAPI.fail("There's no game session.");
+
+					StringBuilder sb = new StringBuilder("[TEAMS]");
+					game.getTeams()
+							.forEach(team -> {
+								// -- TEAMNAME --
+								sb.append("\n -- ")
+										.append(team.getName())
+										.append(" --");
+								team.getChallengers()
+										.forEach(challenger -> {
+											// - PLAYERNAME [(OFFLINE)]
+											sb.append("\n - ")
+													.append(challenger.vanilla()
+															.getDisplayName());
+											if(!challenger.isOnline())
+												sb.append(" (OFFLINE)");
+										});
+							});
+
+					commandSender.sendMessage(sb.toString());
+
 				})
 				// CREATE TEAM
 				.withSubcommand(new CommandAPICommand("create").withAliases("register")
@@ -120,27 +153,6 @@ public class Commands {
 								CommandAPI.fail("Failed to unregister the team.");
 
 						}))
-				// LIST TEAMS
-				.withSubcommand(new CommandAPICommand("list").executesPlayer((player, args) -> {
-
-					UHC plugin = (UHC) UHC.plugin();
-					TeamedGame game = plugin.getGame();
-					StringBuilder sb;
-
-					if(game != null) {
-
-						sb = new StringBuilder("[TEAMS]");
-
-						for(Team team : game.getTeams())
-							sb.append("\n - ")
-									.append(team.getName());
-
-						player.sendMessage(sb.toString());
-
-					} else
-						CommandAPI.fail("There's no game session.");
-
-				}))
 				// LIST TEAM MEMBERS
 				.withSubcommand(new CommandAPICommand("list").withArguments(Commands.teamArgument())
 						.executesPlayer((player, args) -> {
@@ -170,8 +182,8 @@ public class Commands {
 
 							if(team.add(target))
 								player.sendMessage(String.format("Successfully added %s to team %s.",
-										team.getName(),
-										player.getDisplayName()));
+										target.getDisplayName(),
+										team.getName()));
 							else
 								CommandAPI.fail(String.format("Failed to add %s to team %s.", player.getDisplayName(), team.getName()));
 
@@ -245,7 +257,8 @@ public class Commands {
 	// UHC COMMAND BRANCH
 	static {
 
-		XKUHC.withPermission(CommandPermission.OP)
+		XKUHC.withAliases(UHC_ALIASES)
+				.withPermission(CommandPermission.OP)
 				// ONLY GAME ADMIN CAN EXECUTE COMMAND
 				.withRequirement(commandSender -> {
 
@@ -314,14 +327,6 @@ public class Commands {
 							CommandAPI.fail("The game's running.");
 					else
 						CommandAPI.fail("No game found.");
-
-				}))
-				// GAME PREPARE
-				.withSubcommand(new CommandAPICommand("prepare").executesPlayer((player, args) -> {
-
-
-					// TODO: GAME PREPARE (WORLD GEN)
-					CommandAPI.fail("WIP");
 
 				}))
 				// DEBUG MODE CHECK

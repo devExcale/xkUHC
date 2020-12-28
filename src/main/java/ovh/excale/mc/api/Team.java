@@ -13,7 +13,12 @@ public interface Team {
 
 	boolean add(Player player) throws IllegalStateException;
 
+	/**
+	 * Shortcut for Team::unregister(true)
+	 */
 	void unregister() throws IllegalStateException;
+
+	void unregister(boolean silent) throws IllegalStateException;
 
 	void setColor(@Nullable ChatColor color) throws IllegalStateException;
 

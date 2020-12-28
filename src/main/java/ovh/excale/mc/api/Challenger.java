@@ -25,6 +25,7 @@ public class Challenger {
 		uuid = player.getUniqueId();
 		this.player = player;
 		alive = true;
+		online = true;
 		team = null;
 
 		ScoreboardManager scoreboardManager = Bukkit.getScoreboardManager();
@@ -40,8 +41,16 @@ public class Challenger {
 		this.online = online;
 	}
 
-	public void setScoreboard(Scoreboard scoreboard) {
-		this.scoreboard = scoreboard;
+	public void setScoreboard(@Nullable Scoreboard scoreboard) {
+
+		if(scoreboard != null) {
+			this.scoreboard = scoreboard;
+			player.setScoreboard(scoreboard);
+		} else
+			//noinspection ConstantConditions
+			this.scoreboard = Bukkit.getScoreboardManager()
+					.getMainScoreboard();
+
 	}
 
 	public void setTeam(@Nullable Team team) {
@@ -79,6 +88,7 @@ public class Challenger {
 	public void updateReference(Player player) {
 		if(uuid.equals(player.getUniqueId()) && player.isOnline()) {
 			this.player = player;
+			online = player.isOnline();
 			player.setScoreboard(scoreboard);
 		}
 	}

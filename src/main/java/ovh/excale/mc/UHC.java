@@ -1,9 +1,7 @@
 package ovh.excale.mc;
 
 import dev.jorel.commandapi.CommandAPI;
-import dev.jorel.commandapi.CommandAPICommand;
 import org.bukkit.Bukkit;
-import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.api.TeamedGame;
@@ -11,9 +9,6 @@ import ovh.excale.mc.utils.Commands;
 import ovh.excale.mc.utils.PlayerResponseListener;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,59 +61,23 @@ public class UHC extends JavaPlugin {
 				.registerEvents(new PlayerResponseListener(this, 10), this);
 
 		// REGISTER COMMANDS
-		Commands.TEAMS.register();
-		Commands.XKUHC.register();
+		Commands.XKUHC.withSubcommand(Commands.TEAMS)
+				.register();
 
-		try(PrintWriter writer = new PrintWriter(new File(Bukkit.getUpdateFolderFile(), "Advancements.txt"))) {
-			Bukkit.advancementIterator()
-					.forEachRemaining(advancement -> {
-						writer.println("\n[" + advancement.getKey() + "]");
-						advancement.getCriteria()
-								.forEach(writer::println);
-					});
-		} catch(FileNotFoundException e) {
-			logger().log(Level.WARNING, e.getMessage(), e);
+	}
+
+	@Override
+	public void onDisable() {
+
+		if(game != null) {
+
+			UhcGame game = (UhcGame) this.game;
+			game.getTeamManager()
+					.unregisterAll();
+			game.getChallengerManager()
+					.reset();
+
 		}
-
-		new CommandAPICommand("mad").withAliases("myAdvancements")
-				.executesPlayer((player, objects) -> {
-
-					try(PrintWriter writer = new PrintWriter(new File(Bukkit.getUpdateFolderFile(), "Advancements.txt"))) {
-						Bukkit.advancementIterator()
-								.forEachRemaining(advancement -> {
-
-									writer.println("\n[" + advancement.getKey() + "]");
-									AdvancementProgress progress = player.getAdvancementProgress(advancement);
-									progress.getAwardedCriteria()
-											.forEach(s -> writer.println(" + " + s));
-									progress.getRemainingCriteria()
-											.forEach(s -> writer.println(" - " + s));
-
-								});
-					} catch(FileNotFoundException e) {
-						logger().log(Level.WARNING, e.getMessage(), e);
-						player.sendMessage(e.getMessage());
-					}
-
-				})
-				.register();
-
-		new CommandAPICommand("removeStoryAdv").withAliases("rsa")
-				.executesPlayer((player, objects) -> {
-
-					Bukkit.advancementIterator()
-							.forEachRemaining(advancement -> {
-								if(advancement.getKey()
-										.getKey()
-										.contains("story")) {
-									AdvancementProgress progress = player.getAdvancementProgress(advancement);
-									for(String awardedCriteria : progress.getAwardedCriteria())
-										progress.revokeCriteria(awardedCriteria);
-								}
-							});
-
-				})
-				.register();
 
 	}
 

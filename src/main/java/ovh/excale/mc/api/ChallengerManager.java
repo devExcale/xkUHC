@@ -11,10 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.UHC;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class ChallengerManager {
 
@@ -47,6 +44,10 @@ public class ChallengerManager {
 			challenger.setTeam(null);
 	}
 
+	public Set<Challenger> getAll() {
+		return new HashSet<>(challengerMap.values());
+	}
+
 	public void reset() {
 
 		//noinspection ConstantConditions
@@ -56,6 +57,7 @@ public class ChallengerManager {
 		for(Challenger challenger : challengerMap.values())
 			challenger.vanilla()
 					.setScoreboard(mainScoreboard);
+		challengerMap.clear();
 
 	}
 
@@ -97,12 +99,8 @@ public class ChallengerManager {
 			Player player = event.getPlayer();
 			Challenger challenger = challengerMap.get(player.getUniqueId());
 
-			if(challenger != null) {
-
+			if(challenger != null)
 				challenger.updateReference(player);
-				player.setScoreboard(game.getScoreboard());
-
-			}
 
 		}
 
