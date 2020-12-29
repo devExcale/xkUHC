@@ -88,6 +88,7 @@ public class UhcTeam implements Team {
 		return b;
 	}
 
+	// TODO: NEED TO EDIT ACCESS MODIFIERS SOMETIME
 	@Override
 	public void unregister() throws IllegalStateException {
 		unregister(true);

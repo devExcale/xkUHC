@@ -46,10 +46,13 @@ public class UhcGame implements TeamedGame {
 		worldGenerator = new RandomUhcWorldGenerator(UHC.plugin(), System.currentTimeMillis());
 
 		challengerManager.listenChanges();
+		challengerManager.register(admin);
+
+		// SHOW HEARTS IN PLAYER LIST (TAB)
 		scoreboard.registerNewObjective("health", "health", "health", RenderType.HEARTS)
 				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-		// TODO: SCOREBOARD DISPLAYSLOT LIST
+		// TODO: SCOREBOARD DISPLAYSLOT RIGHT
 		Objective rightTab = scoreboard.registerNewObjective("right_tab", "dummy", "excale's UHC", RenderType.INTEGER);
 		rightTab.setDisplaySlot(DisplaySlot.SIDEBAR);
 		rightTab.getScore(" ")

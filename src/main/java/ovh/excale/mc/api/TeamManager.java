@@ -18,6 +18,7 @@ public class TeamManager {
 	}
 
 	public @NotNull Team registerNewTeam(@NotNull String name) {
+		// TODO: tf is this unregister? need to clean up this class
 		unregisterTeam(name);
 
 		Team team = new UhcTeam(name, game);

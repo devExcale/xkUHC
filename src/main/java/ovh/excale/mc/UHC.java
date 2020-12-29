@@ -5,7 +5,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.api.TeamedGame;
-import ovh.excale.mc.utils.Commands;
+import ovh.excale.mc.commands.TeamsCommand;
+import ovh.excale.mc.commands.UhcCommand;
 import ovh.excale.mc.utils.PlayerResponseListener;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
@@ -61,8 +62,8 @@ public class UHC extends JavaPlugin {
 				.registerEvents(new PlayerResponseListener(this, 10), this);
 
 		// REGISTER COMMANDS
-		Commands.XKUHC.withSubcommand(Commands.TEAMS)
-				.register();
+		CommandAPI.registerCommand(UhcCommand.class);
+		CommandAPI.registerCommand(TeamsCommand.class);
 
 	}
 
