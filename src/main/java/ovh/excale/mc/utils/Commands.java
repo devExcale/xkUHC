@@ -7,7 +7,7 @@ import dev.jorel.commandapi.arguments.*;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.UhcGame;
+import ovh.excale.mc.api.UhcGame;
 import ovh.excale.mc.api.Game;
 import ovh.excale.mc.api.Team;
 import ovh.excale.mc.api.TeamedGame;
@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+// Keeping this as assurance
+@SuppressWarnings("unused")
 public class Commands {
 
 	public static final CommandAPICommand TEAMS = new CommandAPICommand("teams").withAliases("team", "t");
@@ -168,7 +170,6 @@ public class Commands {
 
 						}))
 				// ADD PLAYER TO TEAM
-				// FIXME: CAN'T ADD PLAYER TO TEAM
 				.withSubcommand(new CommandAPICommand("add").withArguments(teamPlayerArguments)
 						.executesPlayer((player, args) -> {
 
@@ -219,7 +220,7 @@ public class Commands {
 							ChatColor color = (ChatColor) args[1];
 
 							if(color.isFormat())
-								// TODO: FAIL MESSAGE
+								// UNUSED_TODO: FAIL MESSAGE
 								CommandAPI.fail("TODO: FAIL MESSAGE");
 
 							try {
@@ -332,7 +333,7 @@ public class Commands {
 				// DEBUG MODE CHECK
 				.withSubcommand(new CommandAPICommand("debug").executesPlayer((player, args) -> {
 
-					// TODO: PRINT DEBUG MODE
+					// UNUSED_TODO: PRINT DEBUG MODE
 					CommandAPI.fail("WIP");
 
 				}))
@@ -340,7 +341,7 @@ public class Commands {
 				.withSubcommand(new CommandAPICommand("debug").withArguments(new BooleanArgument("value"))
 						.executesPlayer((player, args) -> {
 
-							// TODO: SET DEBUG MODE
+							// UNUSED_TODO: SET DEBUG MODE
 							CommandAPI.fail("WIP");
 
 						}))

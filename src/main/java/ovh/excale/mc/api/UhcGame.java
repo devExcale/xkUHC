@@ -1,4 +1,4 @@
-package ovh.excale.mc;
+package ovh.excale.mc.api;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -15,13 +15,12 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.api.*;
+import ovh.excale.mc.UHC;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.RandomUhcWorldGenerator;
 
 import java.util.*;
 
-// TODO: RIGHT SCOREBOARD - TEAM & GAME INFO
 public class UhcGame implements TeamedGame {
 
 	private final Map<UUID, Challenger> players;
@@ -52,7 +51,7 @@ public class UhcGame implements TeamedGame {
 		scoreboard.registerNewObjective("health", "health", "health", RenderType.HEARTS)
 				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
 
-		// TODO: SCOREBOARD DISPLAYSLOT RIGHT
+		// TODO: RIGHT SCOREBOARD - TEAM & GAME INFO
 		Objective rightTab = scoreboard.registerNewObjective("right_tab", "dummy", "excale's UHC", RenderType.INTEGER);
 		rightTab.setDisplaySlot(DisplaySlot.SIDEBAR);
 		rightTab.getScore(" ")
@@ -71,6 +70,13 @@ public class UhcGame implements TeamedGame {
 		status = Status.READY;
 	}
 
+	protected void editableCheck() throws IllegalStateException {
+
+		if(status != Status.READY)
+			throw new IllegalStateException("Game is only editable in READY status");
+
+	}
+
 	@Override
 	public @NotNull Set<Team> getTeams() {
 		return teamManager.getTeams();
@@ -84,20 +90,17 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public Team createTeam(@NotNull String name) throws IllegalStateException {
 
-		if(!status.isEditable())
-			throw new IllegalStateException("Game is past preparation phase");
-
+		editableCheck();
 		return teamManager.registerNewTeam(name);
+
 	}
 
 	@Override
 	public boolean unregisterTeam(String name) throws IllegalStateException {
 
-		if(!status.isEditable())
-			throw new IllegalStateException("Game is past preparation phase");
-
-		// TODO: REMOVE CHALLENGERS FROM CHAL_MANAGER ON SET_TEAM NULL
+		editableCheck();
 		return teamManager.unregisterTeam(name);
+
 	}
 
 	@Override
@@ -131,13 +134,12 @@ public class UhcGame implements TeamedGame {
 	@Override
 	public void start() throws IllegalStateException {
 
-		if(!status.equals(Status.READY))
-			throw new IllegalStateException("Cannot run game in current state");
+		editableCheck();
 
 		teamManager.validate();
 		if(teamManager.getTeams()
 				.size() < 2)
-			throw new IllegalStateException("The game cannot start without at least 2 teams");
+			throw new IllegalStateException("The game needs 2 or more teams to start");
 
 		status = Status.STARTING;
 

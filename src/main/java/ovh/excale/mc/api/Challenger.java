@@ -9,7 +9,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-// TODO: ON LEAVE !IN-GAME, UNWRAP PLAYER & RESET SCOREBOARD
 public class Challenger {
 
 	private final UUID uuid;

@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Set;
 import java.util.UUID;
 
-// TODO: DEBUG MODE
+// TODO: BOOST INTERFACES!
 public interface Game {
 
 	Set<Player> getPlayers();
@@ -37,7 +37,6 @@ public interface Game {
 
 	enum Status {
 
-		PREPARE(true),
 		READY(true),
 		STARTING(false),
 		RUNNING(false),

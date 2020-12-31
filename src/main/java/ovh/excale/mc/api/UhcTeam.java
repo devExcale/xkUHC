@@ -1,12 +1,8 @@
-package ovh.excale.mc;
+package ovh.excale.mc.api;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.mc.api.Challenger;
-import ovh.excale.mc.api.ChallengerManager;
-import ovh.excale.mc.api.Team;
-import ovh.excale.mc.api.TeamedGame;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,18 +37,10 @@ public class UhcTeam implements Team {
 		vanillaTeam.setAllowFriendlyFire(false);
 	}
 
-	private void statusCheck() throws IllegalStateException {
-
-		if(!game.getStatus()
-				.isEditable())
-			throw new IllegalStateException("Cannot edit game right now");
-
-	}
-
 	@Override
 	public boolean remove(Player player) throws IllegalStateException {
 
-		statusCheck();
+		game.editableCheck();
 		Challenger challenger = challengerManager.get(player.getUniqueId());
 		boolean b = challenger != null && this.equals(challenger.getTeam());
 
@@ -69,7 +57,7 @@ public class UhcTeam implements Team {
 	@Override
 	public boolean add(Player player) throws IllegalStateException {
 
-		statusCheck();
+		game.editableCheck();
 		Challenger challenger = challengerManager.get(player.getUniqueId());
 		if(challenger == null)
 			challenger = challengerManager.register(player);
@@ -97,7 +85,7 @@ public class UhcTeam implements Team {
 	@Override
 	public void unregister(boolean silent) throws IllegalStateException {
 
-		statusCheck();
+		game.editableCheck();
 		for(Challenger challenger : players) {
 			challenger.setScoreboard(null);
 			challenger.setTeam(null);
@@ -106,6 +94,8 @@ public class UhcTeam implements Team {
 						.sendMessage("Your party has been disbanded.");
 		}
 
+		game.getTeamManager()
+				.removeTeam(this);
 		players.clear();
 		vanillaTeam.unregister();
 	}
@@ -113,7 +103,7 @@ public class UhcTeam implements Team {
 	@Override
 	public void setColor(ChatColor color) throws IllegalStateException {
 
-		statusCheck();
+		game.editableCheck();
 		this.color = (color != null) ? color : ChatColor.WHITE;
 		vanillaTeam.setColor(this.color);
 
@@ -122,7 +112,7 @@ public class UhcTeam implements Team {
 	@Override
 	public void setFriendlyFire(boolean friendlyFire) throws IllegalStateException {
 
-		statusCheck();
+		game.editableCheck();
 		vanillaTeam.setAllowFriendlyFire(friendlyFire);
 
 	}

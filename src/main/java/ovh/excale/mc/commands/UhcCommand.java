@@ -8,7 +8,7 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.UhcGame;
+import ovh.excale.mc.api.UhcGame;
 import ovh.excale.mc.api.Challenger;
 import ovh.excale.mc.api.Game;
 

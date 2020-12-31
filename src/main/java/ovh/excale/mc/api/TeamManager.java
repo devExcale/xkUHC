@@ -2,7 +2,6 @@ package ovh.excale.mc.api;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.UhcTeam;
 
 import java.util.*;
 
@@ -11,7 +10,6 @@ public class TeamManager {
 	private final Map<String, Team> teams;
 	private final TeamedGame game;
 
-	// TODO: SET PLAYER SCOREBOARD ON TEAM ADD
 	public TeamManager(TeamedGame game) {
 		teams = Collections.synchronizedMap(new HashMap<>());
 		this.game = game;
@@ -37,6 +35,10 @@ public class TeamManager {
 		return b;
 	}
 
+	protected void removeTeam(Team team) {
+		teams.remove(team.getName());
+	}
+
 	public @Nullable Team getTeam(String name) {
 		return teams.get(name);
 	}
@@ -54,7 +56,6 @@ public class TeamManager {
 		}
 	}
 
-	// TODO: IMPLEMENT METHOD
 	public void unregisterAll() {
 
 		for(Team team : teams.values())
