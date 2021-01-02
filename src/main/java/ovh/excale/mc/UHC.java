@@ -14,8 +14,6 @@ import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// TODO: CHECK PlayerDeathEvent LISTENER IN SESSION RUN
-// TODO: LOCALIZATION
 public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG;

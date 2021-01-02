@@ -42,7 +42,6 @@ public class BondCommand {
 					.append(ChatColor.RESET)
 					.append(']');
 
-			// TODO: Bond::getPlayers?
 			for(Gamer gamer : bond.getGamers()) {
 
 				list.append("\n - ")
