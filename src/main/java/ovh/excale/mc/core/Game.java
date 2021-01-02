@@ -39,6 +39,8 @@ public interface Game {
 
 	void freeze() throws IllegalStateException;
 
+	void reloadConfig() throws IllegalStateException;
+
 	boolean isFrozen();
 
 	@NotNull Map<String, String> dump();

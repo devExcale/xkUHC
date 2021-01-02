@@ -120,7 +120,7 @@ public class GameCommand {
 	}
 
 	@Subcommand("reload")
-	public static void reloadConfiguration(CommandSender sender) {
+	public static void reloadConfiguration(CommandSender sender) throws WrapperCommandSyntaxException {
 
 		Plugin plugin = UHC.plugin();
 		plugin.reloadConfig();
@@ -128,8 +128,18 @@ public class GameCommand {
 		UHC.DEBUG = plugin.getConfig()
 				.getBoolean("debug", false);
 
-		sender.sendMessage("Configuration reloaded!");
+		sender.sendMessage("Configuration reloaded.");
 
+		Game game = UHC.getGame();
+
+		if(game != null)
+			try {
+
+				game.reloadConfig();
+
+			} catch(IllegalStateException e) {
+				CommandAPI.fail(e.getMessage());
+			}
 	}
 
 }

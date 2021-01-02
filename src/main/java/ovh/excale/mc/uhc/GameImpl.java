@@ -38,18 +38,24 @@ public class GameImpl implements Game, BondManager, Listener {
 	private final Map<String, BondImpl> bonds;
 	private final Scoreboard scoreboard;
 	private boolean frozen;
+	private boolean configOk;
 
 	// TODO: DO_INSOMNIA FALSE IN WORLD
 	private World world;
 	private final Map<Integer, int[]> borders;
 	private int initialBorder;
+	private int criticalTime;
 	private int minutes;
 	private BukkitTask runTask;
 
 	protected GameImpl() {
 		gamers = Collections.synchronizedMap(new HashMap<>());
 		bonds = Collections.synchronizedMap(new HashMap<>());
+		borders = new HashMap<>();
+		configOk = false;
 		frozen = false;
+		initialBorder = 0xFFFFFFFF;
+		criticalTime = -1;
 		minutes = -1;
 		runTask = null;
 
@@ -60,31 +66,6 @@ public class GameImpl implements Game, BondManager, Listener {
 		// SHOW HEARTS ON PLAYER_LIST
 		Objective playerList = scoreboard.registerNewObjective("health_display", "health", "xkUHC", RenderType.HEARTS);
 		playerList.setDisplaySlot(DisplaySlot.PLAYER_LIST);
-
-//		Objective sidebar = scoreboard.registerNewObjective("sidebar", "dummy", "xkUHC");
-//		sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-		ConfigurationSection config = UHC.plugin()
-				.getConfig()
-				.getConfigurationSection("uhc.border");
-
-		borders = new HashMap<>();
-		if(config != null) {
-
-			initialBorder = config.getInt("InitialSize");
-			// TODO: CHANGES CHECKS
-			List<Map<?, ?>> changes = config.getMapList("changes");
-			for(Map<?, ?> change : changes) {
-
-				Integer size, timestamp, shrinktime;
-				size = (Integer) change.get("Size");
-				timestamp = (Integer) change.get("Timestamp");
-				shrinktime = (Integer) change.get("ShrinkTime");
-
-				borders.put(timestamp, new int[] { size, shrinktime });
-			}
-
-		}
 
 		// REGISTER EVENTS LISTENER
 		PluginManager pluginManager = Bukkit.getPluginManager();
@@ -207,16 +188,7 @@ public class GameImpl implements Game, BondManager, Listener {
 	public void tryStart() throws IllegalStateException {
 
 		frozenCheck();
-		Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.plugin(), this::start);
-
-	}
-
-	private void start() {
-
-		broadcast("Loading game...");
-
-		broadcast("Removing offline players and useless bonds...");
+		reloadConfig();
 
 		Set<UUID> removable = new HashSet<>();
 		for(Gamer gamer : gamers.values())
@@ -236,7 +208,19 @@ public class GameImpl implements Game, BondManager, Listener {
 		for(BondImpl bond : bonds.values())
 			if(bond.getGamers()
 					.isEmpty())
-				bonds.remove(bond.getName());
+				breakBond(bond.getName());
+
+		if(bonds.size() < 2)
+			throw new IllegalStateException("Cannot start game with less than 2 bonds");
+
+		Bukkit.getScheduler()
+				.runTaskAsynchronously(UHC.plugin(), this::start);
+
+	}
+
+	private void start() {
+
+		broadcast("Loading game...");
 
 		broadcast("Generating world, server may lag...");
 
@@ -455,6 +439,55 @@ public class GameImpl implements Game, BondManager, Listener {
 				bond.freeze();
 			} catch(IllegalStateException ignored) {
 			}
+
+	}
+
+	@Override
+	public void reloadConfig() throws IllegalStateException {
+
+		frozenCheck();
+		configOk = false;
+		borders.clear();
+		criticalTime = -1;
+		initialBorder = 0xFFFFFFFF;
+
+		ConfigurationSection config = UHC.plugin()
+				.getConfig();
+
+		Integer criticalTime = config.getObject("uhc.CriticalTime", Integer.class);
+		if(criticalTime == null)
+			throw new IllegalStateException("Cannot find uhc.CriticalSize");
+
+		Integer initialBorder = config.getObject("uhc.border.InitialSize", Integer.class);
+		if(initialBorder == null)
+			throw new IllegalStateException("Cannot find uhc.border.InitialSize");
+
+		List<Map<?, ?>> changes = config.getMapList("uhc.border.changes");
+		if(changes.size() == 0)
+			throw new IllegalStateException("Couldn't find uhc.border.changes");
+
+		for(Map<?, ?> change : changes) {
+
+			String sizeStr, timestampStr, shrinktimeStr;
+			int size, timestamp, shrinkTime;
+
+			sizeStr = change.get("Size")
+					.toString();
+			timestampStr = change.get("Timestamp")
+					.toString();
+			shrinktimeStr = change.get("ShrinkTime")
+					.toString();
+
+			try {
+				size = Integer.parseInt(sizeStr);
+				timestamp = Integer.parseInt(timestampStr);
+				shrinkTime = Integer.parseInt(shrinktimeStr);
+			} catch(NumberFormatException e) {
+				throw new IllegalStateException("Error while parsing a String to an it in uhc.border.changes", e);
+			}
+
+			borders.put(timestamp, new int[] { size, shrinkTime });
+		}
 
 	}
 

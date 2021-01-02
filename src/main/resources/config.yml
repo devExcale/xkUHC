@@ -1,5 +1,6 @@
 debug: true
 uhc:
+  CriticalTime: 60
   border:
     InitialSize: 1000
     changes:
