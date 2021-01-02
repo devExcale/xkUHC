@@ -28,6 +28,7 @@ public class BondImpl implements Bond {
 		team = game.getScoreboard()
 				.registerNewTeam(name);
 		team.setColor(color);
+		team.setAllowFriendlyFire(false);
 
 	}
 
@@ -88,6 +89,7 @@ public class BondImpl implements Bond {
 		});
 
 		gamers.clear();
+		team.unregister();
 
 	}
 

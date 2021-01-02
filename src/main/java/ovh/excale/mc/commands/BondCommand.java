@@ -22,10 +22,12 @@ import ovh.excale.mc.core.Gamer;
 @Command("bonds")
 public class BondCommand {
 
+	// TODO: TARGET VERBOSE
+
 	@Default
 	public static void listBondsMain(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -34,9 +36,11 @@ public class BondCommand {
 		BondManager bondManager = game.getBondManager();
 		for(Bond bond : bondManager.getBonds()) {
 
-			list.append("\n -- ")
+			list.append("\n [")
+					.append(bond.getColor())
 					.append(bond.getName())
-					.append(" --");
+					.append(ChatColor.RESET)
+					.append(']');
 
 			// TODO: Bond::getPlayers?
 			for(Gamer gamer : bond.getGamers()) {
@@ -64,7 +68,7 @@ public class BondCommand {
 	@Subcommand("list")
 	public static void listBondMembers(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -74,7 +78,7 @@ public class BondCommand {
 		if(bond == null)
 			CommandAPI.fail("No such bond");
 
-		StringBuilder list = new StringBuilder("\n-- " + bondName + " --");
+		StringBuilder list = new StringBuilder("\n-- " + bond.getColor() + bondName + ChatColor.RESET + " --");
 		for(Gamer gamer : bond.getGamers()) {
 
 			list.append("\n - ")
@@ -94,7 +98,7 @@ public class BondCommand {
 	@Subcommand("create")
 	public static void createBond(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -102,7 +106,32 @@ public class BondCommand {
 		BondManager bondManager = game.getBondManager();
 
 		try {
+
 			bondManager.createBond(bondName);
+
+		} catch(IllegalStateException | IllegalArgumentException e) {
+			CommandAPI.fail(e.getMessage());
+		}
+
+		sender.sendMessage("Bond created successfully");
+
+	}
+
+	@Subcommand("create")
+	public static void createBondColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
+
+		Game game = UHC.getGame();
+
+		if(game == null)
+			CommandAPI.fail("No game found");
+
+		BondManager bondManager = game.getBondManager();
+
+		try {
+
+			bondManager.createBond(bondName)
+					.setColor(color);
+
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
 		}
@@ -114,7 +143,7 @@ public class BondCommand {
 	@Subcommand("break")
 	public static void breakBond(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -134,7 +163,7 @@ public class BondCommand {
 	@Subcommand("bound")
 	public static void boundGamer(CommandSender sender, @AStringArgument String bondName, @APlayerArgument Player target) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -162,18 +191,12 @@ public class BondCommand {
 	}
 
 	@Subcommand("unbound")
-	public static void unboundGamer(CommandSender sender, @AStringArgument String bondName, @APlayerArgument Player target) throws WrapperCommandSyntaxException {
+	public static void unboundGamer(CommandSender sender, @APlayerArgument Player target) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
-
-		Bond bond = game.getBondManager()
-				.getBond(bondName);
-
-		if(bond == null)
-			CommandAPI.fail("No such bond");
 
 		try {
 
@@ -181,20 +204,24 @@ public class BondCommand {
 			if(gamer == null)
 				gamer = game.register(target);
 
+			Bond bond = gamer.getBond();
+			if(bond == null)
+				CommandAPI.fail("Gamer is not bound");
+
 			bond.unboundGamer(gamer);
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
 		}
 
-		sender.sendMessage("Gamer bound successfully");
+		sender.sendMessage("Gamer unbound successfully");
 
 	}
 
 	@Subcommand("color")
 	public static void getColor(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -213,7 +240,7 @@ public class BondCommand {
 	@Subcommand("color")
 	public static void getColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getCoreGame();
+		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
@@ -228,7 +255,9 @@ public class BondCommand {
 			CommandAPI.fail("Illegal color");
 
 		try {
+
 			bond.setColor(color);
+
 		} catch(IllegalStateException e) {
 			CommandAPI.fail(e.getMessage());
 		}

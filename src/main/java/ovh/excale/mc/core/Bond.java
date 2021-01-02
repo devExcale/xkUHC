@@ -1,6 +1,7 @@
 package ovh.excale.mc.core;
 
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;

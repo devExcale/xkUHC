@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.core.Bond;
 import ovh.excale.mc.core.Gamer;
 
 import java.util.UUID;
@@ -29,7 +28,7 @@ public class GamerImpl implements Gamer {
 	}
 
 	@Override
-	public @Nullable Bond getBond() {
+	public @Nullable BondImpl getBond() {
 		return bond;
 	}
 

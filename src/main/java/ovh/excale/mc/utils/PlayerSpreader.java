@@ -1,9 +1,11 @@
 package ovh.excale.mc.utils;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import ovh.excale.mc.UHC;
 
 import java.util.Random;
 
@@ -20,7 +22,6 @@ public class PlayerSpreader {
 	}
 
 	public void spread(Player... players) {
-		int tries = 0;
 		Block block;
 		Location location;
 
@@ -36,8 +37,20 @@ public class PlayerSpreader {
 
 		} while(block.isLiquid());
 
-		for(Player player : players)
-			player.teleport(location);
+		Location finalLocation = location;
+
+		if(Bukkit.isPrimaryThread())
+			for(Player player : players)
+				player.teleport(finalLocation);
+		else
+			Bukkit.getScheduler()
+					.callSyncMethod(UHC.plugin(), () -> {
+
+						for(Player player : players)
+							player.teleport(finalLocation);
+						return Void.TYPE;
+
+					});
 	}
 
 }

@@ -1,7 +1,6 @@
 package ovh.excale.mc.core;
 
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -64,6 +64,6 @@ public interface BondManager {
 	 *
 	 * @throws IllegalStateException if the bond is frozen
 	 */
-	void shutdown() throws IllegalStateException;
+	void unset() throws IllegalStateException;
 
 }

@@ -46,7 +46,7 @@ public class PlayerResponseListener implements Listener {
 						player.sendMessage("Operation timed out.");
 					}
 
-				}, timeout * 20));
+				}, timeout * 20L));
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)

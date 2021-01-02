@@ -6,6 +6,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface Game {
@@ -32,13 +33,15 @@ public interface Game {
 
 	void tryStart() throws IllegalStateException;
 
-	void shutdown() throws IllegalStateException;
+	void unset() throws IllegalStateException;
 
 	void stop() throws IllegalStateException;
 
 	void freeze() throws IllegalStateException;
 
 	boolean isFrozen();
+
+	@NotNull Map<String, String> dump();
 
 	default @NotNull Scoreboard getScoreboard() {
 		//noinspection ConstantConditions

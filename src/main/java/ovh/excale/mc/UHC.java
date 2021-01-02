@@ -4,15 +4,13 @@ import dev.jorel.commandapi.CommandAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import ovh.excale.mc.api.TeamedGame;
-import ovh.excale.mc.api.UhcGame;
 import ovh.excale.mc.commands.BondCommand;
-import ovh.excale.mc.commands.TeamsCommand;
-import ovh.excale.mc.commands.UhcCommand;
+import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.core.Game;
 import ovh.excale.mc.uhc.GameImpl;
-import ovh.excale.mc.utils.RandomUhcWorldGenerator;
+import ovh.excale.mc.utils.UhcWorldUtil;
 
+import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,6 +21,8 @@ public class UHC extends JavaPlugin {
 	public static boolean DEBUG;
 	private static UHC instance;
 
+	private Game coreGame;
+
 	public static Plugin plugin() {
 		return instance;
 	}
@@ -31,76 +31,64 @@ public class UHC extends JavaPlugin {
 		return instance != null ? instance.getLogger() : Bukkit.getLogger();
 	}
 
-	private TeamedGame game;
-
-	public void setGame(TeamedGame game) {
-		this.game = game;
-	}
-
-	public TeamedGame getGame() {
-		return game;
-	}
-
-	// -------------------------------------------------
-	// TODO: REMOVE OLD API -> RENAME 'CORE*' TO '*'
-
-	private Game coreGame;
-
-	public static Game getCoreGame() {
+	public static Game getGame() {
 		return instance.coreGame;
 	}
 
-
-	// -------------------------------------------------
+	public static void setGame(Game game) {
+		instance.coreGame = game;
+	}
 
 	@Override
 	public void onLoad() {
 		instance = this;
 
+		saveDefaultConfig();
+
 		//noinspection ConstantConditions
 		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
 				.toString());
+
+		try {
+
+			Constructor<GameImpl> gameConstructor = GameImpl.class.getDeclaredConstructor();
+			gameConstructor.setAccessible(true);
+			GameCommand.setGameProvider(gameConstructor::newInstance);
+
+		} catch(Exception e) {
+			logger().log(Level.SEVERE, "Couldn't set GameProvider", e);
+		}
+
 
 		CommandAPI.onLoad(DEBUG);
 	}
 
 	@Override
 	public void onEnable() {
+
 		CommandAPI.onEnable(this);
 
 		if(Bukkit.getScoreboardManager() == null)
 			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
 
-		// TODO: REFACTOR NAME
-		RandomUhcWorldGenerator.purgeWorlds(worldCount -> logger().log(Level.INFO,
-				"Removed " + worldCount + " world from previous instances!"));
-
-		// unused TODO: REMOVE
-//		Bukkit.getPluginManager()
-//				.registerEvents(new PlayerResponseListener(this, 10), this);
+		UhcWorldUtil.purgeWorlds(worldCount -> logger().info("Removed " + worldCount + " world(s) from previous instances"));
 
 		// REGISTER COMMANDS
+		CommandAPI.registerCommand(GameCommand.class);
 		CommandAPI.registerCommand(BondCommand.class);
-		// unused TODO: REMOVE
-//		CommandAPI.registerCommand(UhcCommand.class);
-//		CommandAPI.registerCommand(TeamsCommand.class);
-
-		coreGame = new GameImpl();
 
 	}
 
 	@Override
 	public void onDisable() {
 
-		if(game != null) {
+		if(coreGame != null)
+			try {
 
-			UhcGame game = (UhcGame) this.game;
-			game.getTeamManager()
-					.unregisterAll();
-			game.getChallengerManager()
-					.reset();
+				coreGame.unset();
 
-		}
+			} catch(IllegalStateException ignored) {
+			}
 
 	}
 
