@@ -1,0 +1,29 @@
+debug: true
+uhc:
+  border:
+    InitialSize: 1000
+    changes:
+
+      # - Size: 1600       ; Border size
+      #   Timestamp: 120   ; Game timestamp (minutes)
+      #   ShrinkTime: 12   ; Shrink time (seconds)
+
+      - Size: 750
+        Timestamp: 15
+        ShrinkTime: 120
+
+      - Size: 500
+        Time: 30
+        ShrinkTime: 120
+
+      - Size: 250
+        Time: 45
+        ShrinkTime: 120
+
+      - Size: 50
+        Time: 60
+        ShrinkTime: 100
+
+      - Size: 1
+        Time: 66
+        ShrinkTime: 120

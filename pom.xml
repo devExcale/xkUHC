@@ -6,37 +6,15 @@
 
 	<groupId>ovh.excale.mc</groupId>
 	<artifactId>xkuhc</artifactId>
-	<version>2.1.0-DEVELOP</version>
+	<version>1.0.0-DEVELOP</version>
 
 	<name>xkUHC</name>
 	<description>A simple single-instance UHC plugin</description>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>8</source>
-					<target>8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<filtering>false</filtering>
-			</resource>
-			<resource>
-				<directory>src/main/resources-filtered</directory>
-				<filtering>true</filtering>
-			</resource>
-		</resources>
-	</build>
+	<url>http://mc.excale.ovh/</url>
 
 	<properties>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -65,8 +43,14 @@
 
 		<dependency>
 			<groupId>dev.jorel</groupId>
-			<artifactId>commandapi-core</artifactId>
-			<version>4.0</version>
+			<artifactId>commandapi-shade</artifactId>
+			<version>5.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>dev.jorel</groupId>
+			<artifactId>commandapi-annotations</artifactId>
+			<version>5.3</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -78,5 +62,57 @@
 
 	</dependencies>
 
+	<build>
+		<finalName>${project.name}-${project.version}</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.4</version>
+				<executions>
+					<execution>
+						<id>shade</id>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<outputFile>${project.build.directory}\${project.name}.jar</outputFile>
+					<filters>
+						<filter>
+							<artifact>org.jetbrains:annotations</artifact>
+							<excludes>
+								<exclude>META-INF/*.MF</exclude>
+							</excludes>
+						</filter>
+						<filter>
+							<artifact>dev.jorel:commandapi-shade</artifact>
+							<excludes>
+								<exclude>META-INF/*.MF</exclude>
+							</excludes>
+						</filter>
+					</filters>
+					<relocations>
+						<relocation>
+							<pattern>dev.jorel.commandapi-shade</pattern>
+						</relocation>
+					</relocations>
+				</configuration>
+			</plugin>
+		</plugins>
+
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/resources-filtered</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+	</build>
 
 </project>
