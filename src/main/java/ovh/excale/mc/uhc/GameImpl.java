@@ -454,12 +454,12 @@ public class GameImpl implements Game, BondManager, Listener {
 		ConfigurationSection config = UHC.plugin()
 				.getConfig();
 
-		Integer criticalTime = config.getObject("uhc.CriticalTime", Integer.class);
-		if(criticalTime == null)
+		criticalTime = config.getInt("uhc.CriticalTime", -1);
+		if(criticalTime == -1)
 			throw new IllegalStateException("Cannot find uhc.CriticalSize");
 
-		Integer initialBorder = config.getObject("uhc.border.InitialSize", Integer.class);
-		if(initialBorder == null)
+		initialBorder = config.getInt("uhc.border.InitialSize", -1);
+		if(initialBorder == -1)
 			throw new IllegalStateException("Cannot find uhc.border.InitialSize");
 
 		List<Map<?, ?>> changes = config.getMapList("uhc.border.changes");
@@ -468,22 +468,18 @@ public class GameImpl implements Game, BondManager, Listener {
 
 		for(Map<?, ?> change : changes) {
 
-			String sizeStr, timestampStr, shrinktimeStr;
 			int size, timestamp, shrinkTime;
-
-			sizeStr = change.get("Size")
-					.toString();
-			timestampStr = change.get("Timestamp")
-					.toString();
-			shrinktimeStr = change.get("ShrinkTime")
-					.toString();
-
 			try {
-				size = Integer.parseInt(sizeStr);
-				timestamp = Integer.parseInt(timestampStr);
-				shrinkTime = Integer.parseInt(shrinktimeStr);
-			} catch(NumberFormatException e) {
-				throw new IllegalStateException("Error while parsing a String to an it in uhc.border.changes", e);
+				size = Integer.parseInt(change.get("Size")
+						.toString());
+				timestamp = Integer.parseInt(change.get("Timestamp")
+						.toString());
+				shrinkTime = Integer.parseInt(change.get("ShrinkTime")
+						.toString());
+			} catch(Exception e) {
+				throw new IllegalStateException(
+						"Error while parsing border change in uhc.border.changes.\nCheck that all of Size, Timestamp and ShrinkTime are correctly set.",
+						e);
 			}
 
 			borders.put(timestamp, new int[] { size, shrinkTime });
