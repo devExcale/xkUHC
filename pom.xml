@@ -6,7 +6,7 @@
 
 	<groupId>ovh.excale.mc</groupId>
 	<artifactId>xkuhc</artifactId>
-	<version>1.0.0-DEVELOP</version>
+	<version>2.0-DEVELOP</version>
 
 	<name>xkUHC</name>
 	<description>A simple single-instance UHC plugin</description>

@@ -13,10 +13,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.core.Bond;
-import ovh.excale.mc.core.BondManager;
-import ovh.excale.mc.core.Game;
-import ovh.excale.mc.core.Gamer;
 
 @Alias("bond")
 @Command("bonds")

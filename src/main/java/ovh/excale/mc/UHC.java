@@ -6,8 +6,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.commands.BondCommand;
 import ovh.excale.mc.commands.GameCommand;
-import ovh.excale.mc.core.Game;
-import ovh.excale.mc.uhc.GameImpl;
+import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.utils.UhcWorldUtil;
 
 import java.lang.reflect.Constructor;
@@ -49,7 +48,7 @@ public class UHC extends JavaPlugin {
 
 		try {
 
-			Constructor<GameImpl> gameConstructor = GameImpl.class.getDeclaredConstructor();
+			Constructor<Game> gameConstructor = Game.class.getDeclaredConstructor();
 			gameConstructor.setAccessible(true);
 			GameCommand.setGameProvider(gameConstructor::newInstance);
 

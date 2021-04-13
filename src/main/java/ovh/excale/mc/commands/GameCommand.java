@@ -8,7 +8,6 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.core.Game;
 import ovh.excale.mc.utils.UhcWorldUtil;
 
 import java.util.concurrent.Callable;
