@@ -8,33 +8,46 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
+import ovh.excale.mc.uhc.misc.BorderAction;
 import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.utils.PlayerSpreader;
+import ovh.excale.mc.utils.ScoreboardPrinter;
+import ovh.excale.mc.utils.Stopwatch;
 import ovh.excale.mc.utils.UhcWorldUtil;
 
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import static ovh.excale.mc.uhc.misc.BorderAction.ActionType;
+
 public class Game implements Listener {
 
+	// TODO: SCOREBOARD PROCESSOR
 	private final GamerHub hub;
+	private final Stopwatch stopwatch;
+
 	private BukkitTask runTask;
+	private BukkitTask sidebarUpdater;
 	private Status status;
 	// TODO: SET STATUS
 	// TODO: STATUS EVENTS
 
 	private World world;
 	private GameSettings settings;
+	private Iterator<BorderAction> borderActions;
+	private BorderAction currentAction;
 
 	protected Game() {
 		hub = new GamerHub(this);
 		status = Status.PREPARING;
+		stopwatch = new Stopwatch();
 		runTask = null;
 		world = null;
 
@@ -82,7 +95,7 @@ public class Game implements Listener {
 	private void start() {
 
 		hub.broadcast("Loading game...");
-
+		status = Status.STARTING;
 		hub.broadcast("Generating world, server may lag...");
 
 		Optional<World> optional = UhcWorldUtil.generate();
@@ -107,7 +120,12 @@ public class Game implements Listener {
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
-		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false);
+		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS,
+				3600,
+				12,
+				false,
+				false,
+				false);
 		try {
 			Bukkit.getScheduler()
 					.callSyncMethod(UHC.plugin(), () -> {
@@ -156,7 +174,9 @@ public class Game implements Listener {
 				.collect(Collectors.toSet());
 
 		Bukkit.getScheduler()
-				.runTaskLater(UHC.plugin(), () -> players.forEach(player -> player.setHealth(40)), 1);
+				.runTaskLater(UHC.plugin(),
+						() -> players.forEach(player -> player.setHealth(40)),
+						1);
 
 		for(Player player : players) {
 
@@ -203,7 +223,7 @@ public class Game implements Listener {
 		for(Player player : players)
 			player.sendTitle("UHC", "Let the ^^^ start!", 10, 70, 20);
 
-		// TODO
+		// TODO: EVENTS
 //		freeze();
 //		Bukkit.getPluginManager()
 //				.registerEvent(EntityDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> {
@@ -211,30 +231,45 @@ public class Game implements Listener {
 //						((Game) listener).onPlayerDeath((PlayerDeathEvent) event);
 //				}, UHC.plugin());
 
+
 		runTask = Bukkit.getScheduler()
-				.runTaskTimerAsynchronously(UHC.plugin(), this::run, 0L, 1200L);
+				.runTaskAsynchronously(UHC.plugin(), this::run);
+		sidebarUpdater = Bukkit.getScheduler()
+				.runTaskTimer(UHC.plugin(),
+						() -> hub.getGamers()
+								.map(Gamer::getScoreboardPrinter)
+								.forEach(ScoreboardPrinter::update),
+						0L,
+						20L);
+		stopwatch.start();
+		status = Status.RUNNING;
 
 	}
 
+	// TODO: PING SOUND ON
 	private void run() {
 
-		minutes++;
+		stopwatch.lap();
+		currentAction = borderActions.next();
+		BukkitScheduler scheduler = Bukkit.getScheduler();
 
-		int[] borderChange = borders.get(minutes);
-		if(borderChange != null) {
-
-			int size = borderChange[0], shrinkTime = borderChange[1];
-			int currentSize = (int) world.getWorldBorder()
-					.getSize();
-
-			hub.broadcast("The border will shrink from " + currentSize + " to " + size + " for " + (double) shrinkTime / 60 + " minutes!");
+		if(currentAction.getType() == ActionType.SHRINK)
 			world.getWorldBorder()
-					.setSize(size, shrinkTime);
-			Bukkit.getScheduler()
-					.runTaskLaterAsynchronously(UHC.plugin(), () -> hub.broadcast("The border has stopped shrinking"), shrinkTime * 20L);
+					.setSize(currentAction.getBorderSize(), currentAction.getMinutes() * 60);
 
-		}
+		hub.broadcast(ActionType.HOLD.getMessage());
+		runTask = scheduler.runTaskLaterAsynchronously(UHC.plugin(),
+				borderActions.hasNext() ? this::run : this::endgame,
+				currentAction.getMinutes() * 1200);
 
+	}
+
+	private void endgame() {
+		// TODO: ENDGAME
+	}
+
+	private void updateScoreboard() {
+		// TODO: SCOREBOARD PROCESSOR
 	}
 
 //	public void unset() throws IllegalStateException {
@@ -258,6 +293,9 @@ public class Game implements Listener {
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
+		if(!sidebarUpdater.isCancelled())
+			sidebarUpdater.cancel();
+		stopwatch.stop();
 
 		hub.broadcast("Teleporting all players back in 40 seconds...");
 
@@ -290,6 +328,7 @@ public class Game implements Listener {
 				}, 800);
 
 		hub.dispose();
+		// TODO: DISPOSE ALL
 
 	}
 
@@ -332,7 +371,7 @@ public class Game implements Listener {
 
 	}
 
-	// TODO: GAMER EVENTS HANDLING
+// TODO: GAMER EVENTS HANDLING
 //	@EventHandler
 //	void onPlayerQuit(PlayerQuitEvent event) {
 //
@@ -346,7 +385,7 @@ public class Game implements Listener {
 //		}
 //	}
 
-	// TODO: GAMER EVENTS HANDLING
+// TODO: GAMER EVENTS HANDLING
 //	@EventHandler
 //	void onPlayerJoin(PlayerJoinEvent event) {
 //
@@ -361,7 +400,7 @@ public class Game implements Listener {
 //		}
 //	}
 
-	// TODO: GAMER EVENTS HANDLING
+// TODO: GAMER EVENTS HANDLING
 //	@EventHandler
 //	void onPlayerDeath(PlayerDeathEvent event) {
 //

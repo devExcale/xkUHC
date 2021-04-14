@@ -35,8 +35,18 @@ public class BorderAction {
 
 	public enum ActionType {
 
-		HOLD,
-		SHRINK;
+		HOLD("The border is holding still..."),
+		SHRINK("The border is shrinking!");
+
+		private final String message;
+
+		ActionType(String message) {
+			this.message = message;
+		}
+
+		public String getMessage() {
+			return message;
+		}
 
 		public static @Nullable ActionType parse(String value) {
 
