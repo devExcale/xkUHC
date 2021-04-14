@@ -7,12 +7,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.commands.BondCommand;
 import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.uhc.Game;
-import ovh.excale.mc.utils.UhcWorldUtil;
+import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
 import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// TODO: SYNCHRONIZE EVERY [SYNCHRONIZED COLLECTION] ITERATION
 public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG;
@@ -82,7 +83,8 @@ public class UHC extends JavaPlugin {
 		if(coreGame != null)
 			try {
 
-				coreGame.unset();
+				// TODO: DISPOSE
+//				coreGame.unset();
 
 			} catch(IllegalStateException ignored) {
 			}

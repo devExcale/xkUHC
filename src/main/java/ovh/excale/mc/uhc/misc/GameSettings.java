@@ -1,6 +1,7 @@
 package ovh.excale.mc.uhc.misc;
 
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.Plugin;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.misc.BorderAction.ActionType;
 
@@ -19,9 +20,11 @@ public class GameSettings {
 
 	public static GameSettings fromConfig() {
 
+		Plugin plugin = UHC.plugin();
+		plugin.reloadConfig();
+
+		ConfigurationSection config = plugin.getConfig();
 		GameSettings settings = new GameSettings();
-		ConfigurationSection config = UHC.plugin()
-				.getConfig();
 
 		settings.enableFriendlyFire = config.getBoolean("uhc.FriendlyFire", false);
 		settings.lethalDisconnectTime = config.getInt("uhc.LethalDisconnectTime", Integer.MIN_VALUE);

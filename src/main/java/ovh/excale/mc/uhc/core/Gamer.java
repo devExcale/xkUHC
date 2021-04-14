@@ -7,7 +7,7 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.mc.utils.ScoreboardPrinter;
+import ovh.excale.mc.uhc.misc.ScoreboardPrinter;
 
 import java.util.UUID;
 
@@ -28,9 +28,11 @@ public class Gamer {
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
 				.getNewScoreboard();
-		scoreboardPrinter = new ScoreboardPrinter(this);
 		scoreboard.registerNewObjective("health", "health", "health", RenderType.HEARTS)
 				.setDisplaySlot(DisplaySlot.PLAYER_LIST);
+
+		player.setScoreboard(scoreboard);
+		scoreboardPrinter = new ScoreboardPrinter(this);
 
 	}
 

@@ -9,12 +9,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.uhc.Game;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class GamerHub {
 
@@ -33,10 +33,26 @@ public class GamerHub {
 
 		Gamer gamer = gamers.get(player.getUniqueId());
 		if(gamer != null)
-			throw new IllegalArgumentException("This player is already registered");
+			throw new IllegalArgumentException("This player is already a gamer");
 
 		gamer = new Gamer(player);
 		gamers.put(gamer.getUniqueId(), gamer);
+
+		Scoreboard scoreboard = gamer.getScoreboard();
+		for(Bond bond : bonds.values()) {
+
+			Team team = scoreboard.registerNewTeam(bond.getName());
+			team.setColor(bond.getColor());
+			team.setAllowFriendlyFire(bond.isFriendlyFireEnabled());
+
+			for(Gamer bondGamer : bond.getGamers())
+				team.addEntry(bondGamer.getPlayer()
+						.getName());
+
+		}
+
+		game.getScoreboardProcessor()
+				.track(gamer.getScoreboardPrinter());
 
 		return gamer;
 	}
@@ -47,25 +63,30 @@ public class GamerHub {
 		Player player = gamer.getPlayer();
 		bondRemoveGamer(gamer);
 
-		gamers.remove(gamer.getUniqueId());
+		gamers.remove(player.getUniqueId());
+		game.getScoreboardProcessor()
+				.untrack(gamer.getScoreboardPrinter());
+
 		//noinspection ConstantConditions
 		player.setScoreboard(Bukkit.getScoreboardManager()
 				.getMainScoreboard());
 
 	}
 
-	public Stream<Gamer> getGamers() {
-		return gamers.values()
-				.stream();
+	public Gamer getGamer(UUID uniqueId) {
+		return gamers.get(uniqueId);
+	}
+
+	public Set<Gamer> getGamers() {
+		return new HashSet<>(gamers.values());
 	}
 
 	public Bond getBond(String name) {
 		return bonds.get(name);
 	}
 
-	public Stream<Bond> getBonds() {
-		return bonds.values()
-				.stream();
+	public Set<Bond> getBonds() {
+		return new HashSet<>(bonds.values());
 	}
 
 	/**
@@ -80,6 +101,8 @@ public class GamerHub {
 		Bond bond = bonds.get(name);
 		if(bond != null)
 			throw new IllegalArgumentException("A bond named '" + name + "' already exists");
+
+		System.out.println(gamers.size());
 
 		// TODO: EVENT
 		bond = new Bond(name, game);
@@ -100,37 +123,41 @@ public class GamerHub {
 		// TODO: EVENT
 		bond.getGamers()
 				.forEach(gamer -> gamer.setBond(null));
+		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
 				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(name))
-				.filter(Objects::nonNull)
 				.forEach(Team::unregister);
 
 	}
 
 	// TODO: GAME STATUS
+	// TODO: RENAME TO BOUND_GAMER
 	public void bondAddGamer(Bond bond, Gamer gamer) throws IllegalArgumentException, IllegalStateException {
+		// TODO: EVENT
 
 		if(gamer.hasBond())
 			throw new IllegalArgumentException("This player already has a bond");
 
-		// TODO: EVENT
-		bond.getInternalGamersMap()
-				.put(gamer.getUniqueId(), gamer);
+		System.out.println(gamers.size());
 
-		gamer.setBond(bond);
+		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
 				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
-				.filter(Objects::nonNull)
 				.forEach(team -> team.addEntry(gamer.getPlayer()
 						.getName()));
+
+		gamer.setBond(bond);
+		bond.getInternalGamersSet()
+				.add(gamer);
 
 	}
 
 	// TODO: GAME STATUS
+	// TODO: RENAME TO UNBOUND_GAMER
 	public void bondRemoveGamer(Gamer gamer) throws IllegalArgumentException, IllegalStateException {
 
 		if(!gamer.hasBond())
@@ -139,43 +166,43 @@ public class GamerHub {
 		// TODO: EVENT
 		Bond bond = gamer.getBond();
 		//noinspection ConstantConditions
-		bond.getInternalGamersMap()
-				.remove(gamer.getUniqueId());
+		bond.getInternalGamersSet()
+				.remove(gamer);
 
 		gamer.setBond(null);
+		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
 				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
-				.filter(Objects::nonNull)
 				.forEach(team -> team.removeEntry(gamer.getPlayer()
 						.getName()));
 
 	}
 
-	public void setColor(Bond bond, ChatColor color) throws IllegalArgumentException {
+	public void setBondColor(Bond bond, ChatColor color) throws IllegalArgumentException {
 
 		if(color.isFormat())
 			throw new IllegalArgumentException("Color ain't a color");
 
 		bond.setColor(color);
+		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
 				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
-				.filter(Objects::nonNull)
 				.forEach(team -> team.setColor(color));
 
 	}
 
-	public void setFriendlyFire(Bond bond, boolean friendlyFire) {
+	public void setEnableFriendlyFire(Bond bond, boolean friendlyFire) {
 
 		bond.setFriendlyFire(friendlyFire);
+		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
 				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
-				.filter(Objects::nonNull)
 				.forEach(team -> team.setAllowFriendlyFire(friendlyFire));
 
 	}
@@ -198,7 +225,7 @@ public class GamerHub {
 	public class GamerHandler implements Listener {
 
 		@EventHandler
-		void onPlayerQuit(PlayerQuitEvent event) {
+		private void onPlayerQuit(PlayerQuitEvent event) {
 
 			Player player = event.getPlayer();
 			Gamer gamer = gamers.get(player.getUniqueId());
@@ -208,7 +235,7 @@ public class GamerHub {
 		}
 
 		@EventHandler
-		void onPlayerJoin(PlayerJoinEvent event) {
+		private void onPlayerJoin(PlayerJoinEvent event) {
 
 			Player player = event.getPlayer();
 			Gamer gamer = gamers.get(player.getUniqueId());
@@ -222,7 +249,7 @@ public class GamerHub {
 		}
 
 		@EventHandler
-		void onPlayerDeath(PlayerDeathEvent event) {
+		private void onPlayerDeath(PlayerDeathEvent event) {
 
 			Player player = event.getEntity();
 			Gamer gamer = gamers.get(player.getUniqueId());

@@ -6,17 +6,15 @@ import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.uhc.Game;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Stream;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Basically a team.
  */
 public class Bond {
 
-	private final Map<UUID, Gamer> gamers;
+	private final Set<Gamer> gamers;
 	private final Game game;
 	private final String name;
 
@@ -24,7 +22,7 @@ public class Bond {
 	private boolean friendlyFire;
 
 	protected Bond(String name, Game game) {
-		gamers = Collections.synchronizedMap(new HashMap<>());
+		gamers = Collections.synchronizedSet(new HashSet<>());
 		this.game = game;
 		this.name = name;
 
@@ -56,28 +54,29 @@ public class Bond {
 		return game;
 	}
 
-	public Stream<Gamer> getGamers() {
-		return gamers.values()
-				.stream();
+	public Set<Gamer> getGamers() {
+		return new HashSet<>(gamers);
 	}
 
-	protected Map<UUID, Gamer> getInternalGamersMap() {
+	protected Set<Gamer> getInternalGamersSet() {
 		return gamers;
 	}
 
-	public boolean isFriendlyFire() {
+	public boolean isFriendlyFireEnabled() {
 		return friendlyFire;
 	}
 
 	public void broadcast(@NotNull String message) {
-		gamers.forEach((uuid, gamer) -> gamer.getPlayer()
-				.sendMessage(message));
+		for(Gamer gamer : gamers)
+			gamer.getPlayer()
+					.sendMessage(message);
 	}
 
 	public void broadcast(@NotNull BaseComponent message) {
-		gamers.forEach((uuid, gamer) -> gamer.getPlayer()
-				.spigot()
-				.sendMessage(message));
+		for(Gamer gamer : gamers)
+			gamer.getPlayer()
+					.spigot()
+					.sendMessage(message);
 	}
 
 }

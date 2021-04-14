@@ -13,6 +13,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.core.Bond;
+import ovh.excale.mc.uhc.core.Gamer;
+import ovh.excale.mc.uhc.core.GamerHub;
 
 @Alias("bond")
 @Command("bonds")
@@ -28,9 +32,9 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
+		GamerHub hub = game.getHub();
 		StringBuilder list = new StringBuilder("\n~~~ BONDS ~~~");
-		BondManager bondManager = game.getBondManager();
-		for(Bond bond : bondManager.getBonds()) {
+		for(Bond bond : hub.getBonds()) {
 
 			list.append("\n [")
 					.append(bond.getColor())
@@ -68,8 +72,9 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		Bond bond = game.getBondManager()
-				.getBond(bondName);
+		GamerHub hub = game.getHub();
+		Bond bond = hub.getBond(bondName);
+
 		if(bond == null)
 			CommandAPI.fail("No such bond");
 
@@ -98,11 +103,10 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		BondManager bondManager = game.getBondManager();
-
 		try {
 
-			bondManager.createBond(bondName);
+			game.getHub()
+					.createBond(bondName);
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
@@ -112,28 +116,29 @@ public class BondCommand {
 
 	}
 
-	@Subcommand("create")
-	public static void createBondColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
-
-		Game game = UHC.getGame();
-
-		if(game == null)
-			CommandAPI.fail("No game found");
-
-		BondManager bondManager = game.getBondManager();
-
-		try {
-
-			bondManager.createBond(bondName)
-					.setColor(color);
-
-		} catch(IllegalStateException | IllegalArgumentException e) {
-			CommandAPI.fail(e.getMessage());
-		}
-
-		sender.sendMessage("Bond created successfully");
-
-	}
+//	@Subcommand("create")
+//	public static void createBondColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
+//
+//		Game game = UHC.getGame();
+//
+//		if(game == null)
+//			CommandAPI.fail("No game found");
+//
+//		BondManager bondManager = game.getBondManager();
+//
+//		try {
+//
+//			game.getHub()
+//					.createBond(bondName)
+//					.setColor(color);
+//
+//		} catch(IllegalStateException | IllegalArgumentException e) {
+//			CommandAPI.fail(e.getMessage());
+//		}
+//
+//		sender.sendMessage("Bond created successfully");
+//
+//	}
 
 	@Subcommand("break")
 	public static void breakBond(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
@@ -143,10 +148,11 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		BondManager bondManager = game.getBondManager();
-
 		try {
-			bondManager.breakBond(bondName);
+
+			game.getHub()
+					.removeBond(bondName);
+
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
 		}
@@ -163,7 +169,7 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		Bond bond = game.getBondManager()
+		Bond bond = game.getHub()
 				.getBond(bondName);
 
 		if(bond == null)
@@ -171,11 +177,13 @@ public class BondCommand {
 
 		try {
 
-			Gamer gamer = game.getGamer(target);
-			if(gamer == null)
-				gamer = game.register(target);
+			GamerHub hub = game.getHub();
 
-			bond.boundGamer(gamer);
+			Gamer gamer = hub.getGamer(target.getUniqueId());
+			if(gamer == null)
+				gamer = hub.register(target);
+
+			hub.bondAddGamer(bond, gamer);
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
@@ -195,15 +203,13 @@ public class BondCommand {
 
 		try {
 
-			Gamer gamer = game.getGamer(target);
-			if(gamer == null)
-				gamer = game.register(target);
+			GamerHub hub = game.getHub();
 
-			Bond bond = gamer.getBond();
-			if(bond == null)
-				CommandAPI.fail("Gamer is not bound");
+			Gamer gamer = hub.getGamer(target.getUniqueId());
+			if(gamer == null || !gamer.hasBond())
+				throw new IllegalArgumentException("Gamer doesn't have a bond");
 
-			bond.unboundGamer(gamer);
+			hub.bondRemoveGamer(gamer);
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
@@ -221,7 +227,7 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		Bond bond = game.getBondManager()
+		Bond bond = game.getHub()
 				.getBond(bondName);
 
 		if(bond == null)
@@ -240,8 +246,8 @@ public class BondCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		Bond bond = game.getBondManager()
-				.getBond(bondName);
+		GamerHub hub = game.getHub();
+		Bond bond = hub.getBond(bondName);
 
 		if(bond == null)
 			CommandAPI.fail("No such bond");
@@ -251,7 +257,7 @@ public class BondCommand {
 
 		try {
 
-			bond.setColor(color);
+			hub.setBondColor(bond, color);
 
 		} catch(IllegalStateException e) {
 			CommandAPI.fail(e.getMessage());

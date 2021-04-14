@@ -8,7 +8,8 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.utils.UhcWorldUtil;
+import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -17,6 +18,7 @@ import java.util.logging.Level;
 @Command("uhc")
 public class GameCommand {
 
+	// TODO: REMOVE THIS
 	private static Callable<Game> gameProvider;
 
 	public static void setGameProvider(Callable<Game> gameProvider) {
@@ -78,7 +80,8 @@ public class GameCommand {
 		try {
 
 			game.stop();
-			game.broadcast("Game stopped forcefully.");
+			game.getHub()
+					.broadcast("Game stopped forcefully.");
 			UHC.setGame(null);
 
 		} catch(IllegalStateException e) {
@@ -134,7 +137,7 @@ public class GameCommand {
 		if(game != null)
 			try {
 
-				game.reloadConfig();
+				// TODO: RELOAD GAME CONFIG
 
 			} catch(IllegalStateException e) {
 				CommandAPI.fail(e.getMessage());

@@ -1,19 +1,21 @@
-package ovh.excale.mc.utils;
+package ovh.excale.mc.uhc.misc;
 
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import ovh.excale.mc.uhc.core.Gamer;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.Vector;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ScoreboardPrinter {
 
-	private static final int MAX_ROWS = 15;
+	public static final int MAX_ROWS = 15;
 
 	private final String[] rowList;
-	private final Supplier<String>[] suppliers;
+	private final List<Function<Gamer, String>> rowProviders;
 
 	private final Gamer gamer;
 	private final Scoreboard scoreboard;
@@ -21,11 +23,12 @@ public class ScoreboardPrinter {
 
 	public ScoreboardPrinter(Gamer gamer) {
 		rowList = new String[MAX_ROWS];
-		//noinspection unchecked
-		suppliers = new Supplier[MAX_ROWS];
 		this.gamer = gamer;
-		scoreboard = gamer.getPlayer()
-				.getScoreboard();
+		scoreboard = gamer.getScoreboard();
+
+		rowProviders = new Vector<>(MAX_ROWS);
+		for(int i = 0; i < MAX_ROWS; i++)
+			rowProviders.add(null);
 
 		sidebar = scoreboard.registerNewObjective("sidebar", "dummy", "xkUHC");
 		sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -48,46 +51,40 @@ public class ScoreboardPrinter {
 	}
 
 	public void print(int row, String message) {
-		suppliers[row] = () -> message;
-	}
-
-	public void print(int row, Supplier<String> messageSupplier) {
-		suppliers[row] = messageSupplier;
+		rowProviders.set(row, (gamer) -> message);
 	}
 
 	public void print(int row, Function<Gamer, String> messageSupplier) {
-		suppliers[row] = () -> messageSupplier.apply(gamer);
+		rowProviders.set(row, messageSupplier);
 	}
 
 	public void clear(int row) {
-		suppliers[row] = null;
+		rowProviders.set(row, null);
 	}
 
 	public void update() {
 
-		for(int i = 0; i < suppliers.length && i < MAX_ROWS; i++) {
-
-			Supplier<String> supplier = suppliers[i];
-			write(i, supplier);
-
-		}
+		for(int i = 0; i < rowProviders.size() && i < MAX_ROWS; i++)
+			write(i, rowProviders.get(i));
 
 	}
 
-	public void update(Supplier<String>[] globalSupplier) {
+	public void update(List<Function<Gamer, String>> globalProviders) {
 
-		for(int i = 0; i < suppliers.length && i < MAX_ROWS; i++) {
+		for(int i = 0; i < rowProviders.size() && i < MAX_ROWS; i++) {
 
-			Supplier<String> supplier = globalSupplier[i] != null ? globalSupplier[i] : suppliers[i];
-			write(i, supplier);
+			Function<Gamer, String> provider = Optional.ofNullable(globalProviders.get(i))
+					.orElse(rowProviders.get(i));
+			write(i, provider);
 
 		}
 	}
 
-	private void write(int rowIndex, Supplier<String> rowSupplier) {
+	// TODO: INVERT INDEX
+	private void write(int rowIndex, Function<Gamer, String> rowProvider) {
 
 		String row;
-		if(rowSupplier == null) {
+		if(rowProvider == null) {
 
 			StringBuilder rowBuilder = new StringBuilder(" ");
 			for(int i = rowIndex; i > 0; i--)
@@ -95,7 +92,7 @@ public class ScoreboardPrinter {
 			row = rowBuilder.toString();
 
 		} else
-			row = rowSupplier.get();
+			row = rowProvider.apply(gamer);
 
 		scoreboard.resetScores(rowList[rowIndex]);
 		sidebar.getScore(rowList[rowIndex] = row)

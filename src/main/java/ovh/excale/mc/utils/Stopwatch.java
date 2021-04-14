@@ -26,7 +26,7 @@ public class Stopwatch {
 	}
 
 	public boolean isRunning() {
-		return !(task != null && task.isCancelled());
+		return task != null && !task.isCancelled();
 	}
 
 	private void tick() {
