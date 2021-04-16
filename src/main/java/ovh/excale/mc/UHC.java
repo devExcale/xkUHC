@@ -13,7 +13,6 @@ import java.lang.reflect.Constructor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// TODO: SYNCHRONIZE EVERY [SYNCHRONIZED COLLECTION] ITERATION
 public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG;
@@ -42,6 +41,7 @@ public class UHC extends JavaPlugin {
 		instance = this;
 
 		saveDefaultConfig();
+		saveResource("game-messages.yml", false);
 
 		//noinspection ConstantConditions
 		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
@@ -56,7 +56,6 @@ public class UHC extends JavaPlugin {
 		} catch(Exception e) {
 			logger().log(Level.SEVERE, "Couldn't set GameProvider", e);
 		}
-
 
 		CommandAPI.onLoad(DEBUG);
 	}

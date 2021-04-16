@@ -183,7 +183,7 @@ public class BondCommand {
 			if(gamer == null)
 				gamer = hub.register(target);
 
-			hub.bondAddGamer(bond, gamer);
+			hub.boundGamer(bond, gamer);
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());
@@ -209,7 +209,7 @@ public class BondCommand {
 			if(gamer == null || !gamer.hasBond())
 				throw new IllegalArgumentException("Gamer doesn't have a bond");
 
-			hub.bondRemoveGamer(gamer);
+			hub.unboundGamer(gamer);
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			CommandAPI.fail(e.getMessage());

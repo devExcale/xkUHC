@@ -4,38 +4,58 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.*;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.EventExecutor;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
+import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
+import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
+import ovh.excale.mc.uhc.core.events.GamerReconnectEvent;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
+
+import static ovh.excale.mc.uhc.Game.Status;
 
 public class GamerHub {
 
+	private static final Pattern BOND_NAME_REGEX = Pattern.compile("([#@\\[a-zA-Z0-9~\\]_+-.]){3,}");
+
 	private final Map<UUID, Gamer> gamers;
 	private final Map<String, Bond> bonds;
+	private final EventRaiser eventRaiser;
 	private final Game game;
 
 	public GamerHub(Game game) {
+		this.game = game;
 		gamers = Collections.synchronizedMap(new HashMap<>());
 		bonds = Collections.synchronizedMap(new HashMap<>());
-		this.game = game;
+
+		eventRaiser = new EventRaiser();
+		eventRaiser.turnOn();
 	}
 
-	// TODO: GAME STATUS
 	public Gamer register(Player player) throws IllegalArgumentException, IllegalStateException {
+
+		statusCheck();
+
+		if(player == null)
+			return null;
 
 		Gamer gamer = gamers.get(player.getUniqueId());
 		if(gamer != null)
 			throw new IllegalArgumentException("This player is already a gamer");
 
-		gamer = new Gamer(player);
+		gamer = new Gamer(game, player);
 		gamers.put(gamer.getUniqueId(), gamer);
 
 		Scoreboard scoreboard = gamer.getScoreboard();
@@ -57,11 +77,15 @@ public class GamerHub {
 		return gamer;
 	}
 
-	// TODO: GAME STATUS
 	public void unregister(Gamer gamer) throws IllegalStateException {
 
+		statusCheck();
+
+		if(gamer == null)
+			return;
+
 		Player player = gamer.getPlayer();
-		bondRemoveGamer(gamer);
+		unboundGamer(gamer);
 
 		gamers.remove(player.getUniqueId());
 		game.getScoreboardProcessor()
@@ -95,8 +119,14 @@ public class GamerHub {
 	 * @throws IllegalArgumentException if a bond with the specified name already exists
 	 * @throws IllegalStateException    if the game is running
 	 */
-	// TODO: NAME VALIDATION, GAME STATUS
+	// TODO: NAME VALIDATION
 	public Bond createBond(String name) throws IllegalStateException, IllegalArgumentException {
+
+		statusCheck();
+
+		if(name == null || BOND_NAME_REGEX.matcher(name)
+				.matches())
+			throw new IllegalArgumentException("Illegal bond name");
 
 		Bond bond = bonds.get(name);
 		if(bond != null)
@@ -113,7 +143,6 @@ public class GamerHub {
 		return bond;
 	}
 
-	// TODO: GAME STATUS
 	public void removeBond(String name) throws IllegalArgumentException, IllegalStateException {
 
 		Bond bond = bonds.remove(name);
@@ -121,21 +150,31 @@ public class GamerHub {
 			throw new IllegalArgumentException("There's no bond named '" + name + "'");
 
 		// TODO: EVENT
+		breakBond(bond);
+
+	}
+
+	public void breakBond(Bond bond) throws IllegalStateException {
+
+		statusCheck();
+
 		bond.getGamers()
 				.forEach(gamer -> gamer.setBond(null));
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
 				.map(Gamer::getScoreboard)
-				.map(scoreboard -> scoreboard.getTeam(name))
+				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(Team::unregister);
+
+		bonds.remove(bond.getName());
 
 	}
 
-	// TODO: GAME STATUS
-	// TODO: RENAME TO BOUND_GAMER
-	public void bondAddGamer(Bond bond, Gamer gamer) throws IllegalArgumentException, IllegalStateException {
+	public void boundGamer(Bond bond, Gamer gamer) throws IllegalArgumentException, IllegalStateException {
 		// TODO: EVENT
+
+		statusCheck();
 
 		if(gamer.hasBond())
 			throw new IllegalArgumentException("This player already has a bond");
@@ -156,9 +195,9 @@ public class GamerHub {
 
 	}
 
-	// TODO: GAME STATUS
-	// TODO: RENAME TO UNBOUND_GAMER
-	public void bondRemoveGamer(Gamer gamer) throws IllegalArgumentException, IllegalStateException {
+	public void unboundGamer(Gamer gamer) throws IllegalArgumentException, IllegalStateException {
+
+		statusCheck();
 
 		if(!gamer.hasBond())
 			throw new IllegalArgumentException("This player doesn't have a bond");
@@ -180,7 +219,9 @@ public class GamerHub {
 
 	}
 
-	public void setBondColor(Bond bond, ChatColor color) throws IllegalArgumentException {
+	public void setBondColor(Bond bond, ChatColor color) throws IllegalArgumentException, IllegalStateException {
+
+		statusCheck();
 
 		if(color.isFormat())
 			throw new IllegalArgumentException("Color ain't a color");
@@ -218,11 +259,93 @@ public class GamerHub {
 				.sendMessage(message));
 	}
 
+	// TODO: DISPOSE
 	public void dispose() {
+		eventRaiser.turnOff();
+
+		gamers.values()
+				.forEach(this::unregister);
+		bonds.values()
+				.forEach(this::breakBond);
+
+		bonds.clear();
+		gamers.clear();
 
 	}
 
-	public class GamerHandler implements Listener {
+	private void statusCheck() throws IllegalStateException {
+
+		if(!game.getStatus()
+				.isEditable())
+			throw new IllegalStateException("The game is not editable right now");
+
+	}
+
+	public EventRaiser getEventRaiser() {
+		return eventRaiser;
+	}
+
+	public class EventRaiser implements Listener {
+
+		private final Map<Class<? extends Event>, EventExecutor> executors;
+		private final PluginManager pluginManager;
+		private boolean on;
+
+		public EventRaiser() {
+			executors = new HashMap<>();
+			pluginManager = Bukkit.getPluginManager();
+			on = false;
+
+			// JOIN EVENT EXECUTOR
+			executors.put(PlayerJoinEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerJoin((PlayerJoinEvent) event));
+
+			// QUIT EVENT EXECUTOR
+			executors.put(PlayerQuitEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerQuit((PlayerQuitEvent) event));
+
+			// DAMAGE EVENT EXECUTOR
+			executors.put(EntityDamageEvent.class, (listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
+
+		}
+
+		public void turnOn() {
+
+			if(!on) {
+				executors.forEach((eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass,
+						EventRaiser.this,
+						EventPriority.HIGH,
+						eventExecutor,
+						UHC.plugin(),
+						true));
+				on = true;
+			}
+
+		}
+
+		public void turnOff() {
+
+			if(on) {
+				for(Class<? extends Event> eventClass : executors.keySet()) {
+					try {
+
+						((HandlerList) eventClass.getDeclaredMethod("getHandlerList")
+								.invoke(null)).unregister(EventRaiser.this);
+
+					} catch(NoSuchMethodException e) {
+						UHC.logger()
+								.log(Level.SEVERE, "Event " + eventClass.getSimpleName() + " is missing static method getHandlerList()", e);
+					} catch(InvocationTargetException | IllegalAccessException e) {
+						UHC.logger()
+								.log(Level.SEVERE, "Cannot access HandlerList in class " + eventClass.getSimpleName(), e);
+					}
+				}
+				on = false;
+			}
+
+		}
+
+		public boolean isOn() {
+			return on;
+		}
 
 		@EventHandler
 		private void onPlayerQuit(PlayerQuitEvent event) {
@@ -230,7 +353,8 @@ public class GamerHub {
 			Player player = event.getPlayer();
 			Gamer gamer = gamers.get(player.getUniqueId());
 
-			// TODO: RAISE EVENT
+			if(gamer != null)
+				pluginManager.callEvent(new GamerDisconnectEvent(event, GamerHub.this));
 
 		}
 
@@ -242,22 +366,25 @@ public class GamerHub {
 
 			if(gamer != null) {
 				gamer.updateReference(player);
-
-				// TODO: RAISE EVENT
-
+				pluginManager.callEvent(new GamerReconnectEvent(event, GamerHub.this));
 			}
 		}
 
 		@EventHandler
-		private void onPlayerDeath(PlayerDeathEvent event) {
+		private void onEntityDamage(EntityDamageEvent event) {
 
-			Player player = event.getEntity();
-			Gamer gamer = gamers.get(player.getUniqueId());
+			if(game.getStatus() == Status.RUNNING) {
 
-			if(gamer != null) {
+				if(event.getEntity() instanceof Player) {
 
-				// TODO: RAISE EVENT
+					Player damaged = (Player) event.getEntity();
+					if((damaged.getHealth() - event.getDamage()) <= 0) {
 
+						event.setCancelled(true);
+						pluginManager.callEvent(new GamerDeathEvent(event, GamerHub.this));
+
+					}
+				}
 			}
 
 		}

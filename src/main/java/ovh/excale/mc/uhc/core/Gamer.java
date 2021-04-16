@@ -7,6 +7,7 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.ScoreboardPrinter;
 
 import java.util.UUID;
@@ -15,13 +16,15 @@ public class Gamer {
 
 	private final Scoreboard scoreboard;
 	private final ScoreboardPrinter scoreboardPrinter;
+	private final Game game;
 
 	private Player player;
 	private Bond bond;
 	private boolean alive;
 
-	protected Gamer(Player player) {
+	protected Gamer(Game game, Player player) {
 		this.player = player;
+		this.game = game;
 		bond = null;
 		alive = true;
 
@@ -42,6 +45,10 @@ public class Gamer {
 
 	public void setAlive(boolean alive) {
 		this.alive = alive;
+	}
+
+	public Game getGame() {
+		return game;
 	}
 
 	public @Nullable Bond getBond() {

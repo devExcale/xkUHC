@@ -4,7 +4,9 @@ import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -15,6 +17,9 @@ import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
+import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
+import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
+import ovh.excale.mc.uhc.core.events.GamerReconnectEvent;
 import ovh.excale.mc.uhc.misc.BorderAction;
 import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
@@ -22,6 +27,7 @@ import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.time.Clock;
 import java.util.*;
@@ -46,6 +52,7 @@ public class Game implements Listener {
 	private GameSettings settings;
 	private Iterator<BorderAction> borderActions;
 	private BorderAction currentAction;
+	YamlConfiguration gameMessages;
 
 	protected Game() {
 		hub = new GamerHub(this);
@@ -101,6 +108,10 @@ public class Game implements Listener {
 
 	}
 
+	public Status getStatus() {
+		return status;
+	}
+
 	public GamerHub getHub() {
 		return hub;
 	}
@@ -110,7 +121,6 @@ public class Game implements Listener {
 	}
 
 	public void tryStart() throws IllegalStateException {
-
 		settings = GameSettings.fromConfig();
 		if(!settings.isLegal())
 			throw new IllegalStateException(settings.getErrorMessage());
@@ -132,9 +142,19 @@ public class Game implements Listener {
 				.size() < 2)
 			throw new IllegalStateException("Cannot start game with less than 2 bonds");
 
+		File file = new File(UHC.plugin()
+				.getDataFolder(), "game-messages.yml");
+
+		if(!file.exists()) {
+			UHC.logger()
+					.log(Level.SEVERE, "Cannot read resource game-messages.yml");
+			throw new IllegalStateException("Cannot read resource game-messages.yml");
+		}
+
+		gameMessages = YamlConfiguration.loadConfiguration(file);
+
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.plugin(), this::start);
-
 	}
 
 	private void start() {
@@ -181,7 +201,7 @@ public class Game implements Listener {
 			UHC.logger()
 					.log(Level.SEVERE, e.getMessage(), e);
 			hub.broadcast(ChatColor.RED + "An internal error has occurred");
-			// TODO: ERROR STATUS
+			status = Status.READY;
 			return;
 		}
 
@@ -189,22 +209,21 @@ public class Game implements Listener {
 
 		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 160);
 
-		hub.getBonds()
-				.forEach(bond -> {
+		for(Bond bond : hub.getBonds()) {
 
-					hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
-					spreader.spread(bond.getGamers()
-							.stream()
-							.map(Gamer::getPlayer)
-							.toArray(Player[]::new));
+			hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
+			spreader.spread(bond.getGamers()
+					.stream()
+					.map(Gamer::getPlayer)
+					.toArray(Player[]::new));
 
-					// Wait for chunks to load
-					try {
-						Thread.sleep(1000);
-					} catch(InterruptedException ignored) {
-					}
+			// Wait for chunks to load
+			try {
+				Thread.sleep(1000);
+			} catch(InterruptedException ignored) {
+			}
 
-				});
+		}
 
 		// Wait for chunks to load
 		try {
@@ -259,6 +278,7 @@ public class Game implements Listener {
 			UHC.logger()
 					.log(Level.SEVERE, e.getMessage(), e);
 			hub.broadcast(ChatColor.RED + "An internal error has occurred");
+			status = Status.READY;
 			return;
 		}
 
@@ -381,9 +401,12 @@ public class Game implements Listener {
 
 		map.put("MainLoop", (runTask != null && !runTask.isCancelled()) ? "running" : "still");
 		map.put("ScoreboardLoop", (runTask != null && !runTask.isCancelled()) ? "running" : "still");
-		map.put("Status", status.toString());
+		map.put("EventRaiser",
+				(hub.getEventRaiser()
+						.isOn()) ? "running" : "still");
 
 		map.put("WorldName", String.valueOf(world != null ? world.getName() : null));
+		map.put("Status", status.toString());
 
 		map.put("Gamers Count",
 				String.valueOf(hub.getGamers()
@@ -416,91 +439,108 @@ public class Game implements Listener {
 
 	}
 
-// TODO: GAMER EVENTS HANDLING
-//	@EventHandler
-//	void onPlayerQuit(PlayerQuitEvent event) {
-//
-//		Player player = event.getPlayer();
-//		Gamer gamer = gamers.get(player.getUniqueId());
-//
-//		if(gamer != null) {
-//
-//			// TODO: ON_PLAYER_QUIT DURING GAME
-//
-//		}
-//	}
+	@EventHandler
+	private void onGamerDisconnect(GamerDisconnectEvent event) {
 
-// TODO: GAMER EVENTS HANDLING
-//	@EventHandler
-//	void onPlayerJoin(PlayerJoinEvent event) {
-//
-//		Player player = event.getPlayer();
-//		Gamer gamer = gamers.get(player.getUniqueId());
-//
-//		if(gamer != null) {
-//			gamer.updateReference(player);
-//
-//			// TODO: ON_PLAYER_JOIN DURING GAME
-//
-//		}
-//	}
+		// TODO: IN-GAME DISCONNECT
 
-// TODO: GAMER EVENTS HANDLING
-//	@EventHandler
-//	void onPlayerDeath(PlayerDeathEvent event) {
-//
-//		Player player = event.getEntity();
-//		Gamer gamer = getGamer(player);
-//
-//		// TODO: GET DEATH REASON
-//
-//		if(gamer != null && gamer.isAlive() && gamer.hasBond()) {
-//
-//			gamer.setAlive(false);
-//			Bond bond = gamer.getBond();
-//
-//			//noinspection ConstantConditions
-//			broadcast("Gamer " + bond.getColor() + player.getDisplayName() + ChatColor.RESET + " has died!");
-//
-//			Location location = player.getLocation();
-//			Bukkit.getScheduler()
-//					.runTaskLater(UHC.plugin(), () -> {
-//						//noinspection ConstantConditions
-//						player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
-//								.setBaseValue(20);
-//						player.setHealth(20);
-//						player.teleport(location);
-//						player.setGameMode(GameMode.SPECTATOR);
-//					}, 1);
-//
-//			boolean bondDead = bond.getGamers()
-//					.stream()
-//					.noneMatch(Gamer::isAlive);
-//
-//			if(bondDead) {
-//
-//				broadcast("Bond " + bond.getColor() + bond.getName() + ChatColor.RESET + " has been broken!");
-//
-//				List<Bond> bondsLeft = bonds.values()
-//						.stream()
-//						.filter(bond1 -> bond1.getGamers()
-//								.stream()
-//								.anyMatch(Gamer::isAlive))
-//						.collect(Collectors.toList());
-//
-//				if(bondsLeft.size() == 1) {
-//
-//					Bond winnerBond = bondsLeft.get(0);
-//
-//					broadcast("There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() + ChatColor.RESET + " wins!");
-//					stop();
-//
-//				}
-//
-//			}
-//
-//		}
-//
-//	}
+	}
+
+	@EventHandler
+	private void onGamerReconnect(GamerReconnectEvent event) {
+
+		// TODO: IN-GAME RECONNECT
+
+	}
+
+	@EventHandler
+	void onPlayerDeath(GamerDeathEvent event) {
+
+		Gamer gamer = event.getGamer();
+		Player player = gamer.getPlayer();
+
+		if(gamer.isAlive() && gamer.hasBond()) {
+
+			Bond bond = gamer.getBond();
+
+			//noinspection ConstantConditions
+			player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+					.setBaseValue(20);
+			player.setHealth(20);
+			player.setGameMode(GameMode.SPECTATOR);
+			gamer.setAlive(false);
+
+			String message;
+			boolean isPK = event.byGamer();
+
+			switch(event.getDamageCause()) {
+
+				case PROJECTILE:
+					if(isPK)
+						message = gameMessages.getString("death.PROJECTILE.player", "?");
+					else
+						message = gameMessages.getString("death.PROJECTILE.default", "?");
+					break;
+
+				case ENTITY_ATTACK:
+					if(isPK) {
+						List<String> list = gameMessages.getStringList("death.ENTITY_ATTACK.player");
+						if(list.isEmpty())
+							message = "?";
+						else
+							message = list.get(new Random().nextInt(list.size()));
+					} else
+						message = gameMessages.getString("death.ENTITY_ATTACK.default", "?");
+					break;
+
+				default:
+					message = gameMessages.getString("death." + event.getDamageCause(), "?");
+
+			}
+
+			//noinspection ConstantConditions
+			ChatColor bondColor = bond.getColor();
+			String gamerName = player.getName();
+
+			message = message.replaceAll("\\{gamer}", bondColor.toString() + gamerName + ChatColor.WHITE);
+			if(isPK) {
+				Gamer killer = event.getKiller();
+				Player killerPlayer = killer.getPlayer();
+				Bond killerBond = killer.getBond();
+				ChatColor killerColor = killerBond.getColor();
+				String killerName = killerPlayer.getName();
+				message = message.replaceAll("\\{killer}", killerColor.toString() + killerName + ChatColor.WHITE);
+			}
+
+			// Broadcast death message
+			hub.broadcast(message);
+
+			boolean bondDead = bond.getGamers()
+					.stream()
+					.noneMatch(Gamer::isAlive);
+
+			if(bondDead) {
+
+				hub.broadcast("Bond " + bond.getColor() + bond.getName() + ChatColor.RESET + " has been broken!");
+
+				List<Bond> bondsLeft = hub.getBonds()
+						.stream()
+						.filter(bond1 -> bond1.getGamers()
+								.stream()
+								.anyMatch(Gamer::isAlive))
+						.collect(Collectors.toList());
+
+				if(bondsLeft.size() == 1) {
+
+					Bond winnerBond = bondsLeft.get(0);
+					hub.broadcast("There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() + ChatColor.RESET + " wins!");
+
+					stop();
+
+				}
+			}
+		}
+
+	}
 
 }
