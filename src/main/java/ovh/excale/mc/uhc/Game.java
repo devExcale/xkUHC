@@ -40,7 +40,6 @@ import static ovh.excale.mc.uhc.misc.BorderAction.ActionType;
 
 public class Game implements Listener {
 
-	// TODO: SCOREBOARD PROCESSOR
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
 	private final ScoreboardProcessor scoreboardProcessor;

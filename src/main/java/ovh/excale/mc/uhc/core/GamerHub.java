@@ -121,7 +121,6 @@ public class GamerHub {
 	 * @throws IllegalArgumentException if a bond with the specified name already exists
 	 * @throws IllegalStateException    if the game is running
 	 */
-	// TODO: NAME VALIDATION
 	public Bond createBond(String name) throws IllegalStateException, IllegalArgumentException {
 
 		statusCheck();
@@ -256,7 +255,6 @@ public class GamerHub {
 				.sendMessage(message));
 	}
 
-	// TODO: DISPOSE
 	public void dispose() {
 		eventRaiser.turnOff();
 

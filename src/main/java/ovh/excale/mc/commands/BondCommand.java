@@ -22,8 +22,6 @@ import ovh.excale.mc.uhc.core.GamerHub;
 @Command("bonds")
 public class BondCommand {
 
-	// TODO: TARGET VERBOSE
-
 	@Default
 	public static void listBondsMain(CommandSender sender) throws WrapperCommandSyntaxException {
 
