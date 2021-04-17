@@ -170,7 +170,7 @@ public class Game implements Listener {
 		// REMAINING
 		scoreboardProcessor.print(7, gamer -> {
 
-			String s = "> Remaining: N/A";
+			String s = "> " + BOLD + "Remaining:" + RESET + " N/A";
 			if(currentAction != null)
 				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) + "s";
 
@@ -202,7 +202,7 @@ public class Game implements Listener {
 		});
 
 		// TIME
-		scoreboardProcessor.print(1, gamer -> "> " + BOLD + "Time:" + RESET + stopwatch.getTotalSeconds() + "s");
+		scoreboardProcessor.print(1, gamer -> "> " + BOLD + "Time: " + RESET + stopwatch.getTotalSeconds() + "s");
 
 	}
 
