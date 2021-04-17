@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.mc.commands.BondCommand;
 import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.Game.Status;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
 import java.util.logging.Logger;
@@ -70,8 +71,9 @@ public class UHC extends JavaPlugin {
 		if(coreGame != null)
 			try {
 
-				// TODO: DISPOSE
-//				coreGame.unset();
+				if(coreGame.getStatus() == Status.RUNNING)
+					coreGame.stop();
+				coreGame.dispose();
 
 			} catch(IllegalStateException ignored) {
 			}

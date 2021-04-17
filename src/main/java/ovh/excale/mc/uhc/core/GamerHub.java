@@ -6,6 +6,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.EventExecutor;
@@ -24,6 +25,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
+import static org.bukkit.ChatColor.*;
 import static ovh.excale.mc.uhc.Game.Status;
 
 public class GamerHub {
@@ -200,7 +202,6 @@ public class GamerHub {
 
 		// TODO: EVENT
 		Bond bond = gamer.getBond();
-		//noinspection ConstantConditions
 		bond.getInternalGamersSet()
 				.remove(gamer);
 
@@ -301,6 +302,10 @@ public class GamerHub {
 			// DAMAGE EVENT EXECUTOR
 			executors.put(EntityDamageEvent.class, (listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
 
+			// CHAT EVENT EXECUTOR
+			executors.put(AsyncPlayerChatEvent.class,
+					(listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
+
 		}
 
 		public void turnOn() {
@@ -381,6 +386,31 @@ public class GamerHub {
 
 					}
 				}
+			}
+
+		}
+
+		@EventHandler
+		private void onPlayerChat(AsyncPlayerChatEvent event) {
+
+			Player player = event.getPlayer();
+			Gamer gamer = gamers.get(player.getUniqueId());
+
+			if(gamer != null) {
+
+				event.setCancelled(true);
+
+				String message;
+				Bond bond = gamer.getBond();
+
+				if(bond != null) {
+					message = bond.getColor() + "[" + bond.getName() + "/" + BOLD + player.getName() + RESET + bond.getColor() + "] " + RESET + GRAY + event.getMessage();
+				} else
+					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
+
+				for(Player recipient : event.getRecipients())
+					recipient.sendMessage(message);
+
 			}
 
 		}

@@ -1,8 +1,14 @@
 game:
   start: ""
+  not_editable: "Game ain't currently editable"
+  options:
+    running: "running"
+    still: "still"
+
 border:
-  shrink: ""
-  hold: ""
+  SHRINK: ""
+  HOLD: ""
+
 bond:
   death: "Bond {bond} has been broken"
 

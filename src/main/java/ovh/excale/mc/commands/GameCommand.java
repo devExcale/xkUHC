@@ -6,24 +6,18 @@ import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
-import java.lang.reflect.Constructor;
-import java.util.concurrent.Callable;
+import java.io.File;
 import java.util.logging.Level;
 
 @Alias("xkuhc")
 @Command("uhc")
 public class GameCommand {
-
-	private static final Callable<Game> gameProvider = () -> {
-		Constructor<Game> gameConstructor = Game.class.getDeclaredConstructor();
-		gameConstructor.setAccessible(true);
-		return gameConstructor.newInstance();
-	};
 
 	@Subcommand("create")
 	public static void createGame(CommandSender sender) throws WrapperCommandSyntaxException {
@@ -35,7 +29,13 @@ public class GameCommand {
 
 		try {
 
-			UHC.setGame(gameProvider.call());
+			File file = new File(UHC.plugin()
+					.getDataFolder(), "game-messages.yml");
+
+			if(!file.canRead())
+				CommandAPI.fail("Cannot get game messages bundle.");
+
+			UHC.setGame(new Game(YamlConfiguration.loadConfiguration(file)));
 
 		} catch(Exception e) {
 			UHC.logger()

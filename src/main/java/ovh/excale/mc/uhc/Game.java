@@ -44,6 +44,7 @@ public class Game implements Listener {
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
 	private final ScoreboardProcessor scoreboardProcessor;
+	private final YamlConfiguration messages;
 
 	private BukkitTask runTask;
 	private Status status;
@@ -54,19 +55,18 @@ public class Game implements Listener {
 	private GameSettings settings;
 	private Iterator<BorderAction> borderActions;
 	private BorderAction currentAction;
-	private YamlConfiguration gameMessages;
 
-	protected Game() {
+	public Game(YamlConfiguration messages) {
 		hub = new GamerHub(this);
 		stopwatch = new Stopwatch();
 		scoreboardProcessor = new ScoreboardProcessor();
+		this.messages = Objects.requireNonNull(messages);
 
 		runTask = null;
 		status = Status.PREPARING;
 
 		world = null;
 		settings = null;
-		gameMessages = null;
 		currentAction = null;
 
 		PluginManager pluginManager = Bukkit.getPluginManager();
@@ -96,6 +96,24 @@ public class Game implements Listener {
 
 	private void initScoreboardProcessor() {
 
+		// SCOREBOARD
+		// (14)
+		// (13) > Bond:
+		// (12) > Gamer:
+		// (11) > Kills:
+		// (10)
+		// ( 9) > Border:
+		// ( 8) > Status:
+		// ( 7) > Remaining:
+		// ( 6)
+		// ( 5) > Bonds:
+		// ( 4) > Gamers:
+		// ( 3)
+		// ( 2) > Position: [x, z]
+		// ( 1) > Time:
+		// ( 0)
+
+		// BOND
 		scoreboardProcessor.print(13, gamer -> {
 
 			String s = "> " + BOLD + "Bond: " + RESET;
@@ -109,6 +127,7 @@ public class Game implements Listener {
 			return s;
 		});
 
+		// GAMER
 		scoreboardProcessor.print(12, gamer -> {
 
 			String s = "> " + BOLD + "Gamer: " + RESET;
@@ -123,8 +142,10 @@ public class Game implements Listener {
 			return s;
 		});
 
+		// KILLS
 		scoreboardProcessor.print(11, gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
 
+		// BORDER
 		scoreboardProcessor.print(9, gamer -> {
 
 			int size;
@@ -137,6 +158,7 @@ public class Game implements Listener {
 			return "> " + BOLD + "Border: " + RESET + String.format("[%d, %d]", -size, size);
 		});
 
+		// STATUS
 		scoreboardProcessor.print(8, gamer -> {
 
 			String action = (currentAction == null) ? "none" : currentAction.getType()
@@ -146,26 +168,42 @@ public class Game implements Listener {
 			return "> " + BOLD + "Status: " + RESET + action;
 		});
 
+		// REMAINING
 		scoreboardProcessor.print(7, gamer -> {
 
-			String s = "N/A";
+			String s = "> Remaining: N/A";
 			if(currentAction != null)
 				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) + "s";
 
 			return s;
 		});
 
+		// BONDS
 		scoreboardProcessor.print(5,
 				gamer -> "> " + BOLD + "Bonds: " + RESET + (int) hub.getBonds()
 						.stream()
 						.filter(Bond::isAlive)
 						.count());
 
+		// GAMERS
 		scoreboardProcessor.print(4,
 				gamer -> "> " + BOLD + "Gamers: " + RESET + (int) hub.getGamers()
 						.stream()
 						.filter(Gamer::isAlive)
 						.count());
+
+		// POSITION
+		scoreboardProcessor.print(2, gamer -> {
+
+			String s = "> " + BOLD + "Position: " + RESET;
+			Location loc = gamer.getPlayer()
+					.getLocation();
+
+			return s + "[" + loc.getBlockX() + ", " + loc.getBlockZ() + "]";
+		});
+
+		// TIME
+		scoreboardProcessor.print(1, gamer -> "> " + BOLD + "Time:" + RESET + stopwatch.getTotalSeconds() + "s");
 
 	}
 
@@ -212,7 +250,6 @@ public class Game implements Listener {
 			throw new IllegalStateException("Cannot read resource game-messages.yml");
 		}
 
-		gameMessages = YamlConfiguration.loadConfiguration(file);
 		borderActions = settings.getBorderActionIterator();
 
 		Bukkit.getScheduler()
@@ -390,30 +427,17 @@ public class Game implements Listener {
 		// TODO: ENDGAME
 	}
 
-//	public void unset() throws IllegalStateException {
-//
-//		PlayerQuitEvent.getHandlerList()
-//				.unregister(this);
-//		PlayerJoinEvent.getHandlerList()
-//				.unregister(this);
-//		EntityDeathEvent.getHandlerList()
-//				.unregister(this);
-//
-//		for(Gamer gamer : gamers.values())
-//			gamer.setBond(null);
-//
-//		for(Team team : scoreboard.getTeams())
-//			team.unregister();
-//
-//	}
-
 	public void stop() throws IllegalStateException {
+
+		if(!status.equals(Status.RUNNING))
+			throw new IllegalStateException("Game ain't running");
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
 		stopwatch.stop();
-		scoreboardProcessor.untrackAll();
+		scoreboardProcessor.stop();
 
+		// TODO: AND_THEN CALLABLE
 		hub.broadcast("Teleporting all players back in 40 seconds...");
 
 		Bukkit.getScheduler()
@@ -441,8 +465,19 @@ public class Game implements Listener {
 
 				}, 800);
 
+		status = Status.WORN;
+	}
+
+	public void dispose() throws IllegalStateException {
+
+		if(!status.isEditable())
+			throw new IllegalStateException(messages.getString("game.not_editable"));
+
+		scoreboardProcessor.untrackAll();
+
+		if(world != null)
+			Bukkit.unloadWorld(world, false);
 		hub.dispose();
-		// TODO: DISPOSE ALL
 
 	}
 
@@ -450,14 +485,17 @@ public class Game implements Listener {
 
 		LinkedHashMap<String, String> map = new LinkedHashMap<>();
 
-		map.put("StopwatchStatus", stopwatch.isRunning() ? "running" : "still");
+		final String running = messages.getString("game.options.running");
+		final String still = messages.getString("game.options.still");
+
+		map.put("StopwatchStatus", stopwatch.isRunning() ? running : still);
 		map.put("StopwatchCount", stopwatch.getTotalSeconds() + "s");
 
-		map.put("MainLoop", (runTask != null && !runTask.isCancelled()) ? "running" : "still");
-		map.put("ScoreboardLoop", (runTask != null && !runTask.isCancelled()) ? "running" : "still");
+		map.put("MainLoop", (runTask != null && !runTask.isCancelled()) ? running : still);
+		map.put("ScoreboardLoop", (runTask != null && !runTask.isCancelled()) ? running : still);
 		map.put("EventRaiser",
 				(hub.getEventRaiser()
-						.isOn()) ? "running" : "still");
+						.isOn()) ? running : still);
 
 		map.put("WorldName", String.valueOf(world != null ? world.getName() : null));
 		map.put("Status", status.toString());
@@ -475,7 +513,7 @@ public class Game implements Listener {
 	public enum Status {
 
 		PREPARING(true),
-		READY(false),
+		READY(true),
 		STARTING(false),
 		RUNNING(false),
 		FINAL(false),
@@ -516,7 +554,7 @@ public class Game implements Listener {
 
 		player.getInventory()
 				.forEach(itemStack -> player.getWorld()
-						.dropItem(player.getLocation(), itemStack));
+						.dropItemNaturally(player.getLocation(), itemStack));
 
 		if(status.equals(Status.RUNNING) && gamer.isAlive() && gamer.hasBond()) {
 
@@ -536,24 +574,24 @@ public class Game implements Listener {
 
 				case PROJECTILE:
 					if(isPK)
-						message = gameMessages.getString("death.PROJECTILE.player", "?");
+						message = messages.getString("death.PROJECTILE.player", "?");
 					else
-						message = gameMessages.getString("death.PROJECTILE.default", "?");
+						message = messages.getString("death.PROJECTILE.default", "?");
 					break;
 
 				case ENTITY_ATTACK:
 					if(isPK) {
-						List<String> list = gameMessages.getStringList("death.ENTITY_ATTACK.player");
+						List<String> list = messages.getStringList("death.ENTITY_ATTACK.player");
 						if(list.isEmpty())
 							message = "?";
 						else
 							message = list.get(new Random().nextInt(list.size()));
 					} else
-						message = gameMessages.getString("death.ENTITY_ATTACK.default", "?");
+						message = messages.getString("death.ENTITY_ATTACK.default", "?");
 					break;
 
 				default:
-					message = gameMessages.getString("death." + event.getDamageCause(), "?");
+					message = messages.getString("death." + event.getDamageCause(), "?");
 
 			}
 
