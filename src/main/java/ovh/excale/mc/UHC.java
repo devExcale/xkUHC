@@ -9,8 +9,6 @@ import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
-import java.lang.reflect.Constructor;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UHC extends JavaPlugin {
@@ -41,21 +39,11 @@ public class UHC extends JavaPlugin {
 		instance = this;
 
 		saveDefaultConfig();
-		saveResource("game-messages.yml", false);
+		saveResource("lang/game-messages.yml", false);
 
 		//noinspection ConstantConditions
 		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
 				.toString());
-
-		try {
-
-			Constructor<Game> gameConstructor = Game.class.getDeclaredConstructor();
-			gameConstructor.setAccessible(true);
-			GameCommand.setGameProvider(gameConstructor::newInstance);
-
-		} catch(Exception e) {
-			logger().log(Level.SEVERE, "Couldn't set GameProvider", e);
-		}
 
 		CommandAPI.onLoad(DEBUG);
 	}

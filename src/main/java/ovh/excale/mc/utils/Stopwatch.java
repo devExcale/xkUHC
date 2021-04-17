@@ -12,6 +12,7 @@ public class Stopwatch {
 
 	public Stopwatch() {
 		seconds = 0;
+		lap = 0;
 		task = null;
 	}
 

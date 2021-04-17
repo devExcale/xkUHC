@@ -1,0 +1,39 @@
+game:
+  start: ""
+border:
+  shrink: ""
+  hold: ""
+bond:
+  death: "Bond {bond} has been broken"
+
+gamer:
+  death:
+    ENTITY_ATTACK:
+      default: "{gamer} has been beaten up!"
+      player:
+        - "{gamer} has been beaten up by {killer}!"
+        - "{killer} just sent {gamer} to the other side!"
+    PROJECTILE:
+      default: "{gamer} has been shot!"
+      player: "{gamer} has been shot dead by {killer}!"
+    CUSTOM: "{gamer} has misteriously died"
+    THORNS: "{gamer} met his end by their hand"
+    ENTITY_EXPLOSION: "{gamer} hugged a creeper"
+    BLOCK_EXPLOSION: "{gamer} hugger a TNT"
+    CONTACT: "{gamer} hugger a creeper"
+    DRAGON_BREATH: "{gamer} vanished into dragon breath"
+    DROWNING: "{gamer} drowned in their tears"
+    FALL: "{gamer} didn't know how to fly"
+    FALLING_BLOCK: "{gamer} got hit in the head by a pot"
+    FIRE: "{gamer} burnt in hellfire"
+    FIRE_TICK: "{gamer} burnt to a crisp"
+    FLY_INTO_WALL: "{gamer} didn't know how to stop flying"
+    HOT_FLOOR: "{gamer} burnt their feet"
+    LAVA: "{gamer} jumped into a volcano"
+    LIGHTNING: "{gamer} has been chosen by Zeus"
+    MAGIC: "{gamer} has exploded from mana overload"
+    POISON: "{gamer} bit the wrong apple"
+    STARVATION: "{gamer} forgot to eat for too long"
+    SUFFOCATION: "{gamer} forgot how to breathe"
+    WITHER: "{gamer} didn't stay away from the big guys"
+    VOID: "{gamer} vanished from this world"

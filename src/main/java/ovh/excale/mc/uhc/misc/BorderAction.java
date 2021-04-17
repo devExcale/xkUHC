@@ -12,12 +12,9 @@ public class BorderAction {
 
 		if(minutes < 1)
 			throw new IllegalArgumentException("Parameter Minutes must be positive");
+
 		this.minutes = minutes;
-
-		if(borderSize < 500)
-			throw new IllegalArgumentException("Parameter BorderSize is too small");
 		this.borderSize = borderSize;
-
 		this.actionType = actionType;
 	}
 

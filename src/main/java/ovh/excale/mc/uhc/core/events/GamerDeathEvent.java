@@ -43,7 +43,11 @@ public class GamerDeathEvent extends Event {
 		}
 
 		// TODO: FIX KILLER NULL IF KILLER IS PLAYER
-		this.killer = (killer != null) ? hub.getGamer(killer.getUniqueId()) : null;
+		if(killer != null) {
+			this.killer = hub.getGamer(killer.getUniqueId());
+			this.killer.incrementKillCount();
+		} else
+			this.killer = null;
 
 	}
 

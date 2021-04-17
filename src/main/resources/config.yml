@@ -1,30 +1,27 @@
 debug: true
 uhc:
-  CriticalTime: 60
   border:
-    InitialSize: 1000
-    changes:
+    InitialSize: 600
+    actions:
 
       # - Size: 1600       ; Border size
       #   Timestamp: 120   ; Game timestamp (minutes)
       #   ShrinkTime: 12   ; Shrink time (seconds)
 
-      - Size: 750
-        Timestamp: 15
-        ShrinkTime: 120
+      - BorderSize: 500
+        Minutes: 1
+        Action: Shrink
 
-      - Size: 500
-        Time: 30
-        ShrinkTime: 120
+      - Minutes: 1
+        Action: Hold
 
-      - Size: 250
-        Time: 45
-        ShrinkTime: 120
+      - BorderSize: 200
+        Minutes: 1
+        Action: Shrink
 
-      - Size: 50
-        Time: 60
-        ShrinkTime: 100
+      - Minutes: 1
+        Action: Hold
 
-      - Size: 1
-        Time: 66
-        ShrinkTime: 120
+      - BorderSize: 20
+        Minutes: 1
+        Action: Shrink

@@ -7,7 +7,9 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -28,12 +30,12 @@ import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.time.Clock;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
+import static org.bukkit.ChatColor.BOLD;
+import static org.bukkit.ChatColor.RESET;
 import static ovh.excale.mc.uhc.misc.BorderAction.ActionType;
 
 public class Game implements Listener {
@@ -52,7 +54,7 @@ public class Game implements Listener {
 	private GameSettings settings;
 	private Iterator<BorderAction> borderActions;
 	private BorderAction currentAction;
-	YamlConfiguration gameMessages;
+	private YamlConfiguration gameMessages;
 
 	protected Game() {
 		hub = new GamerHub(this);
@@ -64,19 +66,29 @@ public class Game implements Listener {
 
 		world = null;
 		settings = null;
+		gameMessages = null;
+		currentAction = null;
 
-//		// REGISTER EVENTS LISTENER
-//		PluginManager pluginManager = Bukkit.getPluginManager();
-//		pluginManager.registerEvent(PlayerJoinEvent.class,
-//				this,
-//				EventPriority.HIGH,
-//				(listener, event) -> ((Game) listener).onPlayerJoin((PlayerJoinEvent) event),
-//				UHC.plugin());
-//		pluginManager.registerEvent(PlayerQuitEvent.class,
-//				this,
-//				EventPriority.HIGH,
-//				(listener, event) -> ((Game) listener).onPlayerQuit((PlayerQuitEvent) event),
-//				UHC.plugin());
+		PluginManager pluginManager = Bukkit.getPluginManager();
+
+		// GAMER RECONNECT EVENT
+		pluginManager.registerEvent(GamerReconnectEvent.class,
+				this,
+				EventPriority.HIGH,
+				(listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
+				UHC.plugin());
+		// GAMER DISCONNECT EVENT
+		pluginManager.registerEvent(GamerDisconnectEvent.class,
+				this,
+				EventPriority.HIGH,
+				(listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
+				UHC.plugin());
+		// GAMER DEATH EVENT
+		pluginManager.registerEvent(GamerDeathEvent.class,
+				this,
+				EventPriority.HIGH,
+				(listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event),
+				UHC.plugin());
 
 		initScoreboardProcessor();
 
@@ -86,25 +98,74 @@ public class Game implements Listener {
 
 		scoreboardProcessor.print(13, gamer -> {
 
-			String s = " [";
+			String s = "> " + BOLD + "Bond: " + RESET;
 			Bond bond = gamer.getBond();
 
 			if(bond != null)
-				s += bond.getColor() + bond.getName() + ChatColor.WHITE + "]";
+				s += bond.getColor() + bond.getName() + RESET;
 			else
-				s += "UNBOUND]";
+				s += "UNBOUND";
 
 			return s;
 		});
 
-		scoreboardProcessor.print(12,
-				gamer -> gamer.getPlayer()
-						.getName());
+		scoreboardProcessor.print(12, gamer -> {
 
-		Clock clock = Clock.systemDefaultZone();
-		SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+			String s = "> " + BOLD + "Gamer: " + RESET;
+			Bond bond = gamer.getBond();
+			Player player = gamer.getPlayer();
 
-		scoreboardProcessor.print(11, gamer -> sdf.format(Date.from(clock.instant())));
+			if(bond != null)
+				s += bond.getColor() + player.getName() + RESET;
+			else
+				s += player.getName();
+
+			return s;
+		});
+
+		scoreboardProcessor.print(11, gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
+
+		scoreboardProcessor.print(9, gamer -> {
+
+			int size;
+			if(world != null) {
+				WorldBorder border = world.getWorldBorder();
+				size = (int) (border.getSize() / 2);
+			} else
+				size = 0;
+
+			return "> " + BOLD + "Border: " + RESET + String.format("[%d, %d]", -size, size);
+		});
+
+		scoreboardProcessor.print(8, gamer -> {
+
+			String action = (currentAction == null) ? "none" : currentAction.getType()
+					.toString()
+					.toLowerCase() + "ing";
+
+			return "> " + BOLD + "Status: " + RESET + action;
+		});
+
+		scoreboardProcessor.print(7, gamer -> {
+
+			String s = "N/A";
+			if(currentAction != null)
+				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) + "s";
+
+			return s;
+		});
+
+		scoreboardProcessor.print(5,
+				gamer -> "> " + BOLD + "Bonds: " + RESET + (int) hub.getBonds()
+						.stream()
+						.filter(Bond::isAlive)
+						.count());
+
+		scoreboardProcessor.print(4,
+				gamer -> "> " + BOLD + "Gamers: " + RESET + (int) hub.getGamers()
+						.stream()
+						.filter(Gamer::isAlive)
+						.count());
 
 	}
 
@@ -143,7 +204,7 @@ public class Game implements Listener {
 			throw new IllegalStateException("Cannot start game with less than 2 bonds");
 
 		File file = new File(UHC.plugin()
-				.getDataFolder(), "game-messages.yml");
+				.getDataFolder(), "lang/game-messages.yml");
 
 		if(!file.exists()) {
 			UHC.logger()
@@ -152,6 +213,7 @@ public class Game implements Listener {
 		}
 
 		gameMessages = YamlConfiguration.loadConfiguration(file);
+		borderActions = settings.getBorderActionIterator();
 
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.plugin(), this::start);
@@ -190,9 +252,11 @@ public class Game implements Listener {
 			Bukkit.getScheduler()
 					.callSyncMethod(UHC.plugin(), () -> {
 
-						for(Gamer gamer : hub.getGamers())
+						for(Gamer gamer : hub.getGamers()) {
+							gamer.resetKillCount();
 							gamer.getPlayer()
 									.addPotionEffect(blindness);
+						}
 
 						return Void.TYPE;
 					})
@@ -285,15 +349,6 @@ public class Game implements Listener {
 		for(Player player : players)
 			player.sendTitle("UHC", "Let the ^^^ start!", 10, 70, 20);
 
-		// TODO: EVENTS
-//		freeze();
-//		Bukkit.getPluginManager()
-//				.registerEvent(EntityDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> {
-//					if(event instanceof PlayerDeathEvent)
-//						((Game) listener).onPlayerDeath((PlayerDeathEvent) event);
-//				}, UHC.plugin());
-
-
 		runTask = Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.plugin(), this::run);
 		status = Status.RUNNING;
@@ -301,7 +356,6 @@ public class Game implements Listener {
 
 	}
 
-	// TODO: PING SOUND ON
 	private void run() {
 
 		stopwatch.lap();
@@ -433,6 +487,7 @@ public class Game implements Listener {
 			this.editable = editable;
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public boolean isEditable() {
 			return editable;
 		}
@@ -454,12 +509,16 @@ public class Game implements Listener {
 	}
 
 	@EventHandler
-	void onPlayerDeath(GamerDeathEvent event) {
+	void onGamerDeath(GamerDeathEvent event) {
 
 		Gamer gamer = event.getGamer();
 		Player player = gamer.getPlayer();
 
-		if(gamer.isAlive() && gamer.hasBond()) {
+		player.getInventory()
+				.forEach(itemStack -> player.getWorld()
+						.dropItem(player.getLocation(), itemStack));
+
+		if(status.equals(Status.RUNNING) && gamer.isAlive() && gamer.hasBond()) {
 
 			Bond bond = gamer.getBond();
 
@@ -498,11 +557,11 @@ public class Game implements Listener {
 
 			}
 
-			//noinspection ConstantConditions
 			ChatColor bondColor = bond.getColor();
 			String gamerName = player.getName();
 
-			message = message.replaceAll("\\{gamer}", bondColor.toString() + gamerName + ChatColor.WHITE);
+			message = Objects.requireNonNull(message)
+					.replaceAll("\\{gamer}", bondColor.toString() + gamerName + ChatColor.WHITE);
 			if(isPK) {
 				Gamer killer = event.getKiller();
 				Player killerPlayer = killer.getPlayer();
@@ -521,7 +580,7 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				hub.broadcast("Bond " + bond.getColor() + bond.getName() + ChatColor.RESET + " has been broken!");
+				hub.broadcast("Bond " + bond.getColor() + bond.getName() + RESET + " has been broken!");
 
 				List<Bond> bondsLeft = hub.getBonds()
 						.stream()
@@ -533,7 +592,7 @@ public class Game implements Listener {
 				if(bondsLeft.size() == 1) {
 
 					Bond winnerBond = bondsLeft.get(0);
-					hub.broadcast("There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() + ChatColor.RESET + " wins!");
+					hub.broadcast("There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() + RESET + " wins!");
 
 					stop();
 

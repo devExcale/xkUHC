@@ -66,6 +66,11 @@ public class Bond {
 		return friendlyFire;
 	}
 
+	public boolean isAlive() {
+		return gamers.stream()
+				.anyMatch(Gamer::isAlive);
+	}
+
 	public void broadcast(@NotNull String message) {
 		for(Gamer gamer : gamers)
 			gamer.getPlayer()

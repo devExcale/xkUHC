@@ -6,7 +6,6 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.ScoreboardPrinter;
 
@@ -20,6 +19,7 @@ public class Gamer {
 
 	private Player player;
 	private Bond bond;
+	private int killCount;
 	private boolean alive;
 
 	protected Gamer(Game game, Player player) {
@@ -27,6 +27,7 @@ public class Gamer {
 		this.game = game;
 		bond = null;
 		alive = true;
+		killCount = 0;
 
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
@@ -47,12 +48,24 @@ public class Gamer {
 		this.alive = alive;
 	}
 
+	public void resetKillCount() {
+		killCount = 0;
+	}
+
+	public void incrementKillCount() {
+		killCount++;
+	}
+
 	public Game getGame() {
 		return game;
 	}
 
-	public @Nullable Bond getBond() {
+	public Bond getBond() {
 		return bond;
+	}
+
+	public int getKillCount() {
+		return killCount;
 	}
 
 	public Scoreboard getScoreboard() {
@@ -75,6 +88,7 @@ public class Gamer {
 		return alive;
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isOnline() {
 		return player.isOnline();
 	}

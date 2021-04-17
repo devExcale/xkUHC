@@ -11,6 +11,7 @@ import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
+import java.lang.reflect.Constructor;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
@@ -18,12 +19,11 @@ import java.util.logging.Level;
 @Command("uhc")
 public class GameCommand {
 
-	// TODO: REMOVE THIS
-	private static Callable<Game> gameProvider;
-
-	public static void setGameProvider(Callable<Game> gameProvider) {
-		GameCommand.gameProvider = gameProvider;
-	}
+	private static final Callable<Game> gameProvider = () -> {
+		Constructor<Game> gameConstructor = Game.class.getDeclaredConstructor();
+		gameConstructor.setAccessible(true);
+		return gameConstructor.newInstance();
+	};
 
 	@Subcommand("create")
 	public static void createGame(CommandSender sender) throws WrapperCommandSyntaxException {
@@ -124,24 +124,21 @@ public class GameCommand {
 	@Subcommand("reload")
 	public static void reloadConfiguration(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		Plugin plugin = UHC.plugin();
-		plugin.reloadConfig();
+		Game game = UHC.getGame();
 
-		UHC.DEBUG = plugin.getConfig()
-				.getBoolean("debug", false);
+		if(game != null && !game.getStatus()
+				.isEditable()) {
+
+			Plugin plugin = UHC.plugin();
+			plugin.reloadConfig();
+			UHC.DEBUG = plugin.getConfig()
+					.getBoolean("debug", false);
+
+		} else
+			CommandAPI.fail("Game is running");
 
 		sender.sendMessage("Configuration reloaded.");
 
-		Game game = UHC.getGame();
-
-		if(game != null)
-			try {
-
-				// TODO: RELOAD GAME CONFIG
-
-			} catch(IllegalStateException e) {
-				CommandAPI.fail(e.getMessage());
-			}
 	}
 
 }

@@ -124,15 +124,13 @@ public class GamerHub {
 
 		statusCheck();
 
-		if(name == null || BOND_NAME_REGEX.matcher(name)
+		if(name == null || !BOND_NAME_REGEX.matcher(name)
 				.matches())
 			throw new IllegalArgumentException("Illegal bond name");
 
 		Bond bond = bonds.get(name);
 		if(bond != null)
 			throw new IllegalArgumentException("A bond named '" + name + "' already exists");
-
-		System.out.println(gamers.size());
 
 		// TODO: EVENT
 		bond = new Bond(name, game);
@@ -178,8 +176,6 @@ public class GamerHub {
 
 		if(gamer.hasBond())
 			throw new IllegalArgumentException("This player already has a bond");
-
-		System.out.println(gamers.size());
 
 		//noinspection ConstantConditions
 		gamers.values()

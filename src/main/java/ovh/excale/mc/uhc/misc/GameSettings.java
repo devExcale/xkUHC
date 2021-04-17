@@ -38,9 +38,11 @@ public class GameSettings {
 				throw new IllegalArgumentException("InitialSize is too small!");
 
 			List<Map<?, ?>> actions = config.getMapList("uhc.border.actions");
+			actions.forEach(map -> map.forEach((o, o2) -> System.out.println(o.toString() + " : " + o2.toString())));
 			for(int i = 0; i < actions.size(); i++) {
 
-				Map<?, ?> map = actions.get(i);
+				//noinspection unchecked
+				Map<String, Object> map = (Map<String, Object>) actions.get(i);
 				String typeString = map.get("Action")
 						.toString();
 
@@ -48,13 +50,11 @@ public class GameSettings {
 				if(type == null)
 					throw new IllegalArgumentException("Missing parameter Action @ uhc.border.actions[" + i + "]");
 
-				int borderSize = config.getInt("BorderSize", Integer.MIN_VALUE);
+				int borderSize = (int) map.getOrDefault("BorderSize", Integer.MIN_VALUE);
 				if(borderSize == Integer.MIN_VALUE)
 					throw new IllegalArgumentException("Missing parameter BorderSize @ uhc.border.actions[" + i + "]");
-				if(borderSize < MIN_STARTING_BORDER_SIZE)
-					throw new IllegalArgumentException("Parameter BorderSize is too small @ uhc.border.actions[" + i + "]");
 
-				int minutes = config.getInt("Minutes", Integer.MIN_VALUE);
+				int minutes = (int) map.getOrDefault("Minutes", Integer.MIN_VALUE);
 				if(minutes == Integer.MIN_VALUE)
 					throw new IllegalArgumentException("Missing parameter Minutes @ uhc.border.actions[" + i + "]");
 				if(minutes < 1)
