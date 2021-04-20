@@ -108,8 +108,8 @@ public class Game implements Listener {
 		// ( 5) > Bonds:
 		// ( 4) > Gamers:
 		// ( 3)
-		// ( 2) > Position: [x, z]
-		// ( 1) > Time:
+		// ( 2) [ 1h:32m:03s ]
+		// ( 1) [ 000, 00, 000 ]
 		// ( 0)
 
 		// BOND
@@ -142,7 +142,8 @@ public class Game implements Listener {
 		});
 
 		// KILLS
-		scoreboardProcessor.print(11, gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
+		scoreboardProcessor.print(11,
+				gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
 
 		// BORDER
 		scoreboardProcessor.print(9, gamer -> {
@@ -191,18 +192,31 @@ public class Game implements Listener {
 						.filter(Gamer::isAlive)
 						.count());
 
-		// POSITION
+		// TIME
 		scoreboardProcessor.print(2, gamer -> {
 
-			String s = "> " + BOLD + "Position: " + RESET;
+			String str = "[ ";
+
+			int s = stopwatch.getSeconds();
+			int m = stopwatch.getMinutes();
+			int h = m / 60;
+			if(h > 0)
+				str += (m / 60) + "h:";
+
+			return str + String.format(str + "%2dm:%2ds ]", m % 60, s);
+		});
+
+		// POSITION
+		scoreboardProcessor.print(1, gamer -> {
+
 			Location loc = gamer.getPlayer()
 					.getLocation();
 
-			return s + "[" + loc.getBlockX() + ", " + loc.getBlockZ() + "]";
+			return String.format("[ %d, %d, %d ]",
+					loc.getBlockX(),
+					loc.getBlockY(),
+					loc.getBlockZ());
 		});
-
-		// TIME
-		scoreboardProcessor.print(1, gamer -> "> " + BOLD + "Time: " + RESET + stopwatch.getTotalSeconds() + "s");
 
 	}
 
@@ -283,7 +297,12 @@ public class Game implements Listener {
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
-		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false);
+		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS,
+				3600,
+				12,
+				false,
+				false,
+				false);
 		try {
 			Bukkit.getScheduler()
 					.callSyncMethod(UHC.plugin(), () -> {
@@ -337,7 +356,9 @@ public class Game implements Listener {
 				.collect(Collectors.toSet());
 
 		Bukkit.getScheduler()
-				.runTaskLater(UHC.plugin(), () -> players.forEach(player -> player.setHealth(40)), 1);
+				.runTaskLater(UHC.plugin(),
+						() -> players.forEach(player -> player.setHealth(40)),
+						1);
 
 		for(Player player : players) {
 
@@ -605,7 +626,8 @@ public class Game implements Listener {
 				Bond killerBond = killer.getBond();
 				ChatColor killerColor = killerBond.getColor();
 				String killerName = killerPlayer.getName();
-				message = message.replaceAll("\\{killer}", killerColor.toString() + killerName + ChatColor.WHITE);
+				message = message.replaceAll("\\{killer}",
+						killerColor.toString() + killerName + ChatColor.WHITE);
 			}
 
 			// Broadcast death message
