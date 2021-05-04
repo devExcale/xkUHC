@@ -572,11 +572,11 @@ public class Game implements Listener {
 		Gamer gamer = event.getGamer();
 		Player player = gamer.getPlayer();
 
-		player.getInventory()
-				.forEach(itemStack -> player.getWorld()
-						.dropItemNaturally(player.getLocation(), itemStack));
-
 		if(status.equals(Status.RUNNING) && gamer.isAlive() && gamer.hasBond()) {
+
+			player.getInventory()
+					.forEach(itemStack -> player.getWorld()
+							.dropItemNaturally(player.getLocation(), itemStack));
 
 			Bond bond = gamer.getBond();
 
@@ -593,21 +593,22 @@ public class Game implements Listener {
 			switch(event.getDamageCause()) {
 
 				case PROJECTILE:
-					if(isPK)
-						message = messages.getString("death.PROJECTILE.player", "?");
-					else
-						message = messages.getString("death.PROJECTILE.default", "?");
+
+					message = messages.getString("death.PROJECTILE." + (isPK ? "player" : "default"),
+							"?");
+
 					break;
 
 				case ENTITY_ATTACK:
+
 					if(isPK) {
+
 						List<String> list = messages.getStringList("death.ENTITY_ATTACK.player");
-						if(list.isEmpty())
-							message = "?";
-						else
-							message = list.get(new Random().nextInt(list.size()));
+						message = list.isEmpty() ? "?" : list.get(new Random().nextInt(list.size()));
+
 					} else
 						message = messages.getString("death.ENTITY_ATTACK.default", "?");
+
 					break;
 
 				default:
@@ -657,7 +658,8 @@ public class Game implements Listener {
 
 				}
 			}
-		}
+		} else
+			player.setHealth(0);
 
 	}
 
