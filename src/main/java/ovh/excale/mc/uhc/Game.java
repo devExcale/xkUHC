@@ -142,8 +142,7 @@ public class Game implements Listener {
 		});
 
 		// KILLS
-		scoreboardProcessor.print(11,
-				gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
+		scoreboardProcessor.print(11, gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
 
 		// BORDER
 		scoreboardProcessor.print(9, gamer -> {
@@ -212,10 +211,7 @@ public class Game implements Listener {
 			Location loc = gamer.getPlayer()
 					.getLocation();
 
-			return String.format("[ %d, %d, %d ]",
-					loc.getBlockX(),
-					loc.getBlockY(),
-					loc.getBlockZ());
+			return String.format("[ %d, %d, %d ]", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 		});
 
 	}
@@ -297,12 +293,7 @@ public class Game implements Listener {
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
-		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS,
-				3600,
-				12,
-				false,
-				false,
-				false);
+		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false);
 		try {
 			Bukkit.getScheduler()
 					.callSyncMethod(UHC.plugin(), () -> {
@@ -356,9 +347,7 @@ public class Game implements Listener {
 				.collect(Collectors.toSet());
 
 		Bukkit.getScheduler()
-				.runTaskLater(UHC.plugin(),
-						() -> players.forEach(player -> player.setHealth(40)),
-						1);
+				.runTaskLater(UHC.plugin(), () -> players.forEach(player -> player.setHealth(40)), 1);
 
 		for(Player player : players) {
 
@@ -460,6 +449,7 @@ public class Game implements Listener {
 		// TODO: AND_THEN CALLABLE
 		hub.broadcast("Teleporting all players back in 40 seconds...");
 
+		// TODO: FIX: CANNOT STOP ON PLUGIN DISABLE (cannot schedule task while plugin is disabled)
 		Bukkit.getScheduler()
 				.runTaskLater(UHC.plugin(), () -> {
 
@@ -594,8 +584,7 @@ public class Game implements Listener {
 
 				case PROJECTILE:
 
-					message = messages.getString("death.PROJECTILE." + (isPK ? "player" : "default"),
-							"?");
+					message = messages.getString("death.PROJECTILE." + (isPK ? "player" : "default"), "?");
 
 					break;
 
@@ -627,8 +616,7 @@ public class Game implements Listener {
 				Bond killerBond = killer.getBond();
 				ChatColor killerColor = killerBond.getColor();
 				String killerName = killerPlayer.getName();
-				message = message.replaceAll("\\{killer}",
-						killerColor.toString() + killerName + ChatColor.WHITE);
+				message = message.replaceAll("\\{killer}", killerColor.toString() + killerName + ChatColor.WHITE);
 			}
 
 			// Broadcast death message
