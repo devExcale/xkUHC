@@ -1,27 +1,65 @@
 debug: true
 uhc:
   border:
-    InitialSize: 600
+    InitialSize: 1500
     actions:
 
-      # - Size: 1600       ; Border size
-      #   Timestamp: 120   ; Game timestamp (minutes)
-      #   ShrinkTime: 12   ; Shrink time (seconds)
+      - BorderSize: 1500
+        Minutes: 5
+        Action: Hold
+
+      - Minutes: 5
+        Action: Shrink
+        BorderSize: 1250
+
+      - BorderSize: 1250
+        Minutes: 5
+        Action: Hold
+
+      - Minutes: 5
+        Action: Shrink
+        BorderSize: 1000
+
+      - BorderSize: 1000
+        Minutes: 5
+        Action: Hold
+
+      - Minutes: 5
+        Action: Shrink
+        BorderSize: 500
 
       - BorderSize: 500
-        Minutes: 1
-        Action: Shrink
-
-      - Minutes: 1
+        Minutes: 5
         Action: Hold
+
+      - BorderSize: 500
+        Minutes: 5
+        Action: Hold
+
+      - Minutes: 5
+        Action: Shrink
+        BorderSize: 350
+
+      - BorderSize: 350
+        Minutes: 5
+        Action: Hold
+
+      - Minutes: 5
+        Action: Shrink
+        BorderSize: 200
 
       - BorderSize: 200
-        Minutes: 1
-        Action: Shrink
-
-      - Minutes: 1
+        Minutes: 5
         Action: Hold
 
-      - BorderSize: 20
-        Minutes: 1
+      - Minutes: 5
         Action: Shrink
+        BorderSize: 50
+
+      - BorderSize: 50
+        Minutes: 5
+        Action: Hold
+
+      - Minutes: 20
+        Action: Shrink
+        BorderSize: 2
