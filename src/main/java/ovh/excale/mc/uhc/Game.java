@@ -19,9 +19,7 @@ import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
-import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
-import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
-import ovh.excale.mc.uhc.core.events.GamerReconnectEvent;
+import ovh.excale.mc.uhc.core.events.*;
 import ovh.excale.mc.uhc.misc.BorderAction;
 import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
@@ -398,6 +396,10 @@ public class Game implements Listener {
 			return;
 		}
 
+		// Call GameStartEvent on game start
+		Bukkit.getPluginManager()
+				.callEvent(new GameStartEvent(this));
+
 		for(Player player : players)
 			player.sendTitle("UHC", "Let the ^^^ start!", 10, 70, 20);
 
@@ -482,6 +484,11 @@ public class Game implements Listener {
 				}, 800);
 
 		status = Status.WORN;
+
+		// Call GameStopEvent on game stop
+		Bukkit.getPluginManager()
+				.callEvent(new GameStopEvent(this));
+
 	}
 
 	public void dispose() throws IllegalStateException {
@@ -563,7 +570,7 @@ public class Game implements Listener {
 	}
 
 	@EventHandler
-	void onGamerDeath(GamerDeathEvent event) {
+	private void onGamerDeath(GamerDeathEvent event) {
 
 		Gamer gamer = event.getGamer();
 		Player player = gamer.getPlayer();

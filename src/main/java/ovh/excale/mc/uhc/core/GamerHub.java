@@ -133,7 +133,6 @@ public class GamerHub {
 		if(bond != null)
 			throw new IllegalArgumentException("A bond named '" + name + "' already exists");
 
-		// TODO: EVENT
 		bond = new Bond(name, game);
 		gamers.forEach((uuid, gamer) -> gamer.getScoreboard()
 				.registerNewTeam(name));
@@ -148,7 +147,6 @@ public class GamerHub {
 		if(bond == null)
 			throw new IllegalArgumentException("There's no bond named '" + name + "'");
 
-		// TODO: EVENT
 		breakBond(bond);
 
 	}
@@ -171,7 +169,6 @@ public class GamerHub {
 	}
 
 	public void boundGamer(Bond bond, Gamer gamer) throws IllegalArgumentException, IllegalStateException {
-		// TODO: EVENT
 
 		statusCheck();
 
@@ -199,7 +196,6 @@ public class GamerHub {
 		if(!gamer.hasBond())
 			throw new IllegalArgumentException("This player doesn't have a bond");
 
-		// TODO: EVENT
 		Bond bond = gamer.getBond();
 		bond.getInternalGamersSet()
 				.remove(gamer);
