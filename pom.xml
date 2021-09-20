@@ -16,6 +16,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<version.commandapi>5.12</version.commandapi>
 	</properties>
 
 	<repositories>
@@ -26,8 +27,8 @@
 		</repository>
 
 		<repository>
-			<id>commandapi</id>
-			<url>https://raw.githubusercontent.com/JorelAli/CommandAPI/mvn-repo/</url>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 		</repository>
 
 	</repositories>
@@ -42,22 +43,22 @@
 		</dependency>
 
 		<dependency>
-			<groupId>dev.jorel</groupId>
+			<groupId>dev.jorel.CommandAPI</groupId>
 			<artifactId>commandapi-shade</artifactId>
-			<version>5.3</version>
+			<version>${version.commandapi}</version>
 		</dependency>
 
 		<dependency>
-			<groupId>dev.jorel</groupId>
+			<groupId>dev.jorel.CommandAPI</groupId>
 			<artifactId>commandapi-annotations</artifactId>
-			<version>5.3</version>
+			<version>${version.commandapi}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
-			<version>16.0.2</version>
+			<version>22.0.0</version>
 		</dependency>
 
 	</dependencies>

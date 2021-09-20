@@ -568,6 +568,10 @@ public class Game implements Listener {
 					.forEach(itemStack -> player.getWorld()
 							.dropItemNaturally(player.getLocation(), itemStack));
 
+			// clear inventory after dropping
+			player.getInventory()
+					.clear();
+
 			Bond bond = gamer.getBond();
 
 			//noinspection ConstantConditions
