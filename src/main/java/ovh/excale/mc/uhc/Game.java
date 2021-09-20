@@ -293,6 +293,18 @@ public class Game implements Listener {
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
+		// remove advancements | TODO: optional feature
+		Bukkit.getServer()
+				.advancementIterator()
+				.forEachRemaining(advancement -> {
+					for(Gamer gamer : hub.getGamers()) {
+						AdvancementProgress progress = gamer.getPlayer()
+								.getAdvancementProgress(advancement);
+						for(String criteria : progress.getAwardedCriteria())
+							progress.revokeCriteria(criteria);
+					}
+				});
+
 		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false);
 		try {
 			Bukkit.getScheduler()
