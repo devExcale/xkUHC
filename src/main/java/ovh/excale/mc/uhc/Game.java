@@ -293,15 +293,21 @@ public class Game implements Listener {
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
-		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false);
+		PotionEffect[] effects = new PotionEffect[] {
+				new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false),
+				new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 3600, 12, false, false, false),
+				new PotionEffect(PotionEffectType.REGENERATION, 3600, 12, false, false, false)
+		};
+
 		try {
 			Bukkit.getScheduler()
 					.callSyncMethod(UHC.plugin(), () -> {
 
 						for(Gamer gamer : hub.getGamers()) {
 							gamer.resetKillCount();
-							gamer.getPlayer()
-									.addPotionEffect(blindness);
+							Player player = gamer.getPlayer();
+							for(PotionEffect effect : effects)
+								player.addPotionEffect(effect, true);
 						}
 
 						return Void.TYPE;
