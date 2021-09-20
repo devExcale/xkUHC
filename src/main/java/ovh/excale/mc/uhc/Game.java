@@ -293,18 +293,6 @@ public class Game implements Listener {
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
-		// remove advancements | TODO: optional feature
-		Bukkit.getServer()
-				.advancementIterator()
-				.forEachRemaining(advancement -> {
-					for(Gamer gamer : hub.getGamers()) {
-						AdvancementProgress progress = gamer.getPlayer()
-								.getAdvancementProgress(advancement);
-						for(String criteria : progress.getAwardedCriteria())
-							progress.revokeCriteria(criteria);
-					}
-				});
-
 		PotionEffect blindness = new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false);
 		try {
 			Bukkit.getScheduler()
@@ -372,12 +360,12 @@ public class Game implements Listener {
 			player.getInventory()
 					.clear();
 
-			// REVOKE ALL ADVANCEMENTS
+			// REVOKE ALL ADVANCEMENTS | TODO: optional feature
 			Iterator<Advancement> iter = Bukkit.advancementIterator();
 			while(iter.hasNext()) {
 				Advancement advancement = iter.next();
 				AdvancementProgress progress = player.getAdvancementProgress(advancement);
-				progress.getRemainingCriteria()
+				progress.getAwardedCriteria()
 						.forEach(progress::revokeCriteria);
 			}
 
