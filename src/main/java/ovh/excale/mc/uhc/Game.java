@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -577,9 +578,13 @@ public class Game implements Listener {
 
 		if(status.equals(Status.RUNNING) && gamer.isAlive() && gamer.hasBond()) {
 
-			player.getInventory()
-					.forEach(itemStack -> player.getWorld()
-							.dropItemNaturally(player.getLocation(), itemStack));
+			World world = player.getWorld();
+			Location location = player.getLocation();
+
+			// drop inventory
+			for(ItemStack itemStack : player.getInventory())
+				if(itemStack != null)
+					world.dropItemNaturally(location, itemStack);
 
 			// clear inventory after dropping
 			player.getInventory()
