@@ -201,7 +201,7 @@ public class Game implements Listener {
 			if(h > 0)
 				str += (m / 60) + "h:";
 
-			return str + String.format(str + "%2dm:%2ds ]", m % 60, s);
+			return String.format(str + "%2dm:%2ds ]", m % 60, s);
 		});
 
 		// POSITION
