@@ -487,8 +487,10 @@ public class Game implements Listener {
 		status = Status.WORN;
 
 		// Call GameStopEvent on game stop
-		Bukkit.getPluginManager()
-				.callEvent(new GameStopEvent(this));
+		Bukkit.getScheduler()
+				.runTaskAsynchronously(UHC.plugin(),
+						() -> Bukkit.getPluginManager()
+								.callEvent(new GameStopEvent(Game.this)));
 
 	}
 
