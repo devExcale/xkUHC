@@ -28,7 +28,7 @@ public class DiscordEndpoint implements Listener {
     private final GatewayDiscordClient client;
     private final Guild guild;
     private Category category;
-    private Map<Bond, VoiceChannel> voiceChannels = new HashMap<>();
+    private final Map<Bond, VoiceChannel> voiceChannels = new HashMap<>();
     private int channelPos;
     private VoiceChannel mainChannel;
     private VoiceChannel specChannel;
