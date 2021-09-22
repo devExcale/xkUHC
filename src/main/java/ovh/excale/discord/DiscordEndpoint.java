@@ -3,6 +3,7 @@ package ovh.excale.discord;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.VoiceChannel;
@@ -90,6 +91,13 @@ public class DiscordEndpoint implements Listener {
     private void onGameStop(GameStopEvent gameStopEvent) {
         if (status)
             category.delete();
+        voiceChannels.forEach((bond, voiceChannel) -> bond.getGamers().forEach(this::moveUserToMainChannel));
+        // move users from spectator channel to main channel
+        specChannel.getVoiceStates()
+                .flatMap(VoiceState::getMember)
+                .subscribe(member ->
+                        member.edit(guildMemberEditSpec ->
+                                guildMemberEditSpec.setNewVoiceChannel(mainChannel.getId())));
     }
 
     @EventHandler
