@@ -24,7 +24,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
-public class DiscordEndPoint implements Listener {
+public class DiscordEndpoint implements Listener {
+
     private final GatewayDiscordClient client;
     private final Guild guild;
     private Category category;
@@ -91,8 +92,7 @@ public class DiscordEndPoint implements Listener {
      */
 
 
-    public DiscordEndPoint(long guildID) {
-        // Pure qua c'ho provato me puzza un pò cerco meglio più tardi/sta sera (Il bot l'ho creato su ds developers)
+    public DiscordEndpoint(long guildID) {
         client = DiscordClientBuilder.create("").build()
                 .login()
                 .block();
