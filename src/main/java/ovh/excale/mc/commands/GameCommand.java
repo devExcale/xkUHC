@@ -4,7 +4,10 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
+import dev.jorel.commandapi.annotations.arguments.AStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import discord4j.core.DiscordClientBuilder;
+import discord4j.core.GatewayDiscordClient;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -138,6 +141,35 @@ public class GameCommand {
 			CommandAPI.fail("Game is running");
 
 		sender.sendMessage("Configuration reloaded.");
+
+	}
+
+	@Subcommand("discord")
+	public static void discord(CommandSender sender, @AStringArgument String action) throws WrapperCommandSyntaxException {
+		Game game = UHC.getGame();
+
+		if(game == null)
+			CommandAPI.fail("No game found");
+
+		//TODO: Istance of discord client
+
+		try {
+			if(action.equalsIgnoreCase("enable")) {
+				//TODO: connect discord bot
+
+				sender.sendMessage("Discord enabled correctly.");
+			} else if(action.equalsIgnoreCase("disable")) {
+				/* TODO: disconnect discord bot
+				if( == null)
+					CommandAPI.fail("Cannot disable discord if it isn't enabled first!");
+
+				 */
+				sender.sendMessage("Discord disabled correctly.");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			CommandAPI.fail("Error");
+		}
 
 	}
 
