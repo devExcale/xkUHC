@@ -62,11 +62,13 @@ public class DiscordEndpoint implements Listener {
                     .block();
             mainChannel = guild.createVoiceChannel(voiceChannelCreateSpec ->
                             voiceChannelCreateSpec.setName("Hub")
-                                    .setPosition(1))
+                                    .setPosition(1)
+                                    .setParentId(category.getId()))
                     .block();
             specChannel = guild.createVoiceChannel(voiceChannelCreateSpec ->
                             voiceChannelCreateSpec.setName("Spectators")
-                                    .setPosition(2))
+                                    .setPosition(2)
+                                    .setParentId(category.getId()))
                     .block();
             channelPos = 3;
             Game game = gameStartEvent.getGame();
@@ -91,6 +93,7 @@ public class DiscordEndpoint implements Listener {
     private void onGameStop(GameStopEvent gameStopEvent) {
         // TODO: disconnect bot
         // TODO: move users to main channel
+        // TODO: think about if main channel outside of category or never delete category or never create main channel
         if (status)
             category.delete();
         voiceChannels.forEach((bond, voiceChannel) -> bond.getGamers().forEach(this::moveUserToMainChannel));
