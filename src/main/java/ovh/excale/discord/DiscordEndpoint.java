@@ -89,6 +89,8 @@ public class DiscordEndpoint implements Listener {
 
     @EventHandler
     private void onGameStop(GameStopEvent gameStopEvent) {
+        // TODO: disconnect bot
+        // TODO: move users to main channel
         if (status)
             category.delete();
         voiceChannels.forEach((bond, voiceChannel) -> bond.getGamers().forEach(this::moveUserToMainChannel));
@@ -105,44 +107,53 @@ public class DiscordEndpoint implements Listener {
         if (status) {
             Gamer gamer = gamerDeathEvent.getGamer();
             Bond bond = gamer.getBond();
-            //TODO: spostare user
+            //TODO: move user to spectator channel
             moveUserToSpectatorChannel(gamer);
             VoiceChannel channel = voiceChannels.get(bond);
-            if (bond.getGamers().stream().noneMatch(Gamer::isAlive))
+            if (bond.getGamers()
+                    .stream()
+                    .noneMatch(Gamer::isAlive))
                 channel.delete();
         }
     }
 
     public void moveUserToTeamChannel(Gamer gamer) {
+        // TODO: get user (Discord) from gamer (MC) and move him to team channel
 
     }
 
     public void moveUserToMainChannel(Gamer gamer) {
+        // TODO: get user (Discord) from gamer (MC) and move him to main channel
 
     }
 
     public void moveUserToSpectatorChannel(Gamer gamer) {
+        // TODO: get user (Discord) from gamer (MC) and move him to spectator channel
 
     }
 
-    /* TODO: fare associazione gamer (MC) - user (Discord)
+    /*
+    TODO: create map gamer (MC) - user (Discord)
+    TODO: create method for get user (Discord) from gamer (MC)
     public User getGamerUser(Gamer gamer) {
 
     }
-
-     */
+    */
 
 
     public DiscordEndpoint(long guildID) {
-        client = DiscordClientBuilder.create("").build()
+        client = DiscordClientBuilder
+                .create("")
+                .build()
                 .login()
                 .block();
         if (client != null) {
-            client.onDisconnect().block();
+            client.onDisconnect()
+                    .block();
             guild = client.getGuildById(Snowflake.of(guildID)).block();
         } else {
             UHC.logger()
-                    .log(Level.SEVERE, "Error, coulnd't connect to discord guild!");
+                    .log(Level.SEVERE, "Error, couldn't connect to discord guild!");
             guild = null;
         }
     }

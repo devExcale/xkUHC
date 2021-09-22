@@ -154,7 +154,7 @@ public class GameCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		// spero sia giusto penso sia sbagliato kekw
+		// TODO: check if right
 		DiscordEndpoint discordEndpoint = DiscordEndpoint.getInstance();
 		GatewayDiscordClient client = discordEndpoint.getClient();
 
