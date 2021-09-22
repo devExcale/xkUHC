@@ -6,8 +6,6 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.VoiceChannel;
-import discord4j.core.spec.CategoryCreateSpec;
-import discord4j.core.spec.VoiceChannelCreateSpec;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import ovh.excale.mc.UHC;
@@ -18,8 +16,8 @@ import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.core.events.GameStartEvent;
 import ovh.excale.mc.uhc.core.events.GameStopEvent;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
-import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -29,7 +27,10 @@ public class DiscordEndpoint implements Listener {
     private final GatewayDiscordClient client;
     private final Guild guild;
     private Category category;
-    private Map<Bond, VoiceChannel> voiceChannels;
+    private Map<Bond, VoiceChannel> voiceChannels = new HashMap<>();
+    private int channelPos;
+    private VoiceChannel mainChannel;
+    private VoiceChannel specChannel;
 
     private static DiscordEndpoint instance;
     // false - disabled; true - enabled;
@@ -54,25 +55,33 @@ public class DiscordEndpoint implements Listener {
     @EventHandler
     private void onGameStart(GameStartEvent gameStartEvent) {
         if (status) {
-            CategoryCreateSpec categoryCreateSpec = new CategoryCreateSpec()
-                    .setName("UHC")
-                    .setPosition(2);
-            // C'ho provato xd dopo cerco meglio mi sembra sbagliato
-            Mono<Category> categoryMono = guild.createCategory(categoryCreateSpec1 -> Mono.just(categoryCreateSpec));
-            category = categoryMono.block();
+            category = guild.createCategory(categoryCreateSpec ->
+                            categoryCreateSpec.setName("UHC")
+                                    .setPosition(2))
+                    .block();
+            mainChannel = guild.createVoiceChannel(voiceChannelCreateSpec ->
+                            voiceChannelCreateSpec.setName("Hub")
+                                    .setPosition(1))
+                    .block();
+            specChannel = guild.createVoiceChannel(voiceChannelCreateSpec ->
+                            voiceChannelCreateSpec.setName("Spectators")
+                                    .setPosition(2))
+                    .block();
+            channelPos = 3;
             Game game = gameStartEvent.getGame();
             GamerHub hub = game.getHub();
             Set<Bond> bonds = hub.getBonds();
             bonds.forEach(bond -> {
-                VoiceChannelCreateSpec voiceChannelCreateSpec = new VoiceChannelCreateSpec()
-                        .setName(bond.getName());
-                // C'ho provato xd x2
-                Mono<VoiceChannel> channel = guild.createVoiceChannel(voiceChannelCreateSpec1 -> Mono.just(voiceChannelCreateSpec));
-                voiceChannels.put(bond, channel.block());
-                //TODO: spostare users
+                VoiceChannel channel = guild.createVoiceChannel(voiceChannelCreateSpec ->
+                                voiceChannelCreateSpec.setName(bond.getName())
+                                        .setPosition(channelPos))
+                        .block();
+                voiceChannels.put(bond, channel);
+                // TODO: move users to team channels
                 for (Gamer gamer : bond.getGamers()) {
                     moveUserToTeamChannel(gamer);
                 }
+                channelPos++;
             });
         }
     }
