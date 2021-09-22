@@ -104,19 +104,5 @@ public class DiscordEndPoint implements Listener {
                     .log(Level.SEVERE, "Error, coulnd't connect to discord guild!");
             guild = null;
         }
-
-
-
-
-        /*
-        //TODO: login discord bot
-        GatewayDiscordClient client;
-
-        client = DiscordClientBuilder.create("ODkwMTcwMTkyMDYyMjE0MTc2.YUr5mA.HZ6dzf_ZLe9o8ITTpNUEqk-C_rg").build()
-                .login()
-                .block();
-
-
-         */
     }
 }
