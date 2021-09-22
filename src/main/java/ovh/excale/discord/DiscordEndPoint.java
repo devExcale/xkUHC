@@ -93,7 +93,7 @@ public class DiscordEndPoint implements Listener {
 
     public DiscordEndPoint(long guildID) {
         // Pure qua c'ho provato me puzza un pò cerco meglio più tardi/sta sera (Il bot l'ho creato su ds developers)
-        client = DiscordClientBuilder.create("ODkwMTcwMTkyMDYyMjE0MTc2.YUr5mA.HZ6dzf_ZLe9o8ITTpNUEqk-C_rg").build()
+        client = DiscordClientBuilder.create("").build()
                 .login()
                 .block();
         if (client != null) {
