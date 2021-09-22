@@ -6,11 +6,11 @@ import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
@@ -26,6 +26,9 @@ public class GameCommand {
 	public static void createGame(CommandSender sender) throws WrapperCommandSyntaxException {
 
 		Game game = UHC.getGame();
+
+		int guildID = 0;
+		DiscordEndpoint discordEndpoint = new DiscordEndpoint(guildID);
 
 		if(game != null)
 			CommandAPI.fail("There's already another session");
@@ -151,19 +154,21 @@ public class GameCommand {
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		//TODO: Istance of discord client
+		// spero sia giusto penso sia sbagliato kekw
+		DiscordEndpoint discordEndpoint = DiscordEndpoint.getInstance();
+		GatewayDiscordClient client = discordEndpoint.getClient();
+
+		if(client == null)
+			CommandAPI.fail("Error");
 
 		try {
 			if(action.equalsIgnoreCase("enable")) {
-				//TODO: connect discord bot
+				discordEndpoint.setStatus(true);
 
 				sender.sendMessage("Discord enabled correctly.");
 			} else if(action.equalsIgnoreCase("disable")) {
-				/* TODO: disconnect discord bot
-				if( == null)
-					CommandAPI.fail("Cannot disable discord if it isn't enabled first!");
+				discordEndpoint.setStatus(false);
 
-				 */
 				sender.sendMessage("Discord disabled correctly.");
 			}
 		} catch (Exception e) {

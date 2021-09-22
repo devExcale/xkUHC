@@ -31,45 +31,69 @@ public class DiscordEndpoint implements Listener {
     private Category category;
     private Map<Bond, VoiceChannel> voiceChannels;
 
+    private static DiscordEndpoint instance;
+    // false - disabled; true - enabled;
+    private boolean status = false;
+
+    public static DiscordEndpoint getInstance() {
+        return instance;
+    }
+
+    public boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public GatewayDiscordClient getClient() {
+        return client;
+    }
+
     @EventHandler
     private void onGameStart(GameStartEvent gameStartEvent) {
-        CategoryCreateSpec categoryCreateSpec = new CategoryCreateSpec()
-                .setName("UHC")
-                .setPosition(2);
-        // C'ho provato xd dopo cerco meglio mi sembra sbagliato
-        Mono<Category> categoryMono = guild.createCategory(categoryCreateSpec1 -> Mono.just(categoryCreateSpec));
-        category = categoryMono.block();
-        Game game = gameStartEvent.getGame();
-        GamerHub hub = game.getHub();
-        Set<Bond> bonds = hub.getBonds();
-        bonds.forEach(bond -> {
-            VoiceChannelCreateSpec voiceChannelCreateSpec = new VoiceChannelCreateSpec()
-                    .setName(bond.getName());
-            // C'ho provato xd x2
-            Mono<VoiceChannel> channel = guild.createVoiceChannel(voiceChannelCreateSpec1 -> Mono.just(voiceChannelCreateSpec));
-            voiceChannels.put(bond, channel.block());
-            //TODO: spostare users
-            for (Gamer gamer : bond.getGamers()) {
-                moveUserToTeamChannel(gamer);
-            }
-        });
+        if (status) {
+            CategoryCreateSpec categoryCreateSpec = new CategoryCreateSpec()
+                    .setName("UHC")
+                    .setPosition(2);
+            // C'ho provato xd dopo cerco meglio mi sembra sbagliato
+            Mono<Category> categoryMono = guild.createCategory(categoryCreateSpec1 -> Mono.just(categoryCreateSpec));
+            category = categoryMono.block();
+            Game game = gameStartEvent.getGame();
+            GamerHub hub = game.getHub();
+            Set<Bond> bonds = hub.getBonds();
+            bonds.forEach(bond -> {
+                VoiceChannelCreateSpec voiceChannelCreateSpec = new VoiceChannelCreateSpec()
+                        .setName(bond.getName());
+                // C'ho provato xd x2
+                Mono<VoiceChannel> channel = guild.createVoiceChannel(voiceChannelCreateSpec1 -> Mono.just(voiceChannelCreateSpec));
+                voiceChannels.put(bond, channel.block());
+                //TODO: spostare users
+                for (Gamer gamer : bond.getGamers()) {
+                    moveUserToTeamChannel(gamer);
+                }
+            });
+        }
     }
 
     @EventHandler
     private void onGameStop(GameStopEvent gameStopEvent) {
-        category.delete();
+        if (status)
+            category.delete();
     }
 
     @EventHandler
     private void onGamerDeath(GamerDeathEvent gamerDeathEvent) {
-        Gamer gamer = gamerDeathEvent.getGamer();
-        Bond bond = gamer.getBond();
-        //TODO: spostare user
-        moveUserToSpectatorChannel(gamer);
-        VoiceChannel channel = voiceChannels.get(bond);
-        if (bond.getGamers().stream().noneMatch(Gamer::isAlive))
-            channel.delete();
-
+        if (status) {
+            Gamer gamer = gamerDeathEvent.getGamer();
+            Bond bond = gamer.getBond();
+            //TODO: spostare user
+            moveUserToSpectatorChannel(gamer);
+            VoiceChannel channel = voiceChannels.get(bond);
+            if (bond.getGamers().stream().noneMatch(Gamer::isAlive))
+                channel.delete();
+        }
     }
 
     public void moveUserToTeamChannel(Gamer gamer) {
