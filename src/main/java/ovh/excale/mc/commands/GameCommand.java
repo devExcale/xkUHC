@@ -6,7 +6,6 @@ import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import discord4j.core.GatewayDiscordClient;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -146,7 +145,10 @@ public class GameCommand {
 	}
 
 	@Subcommand("discord")
-	public static void discord(CommandSender sender, @AStringArgument String action) throws WrapperCommandSyntaxException {
+	public static void discord(CommandSender sender,
+			@AStringArgument String action) throws WrapperCommandSyntaxException {
+
+		// TODO: GAME STATUS CHECK
 		Game game = UHC.getGame();
 
 		if(game == null)

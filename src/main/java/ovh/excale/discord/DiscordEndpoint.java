@@ -3,29 +3,50 @@ package ovh.excale.discord;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
-import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import ovh.excale.mc.UHC;
-import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
-import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.core.events.GameStartEvent;
 import ovh.excale.mc.uhc.core.events.GameStopEvent;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
+import reactor.core.publisher.Flux;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
+import java.util.*;
 
 public class DiscordEndpoint implements Listener {
+
+	private static DiscordEndpoint instance;
+
+	public static DiscordEndpoint getInstance() {
+		return instance;
+	}
+
+	public static DiscordEndpoint open(String token, long guildId) throws IllegalStateException {
+
+		if(instance != null)
+			throw new IllegalStateException();
+
+		return instance = new DiscordEndpoint(token, guildId);
+	}
+
+	public static void close() {
+
+		if(instance != null) {
+
+			instance.client.logout()
+					.block();
+
+			instance = null;
+		}
+
+	}
 
 	private final GatewayDiscordClient client;
 	private final Guild guild;
