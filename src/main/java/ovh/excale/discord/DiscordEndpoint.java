@@ -5,6 +5,8 @@ import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
+import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import org.bukkit.event.EventHandler;
@@ -25,139 +27,141 @@ import java.util.logging.Level;
 
 public class DiscordEndpoint implements Listener {
 
-    private final GatewayDiscordClient client;
-    private final Guild guild;
-    private Category category;
-    private final Map<Bond, VoiceChannel> voiceChannels = new HashMap<>();
-    private int channelPos;
-    private VoiceChannel mainChannel;
-    private VoiceChannel specChannel;
+	private final GatewayDiscordClient client;
+	private final Guild guild;
+	private final Map<Bond, VoiceChannel> channels;
+	private final Map<UUID, Member> users;
 
-    private static DiscordEndpoint instance;
-    // false - disabled; true - enabled;
-    private boolean status = false;
+	private Category category;
+	private VoiceChannel mainChannel;
+	private VoiceChannel spectChannel;
 
-    public static DiscordEndpoint getInstance() {
-        return instance;
-    }
+	private DiscordEndpoint(String token, long guildId) throws RuntimeException {
 
-    public boolean getStatus() {
-        return status;
-    }
+		users = Collections.synchronizedMap(new HashMap<>());
+		channels = Collections.synchronizedMap(new HashMap<>());
 
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
+		client = DiscordClientBuilder.create(token)
+				.build()
+				.login()
+				.block();
 
-    public GatewayDiscordClient getClient() {
-        return client;
-    }
+		//noinspection ConstantConditions
+		guild = client.getGuildById(Snowflake.of(guildId))
+				.block();
 
-    @EventHandler
-    private void onGameStart(GameStartEvent gameStartEvent) {
-        if (status) {
-            category = guild.createCategory(categoryCreateSpec ->
-                            categoryCreateSpec.setName("UHC")
-                                    .setPosition(2))
-                    .block();
-            mainChannel = guild.createVoiceChannel(voiceChannelCreateSpec ->
-                            voiceChannelCreateSpec.setName("Hub")
-                                    .setPosition(1)
-                                    .setParentId(category.getId()))
-                    .block();
-            specChannel = guild.createVoiceChannel(voiceChannelCreateSpec ->
-                            voiceChannelCreateSpec.setName("Spectators")
-                                    .setPosition(2)
-                                    .setParentId(category.getId()))
-                    .block();
-            channelPos = 3;
-            Game game = gameStartEvent.getGame();
-            GamerHub hub = game.getHub();
-            Set<Bond> bonds = hub.getBonds();
-            bonds.forEach(bond -> {
-                VoiceChannel channel = guild.createVoiceChannel(voiceChannelCreateSpec ->
-                                voiceChannelCreateSpec.setName(bond.getName())
-                                        .setPosition(channelPos))
-                        .block();
-                voiceChannels.put(bond, channel);
-                // TODO: move users to team channels
-                for (Gamer gamer : bond.getGamers()) {
-                    moveUserToTeamChannel(gamer);
-                }
-                channelPos++;
-            });
-        }
-    }
+		if(guild == null)
+			throw new RuntimeException("Couldn't find guild with provided id: " + guildId);
 
-    @EventHandler
-    private void onGameStop(GameStopEvent gameStopEvent) {
-        // TODO: disconnect bot
-        // TODO: move users to main channel
-        // TODO: think about if main channel outside of category or never delete category or never create main channel
-        if (status)
-            category.delete();
-        voiceChannels.forEach((bond, voiceChannel) -> bond.getGamers().forEach(this::moveUserToMainChannel));
-        // move users from spectator channel to main channel
-        specChannel.getVoiceStates()
-                .flatMap(VoiceState::getMember)
-                .subscribe(member ->
-                        member.edit(guildMemberEditSpec ->
-                                guildMemberEditSpec.setNewVoiceChannel(mainChannel.getId())));
-    }
+	}
 
-    @EventHandler
-    private void onGamerDeath(GamerDeathEvent gamerDeathEvent) {
-        if (status) {
-            Gamer gamer = gamerDeathEvent.getGamer();
-            Bond bond = gamer.getBond();
-            //TODO: move user to spectator channel
-            moveUserToSpectatorChannel(gamer);
-            VoiceChannel channel = voiceChannels.get(bond);
-            if (bond.getGamers()
-                    .stream()
-                    .noneMatch(Gamer::isAlive))
-                channel.delete();
-        }
-    }
+	@EventHandler
+	private void onGameStart(GameStartEvent gameStartEvent) {
 
-    public void moveUserToTeamChannel(Gamer gamer) {
-        // TODO: get user (Discord) from gamer (MC) and move him to team channel
+		category = guild.createCategory(categoryCreateSpec -> categoryCreateSpec.setName("xkUHC"))
+				.block();
 
-    }
+		spectChannel = guild.createVoiceChannel(channelSpec -> channelSpec.setName("Spectators")
+						.setParentId(category.getId()))
+				.block();
 
-    public void moveUserToMainChannel(Gamer gamer) {
-        // TODO: get user (Discord) from gamer (MC) and move him to main channel
+		Set<Bond> bonds = gameStartEvent.getGame()
+				.getHub()
+				.getBonds();
 
-    }
+		for(Bond bond : bonds) {
 
-    public void moveUserToSpectatorChannel(Gamer gamer) {
-        // TODO: get user (Discord) from gamer (MC) and move him to spectator channel
+			VoiceChannel channel = guild.createVoiceChannel(channelSpec -> channelSpec.setName(bond.getName())
+							.setParentId(category.getId()))
+					.block();
 
-    }
+			channels.put(bond, channel);
+			for(Gamer gamer : bond.getGamers())
+				moveUserToTeamChannel(gamer);
 
-    /*
-    TODO: create map gamer (MC) - user (Discord)
-    TODO: create method for get user (Discord) from gamer (MC)
-    public User getGamerUser(Gamer gamer) {
+		}
 
-    }
-    */
+	}
 
+	@EventHandler
+	private void onGameStop(GameStopEvent gameStopEvent) {
 
-    public DiscordEndpoint(long guildID) {
-        client = DiscordClientBuilder
-                .create("")
-                .build()
-                .login()
-                .block();
-        if (client != null) {
-            client.onDisconnect()
-                    .block();
-            guild = client.getGuildById(Snowflake.of(guildID)).block();
-        } else {
-            UHC.logger()
-                    .log(Level.SEVERE, "Error, couldn't connect to discord guild!");
-            guild = null;
-        }
-    }
+		Flux.fromIterable(users.values())
+				.flatMap(member -> member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId())))
+				.then(category.delete())
+				.block();
+
+		DiscordEndpoint.close();
+
+	}
+
+	@EventHandler
+	private void onGamerDeath(GamerDeathEvent gamerDeathEvent) {
+
+		Gamer gamer = gamerDeathEvent.getGamer();
+		Bond bond = gamer.getBond();
+
+		boolean lastBond = gamer.getGame()
+				.getHub()
+				.getBonds()
+				.stream()
+				.filter(Bond::isAlive)
+				.count() < 2;
+
+		if(!lastBond)
+			moveUserToSpectatorChannel(gamer);
+
+		VoiceChannel channel = channels.get(bond);
+		if(!bond.isAlive())
+			channel.delete();
+
+	}
+
+	// get user (Discord) from gamer (MC) and move him to team channel
+	public void moveUserToTeamChannel(Gamer gamer) {
+
+		Member member = users.get(gamer.getUniqueId());
+
+		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(channels.get(gamer.getBond())
+				.getId()));
+
+	}
+
+	// get user (Discord) from gamer (MC) and move him to main channel
+	public void moveUserToMainChannel(Gamer gamer) {
+
+		Member member = users.get(gamer.getUniqueId());
+
+		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId()));
+
+	}
+
+	// get user (Discord) from gamer (MC) and move him to spectator channel
+	public void moveUserToSpectatorChannel(Gamer gamer) {
+
+		Member member = users.get(gamer.getUniqueId());
+
+		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(spectChannel.getId()));
+
+	}
+
+	// bind gamer to Discord user by given Discord user id
+	public void bindPlayer(Player player, long userId) throws IllegalArgumentException {
+
+		UUID uuid = player.getUniqueId();
+		Member member = client.getMemberById(guild.getId(), Snowflake.of(userId))
+				.block();
+
+		if(member == null)
+			throw new IllegalArgumentException("Cannot find a discord user with such ID");
+
+		users.put(uuid, member);
+
+	}
+
+	// get Discord user by given gamer
+	public User getGamerUser(Gamer gamer) {
+		return users.get(gamer.getUniqueId());
+	}
+
 }

@@ -1,4 +1,9 @@
 debug: true
+
+discord:
+  token: "TOKEN_HERE"
+  guildId: 0000
+
 uhc:
   border:
     InitialSize: 1500
