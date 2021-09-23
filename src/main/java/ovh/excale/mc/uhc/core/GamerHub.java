@@ -398,7 +398,11 @@ public class GamerHub {
 				Bond bond = gamer.getBond();
 
 				if(bond != null) {
-					message = bond.getColor() + "[" + bond.getName() + "/" + BOLD + player.getName() + RESET + bond.getColor() + "] " + RESET + GRAY + event.getMessage();
+					if(!gamer.isAlive())
+						message = bond.getColor() + "" + ITALIC + "*Dead*" + RESET;
+					else
+						message = "";
+					message = message + bond.getColor() + "[" + bond.getName() + "/" + BOLD + player.getName() + RESET + bond.getColor() + "] " + RESET + GRAY + event.getMessage();
 				} else
 					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
 
