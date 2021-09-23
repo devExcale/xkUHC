@@ -116,15 +116,18 @@ public class GamerHub {
 	}
 
 	/**
+	 * Get all {@link ChatColor}s bounded to all existing bonds except of the white one.
 	 *
 	 * @return a {@link Set}<{@link ChatColor}> that contains all the color binded to the bonds, expect for the WHITE
 	 */
 	public Set<ChatColor> getBondColors() {
 		Set<ChatColor> chatColors = new HashSet<>();
-		bonds.values().forEach(bond -> {
-			if(!bond.getColor().equals(WHITE))
-				chatColors.add(bond.getColor());
-		});
+		bonds.values()
+				.forEach(bond -> {
+					if(!bond.getColor()
+							.equals(WHITE))
+						chatColors.add(bond.getColor());
+				});
 		return chatColors;
 	}
 
@@ -411,17 +414,21 @@ public class GamerHub {
 				Bond bond = gamer.getBond();
 
 				if(bond != null) {
-					message = bond.getColor() + "[" + bond.getName() + "/" + BOLD + player.getName() + RESET + bond.getColor() + "] " + RESET + GRAY + event.getMessage();
+					message = bond.getColor() + "[" + bond.getName() + "/" + BOLD + player.getName() + RESET +
+							bond.getColor() + "] " + RESET + GRAY + event.getMessage();
 				} else
 					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
 
-				// TODO: implement sending message if player dead to spectators (outsiders, not gamers) too
-				for(Player recipient : event.getRecipients())
+				// TODO: implement sending message if player dead to spectators (outsiders, not gamers)
+				for(Player recipient : event.getRecipients()) {
+					Gamer recipientGamer = gamers.get(recipient.getUniqueId());
 					if(!gamer.isAlive())
-						if(!gamers.get(recipient.getUniqueId()).isAlive())
+						if(!recipientGamer.isAlive())
 							recipient.sendMessage(message);
-					else
-						recipient.sendMessage(message);
+						else if(recipientGamer.getBond()
+								.equals(gamer.getBond()))
+							recipient.sendMessage(message);
+				}
 			}
 
 		}
