@@ -116,6 +116,19 @@ public class GamerHub {
 	}
 
 	/**
+	 *
+	 * @return a {@link Set}<{@link ChatColor}> that contains all the color binded to the bonds, expect for the WHITE
+	 */
+	public Set<ChatColor> getBondColors() {
+		Set<ChatColor> chatColors = new HashSet<>();
+		bonds.values().forEach(bond -> {
+			if(!bond.getColor().equals(WHITE))
+				chatColors.add(bond.getColor());
+		});
+		return chatColors;
+	}
+
+	/**
 	 * @param name The name of the bond
 	 * @return The new bond
 	 * @throws IllegalArgumentException if a bond with the specified name already exists
@@ -402,9 +415,13 @@ public class GamerHub {
 				} else
 					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
 
+				// TODO: implement sending message if player dead to spectators (outsiders, not gamers) too
 				for(Player recipient : event.getRecipients())
-					recipient.sendMessage(message);
-
+					if(!gamer.isAlive())
+						if(!gamers.get(recipient.getUniqueId()).isAlive())
+							recipient.sendMessage(message);
+					else
+						recipient.sendMessage(message);
 			}
 
 		}
