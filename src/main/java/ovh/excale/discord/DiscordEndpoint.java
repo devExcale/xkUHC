@@ -8,9 +8,12 @@ import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.events.GameStartEvent;
@@ -73,6 +76,30 @@ public class DiscordEndpoint implements Listener {
 
 		if(guild == null)
 			throw new RuntimeException("Couldn't find guild with provided id: " + guildId);
+
+		// REGISTER GAME START EVENT
+		Bukkit.getPluginManager()
+				.registerEvent(GameStartEvent.class,
+						this,
+						EventPriority.HIGH,
+						(listener, event) -> ((DiscordEndpoint) listener).onGameStart((GameStartEvent) event),
+						UHC.plugin());
+
+		// REGISTER GAME STOP EVENT
+		Bukkit.getPluginManager()
+				.registerEvent(GameStopEvent.class,
+						this,
+						EventPriority.HIGH,
+						(listener, event) -> ((DiscordEndpoint) listener).onGameStop((GameStopEvent) event),
+						UHC.plugin());
+
+		// REGISTER GAMER DEATH EVENT
+		Bukkit.getPluginManager()
+				.registerEvent(GamerDeathEvent.class,
+						this,
+						EventPriority.HIGH,
+						(listener, event) -> ((DiscordEndpoint) listener).onGamerDeath((GamerDeathEvent) event),
+						UHC.plugin());
 
 	}
 
