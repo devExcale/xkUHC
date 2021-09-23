@@ -5,7 +5,6 @@ import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AIntegerArgument;
-import dev.jorel.commandapi.annotations.arguments.AStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -20,9 +19,11 @@ import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
 import java.io.File;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Alias("xkuhc")
 @Command("uhc")
@@ -151,81 +152,57 @@ public class GameCommand {
 	}
 
 	@Subcommand("random")
-	public static void listBondMembers(CommandSender sender, @AIntegerArgument Integer teamNumber) throws WrapperCommandSyntaxException {
+	public static void createRandomTeams(CommandSender sender,
+			@AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
+
+		if(bondQty < 2)
+			CommandAPI.fail("Can't create less than two teams");
 
 		Game game = UHC.getGame();
-		GamerHub hub = game.getHub();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		Bukkit.getServer().getOnlinePlayers().forEach(player -> game.getHub().register(player));
+		// TODO: check for other bonds / game status
 
-		Set<Gamer> gamers = hub.getGamers();
+		GamerHub hub = game.getHub();
 
-		int gamersNumber = gamers.size();
+		if(hub.getBonds().size() > 0)
+			hub.getBonds().forEach(bond -> hub.removeBond(bond.getName()));
 
-		if(gamersNumber < teamNumber)
-			CommandAPI.fail("Can't create a number of teams greater than the gamers");
-		else if(gamersNumber < 2)
-			CommandAPI.fail("Can't create teams with only one gamer");
-		else if(teamNumber < 2)
-			CommandAPI.fail("Can't create less than two teams");
-		else if(gamersNumber % teamNumber != 0)
-			CommandAPI.fail("Can't create teams with the same players number");
+		if(!game.getStatus().equals(Game.Status.PREPARING))
+			CommandAPI.fail("Game already started");
 
-		for(int i = 1; i <= teamNumber; i++)
-			try {
-				hub.createBond("Team" + i);
-			} catch(IllegalStateException | IllegalArgumentException e) {
-				CommandAPI.fail(e.getMessage());
-			}
+		List<Gamer> gamers = new LinkedList<>();
 
-		Set<Bond> bonds = hub.getBonds();
+		Bukkit.getServer()
+				.getOnlinePlayers()
+				.forEach(player -> {
 
-		Random random = new Random();
+					Gamer gamer = hub.register(player);
+					gamers.add(gamer);
 
-		for(Bond bond : bonds) {
-			int index = random.nextInt(gamersNumber);
-			for(int i = 1; i <= gamersNumber / teamNumber; i++) {
-				if(bonds.stream()
-						.noneMatch(bond1 -> bond1.getGamers()
-								.equals(gamers.toArray()[index + 1])))
-					try {
+				});
 
-						hub.boundGamer(bond, hub.getGamer(((Gamer) gamers.toArray()[index + 1]).getUniqueId()));
+		Collections.shuffle(gamers);
 
-					} catch(IllegalStateException | IllegalArgumentException e) {
-						CommandAPI.fail(e.getMessage());
-					}
-				else
-					i--;
-			}
+		if(gamers.size() < bondQty)
+			CommandAPI.fail("Too many teams");
 
-			Set<ChatColor> usedColors = hub.getBondColors();
-			ChatColor[] allColors = ChatColor.values();
-			int randColor;
-			ChatColor bondColor;
+		List<ChatColor> colors = Arrays.stream(ChatColor.values())
+				.filter(ChatColor::isColor)
+				.collect(Collectors.toList());
+		Collections.shuffle(colors);
+		Iterator<ChatColor> iterColors = colors.iterator();
 
-			do {
-				randColor = random.nextInt(22);
-				bondColor = allColors[randColor];
-				for(ChatColor usedColor : usedColors) {
-					if(bondColor.equals(usedColor)) {
-						bondColor = ChatColor.WHITE;
-						break;
-					}
-				}
-			} while (!bondColor.isColor() || bondColor.equals(ChatColor.WHITE));
+		Bond[] bonds = IntStream.range(1, bondQty)
+				.mapToObj(i -> hub.createBond("Team" + i))
+				.peek(bond -> hub.setBondColor(bond, iterColors.next()))
+				.toArray(Bond[]::new);
+		AtomicInteger iBonds = new AtomicInteger(0);
 
-			try {
+		gamers.forEach(gamer -> hub.boundGamer(bonds[iBonds.getAndIncrement() % bondQty], gamer));
 
-				hub.setBondColor(bond, bondColor);
-
-			} catch(IllegalStateException e) {
-				CommandAPI.fail(e.getMessage());
-			}
-		}
 	}
 
 }
