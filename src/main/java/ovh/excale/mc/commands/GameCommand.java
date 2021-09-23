@@ -4,19 +4,26 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
-import dev.jorel.commandapi.annotations.arguments.AStringArgument;
+import dev.jorel.commandapi.annotations.arguments.AIntegerArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.core.Bond;
+import ovh.excale.mc.uhc.core.Gamer;
+import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
 
 import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Alias("xkuhc")
 @Command("uhc")
@@ -144,55 +151,57 @@ public class GameCommand {
 
 	}
 
-	@Subcommand("discord")
-	public static void discord(CommandSender sender,
-			@AStringArgument String action) throws WrapperCommandSyntaxException {
+	@Subcommand("random")
+	public static void createRandomTeams(CommandSender sender,
+			@AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
 
-		// TODO: GAME STATUS CHECK
+		if(bondQty < 2)
+			CommandAPI.fail("Can't create less than two teams");
+
 		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
 
-		try {
-			switch(action.toLowerCase()) {
+		// TODO: check for other bonds / game status
 
-				case "enable":
+		GamerHub hub = game.getHub();
 
-					// get token and guild
-					ConfigurationSection config = UHC.plugin()
-							.getConfig();
-					String token = config.getString("discord.token");
-					long guildId = config.getInt("discord.guildId");
+		if(hub.getBonds().size() > 0)
+			hub.getBonds().forEach(bond -> hub.removeBond(bond.getName()));
 
-					try {
-						DiscordEndpoint.open(token, guildId);
-					} catch(IllegalStateException e) {
-						CommandAPI.fail("Discord integration already enabled");
-					}
+		if(!game.getStatus().equals(Game.Status.PREPARING))
+			CommandAPI.fail("Game already started");
 
-					sender.sendMessage("Discord integration successfully enabled");
+		List<Gamer> gamers = new LinkedList<>();
 
-					break;
+		Bukkit.getServer()
+				.getOnlinePlayers()
+				.forEach(player -> {
 
-				case "disable":
+					Gamer gamer = hub.register(player);
+					gamers.add(gamer);
 
-					DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
-					if(endpoint == null)
-						CommandAPI.fail("Discord integration is already disabled");
+				});
 
-					DiscordEndpoint.close();
-					sender.sendMessage("Discord integration disabled");
+		Collections.shuffle(gamers);
 
-					break;
+		if(gamers.size() < bondQty)
+			CommandAPI.fail("Too many teams");
 
-				default:
-					CommandAPI.fail("Unknown option");
+		List<ChatColor> colors = Arrays.stream(ChatColor.values())
+				.filter(ChatColor::isColor)
+				.collect(Collectors.toList());
+		Collections.shuffle(colors);
+		Iterator<ChatColor> iterColors = colors.iterator();
 
-			}
-		} catch(RuntimeException e) {
-			CommandAPI.fail(e.getMessage());
-		}
+		Bond[] bonds = IntStream.range(1, bondQty)
+				.mapToObj(i -> hub.createBond("Team" + i))
+				.peek(bond -> hub.setBondColor(bond, iterColors.next()))
+				.toArray(Bond[]::new);
+		AtomicInteger iBonds = new AtomicInteger(0);
+
+		gamers.forEach(gamer -> hub.boundGamer(bonds[iBonds.getAndIncrement() % bondQty], gamer));
 
 	}
 
