@@ -195,7 +195,7 @@ public class GameCommand {
 		Collections.shuffle(colors);
 		Iterator<ChatColor> iterColors = colors.iterator();
 
-		Bond[] bonds = IntStream.range(1, bondQty)
+		Bond[] bonds = IntStream.range(1, bondQty + 1)
 				.mapToObj(i -> hub.createBond("Team" + i))
 				.peek(bond -> hub.setBondColor(bond, iterColors.next()))
 				.toArray(Bond[]::new);
