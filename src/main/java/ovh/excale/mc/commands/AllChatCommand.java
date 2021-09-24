@@ -4,6 +4,7 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
+import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AGreedyStringArgument;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
@@ -47,6 +48,54 @@ public class AllChatCommand {
 
 		game.getHub()
 				.broadcast(finalMessage);
+
+	}
+
+	// TODO: think about if we need to create boolean allChatMuted and isAllChat(), muteAllChat() and unmuteAllChat() methods on Gamer and use these commands:
+	@Subcommand("mute")
+	public static void muteAllChat(CommandSender sender) throws WrapperCommandSyntaxException {
+		CommandAPI.fail("Command not developed yet!");
+
+		if(sender instanceof Player) {
+
+			Player player = (Player) sender;
+			Game game = UHC.getGame();
+			Gamer gamer = game.getHub()
+					.getGamer(player.getUniqueId());
+
+			/*
+			if(gamer.isAllChat())
+				gamer.muteAllChat();
+			else
+				CommandAPI.fail("All chat already muted");
+
+			 */
+		} else
+			CommandAPI.fail("Only players can use this command");
+
+	}
+
+	@Subcommand("unmute")
+	public static void unmuteAllChat(CommandSender sender) throws WrapperCommandSyntaxException {
+		CommandAPI.fail("Command not developed yet!");
+
+		if(sender instanceof Player) {
+
+			Player player = (Player) sender;
+			Game game = UHC.getGame();
+			Gamer gamer = game.getHub()
+					.getGamer(player.getUniqueId());
+
+			/*
+			if(!gamer.isAllChat())
+				gamer.unmuteAllChat();
+			else
+				CommandAPI.fail("All chat already unmuted");
+
+			 */
+
+		} else
+			CommandAPI.fail("Only players can use this command");
 
 	}
 
