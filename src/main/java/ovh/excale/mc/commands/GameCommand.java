@@ -5,12 +5,18 @@ import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AIntegerArgument;
+import dev.jorel.commandapi.annotations.arguments.ALiteralArgument;
+import dev.jorel.commandapi.annotations.arguments.AMultiLiteralArgument;
+import dev.jorel.commandapi.annotations.arguments.AStringArgument;
+import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.Bond;
@@ -202,6 +208,57 @@ public class GameCommand {
 		AtomicInteger iBonds = new AtomicInteger(0);
 
 		gamers.forEach(gamer -> hub.boundGamer(bonds[iBonds.getAndIncrement() % bondQty], gamer));
+
+	}
+
+	@Subcommand("discord")
+	public static void discord(CommandSender sender,
+			@AMultiLiteralArgument({"enable", "disable"}) MultiLiteralArgument action) throws WrapperCommandSyntaxException {
+
+		// TODO: GAME STATUS CHECK
+		Game game = UHC.getGame();
+
+		if(game == null)
+			CommandAPI.fail("No game found");
+
+		try {
+			switch(action.getLiterals()[0]) {
+				case "enable":
+
+					// Get token and guildId from config file
+					ConfigurationSection config = UHC.plugin()
+							.getConfig();
+					String token = config.getString("discord.token");
+					long guildId = config.getInt("discord.guildId");
+
+					try {
+						DiscordEndpoint.open(token, guildId);
+					} catch(IllegalStateException e) {
+						CommandAPI.fail("Discord integration already enabled");
+					}
+
+					sender.sendMessage("Discord integration successfully enabled");
+
+					break;
+
+				case "disable":
+
+					DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
+					if(endpoint == null)
+						CommandAPI.fail("Discord integration is already disabled");
+
+					DiscordEndpoint.close();
+					sender.sendMessage("Discord integration disabled");
+
+					break;
+
+				default:
+					CommandAPI.fail("Unknown option");
+
+			}
+		} catch(RuntimeException e) {
+			CommandAPI.fail(e.getMessage());
+		}
 
 	}
 
