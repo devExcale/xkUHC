@@ -413,21 +413,25 @@ public class GamerHub {
 				String message;
 				Bond bond = gamer.getBond();
 
+				String teamStr = "[Team]";
+				String deadStr = GRAY + "[*Dead*]";
+
 				if(bond != null) {
-					message = bond.getColor() + "[" + bond.getName() + "/" + BOLD + player.getName() + RESET +
-							bond.getColor() + "] " + RESET + GRAY + event.getMessage();
+					teamStr = bond.getColor() + teamStr;
+					message = bond.getColor() + "[" + bond.getName() + "]" + BOLD + player.getName() + RESET +
+							bond.getColor() + ":  " + event.getMessage();
 				} else
 					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
 
 				// TODO: implement sending message if player dead to spectators (outsiders, not gamers)
 				for(Player recipient : event.getRecipients()) {
 					Gamer recipientGamer = gamers.get(recipient.getUniqueId());
-					if(!gamer.isAlive())
+					if(!gamer.isAlive()) {
 						if(!recipientGamer.isAlive())
-							recipient.sendMessage(message);
-						else if(recipientGamer.getBond()
-								.equals(gamer.getBond()))
-							recipient.sendMessage(message);
+							recipient.sendMessage(deadStr + message);
+					} else if(recipientGamer.getBond()
+							.equals(gamer.getBond()))
+						recipient.sendMessage(teamStr + message);
 				}
 			}
 
