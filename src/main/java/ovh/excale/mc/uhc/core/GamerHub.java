@@ -19,13 +19,14 @@ import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
 import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
 import ovh.excale.mc.uhc.core.events.GamerReconnectEvent;
+import ovh.excale.mc.utils.MessageFormatter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-import static org.bukkit.ChatColor.*;
+import static org.bukkit.ChatColor.WHITE;
 import static ovh.excale.mc.uhc.Game.Status;
 
 public class GamerHub {
@@ -267,6 +268,21 @@ public class GamerHub {
 				.sendMessage(message));
 	}
 
+	public void broadcastDead(@NotNull String message) {
+		for(Gamer gamer : gamers.values())
+			if(!gamer.isAlive())
+				gamer.getPlayer()
+						.sendMessage(message);
+	}
+
+	public void broadcastDead(@NotNull BaseComponent message) {
+		for(Gamer gamer : gamers.values())
+			if(!gamer.isAlive())
+				gamer.getPlayer()
+						.spigot()
+						.sendMessage(message);
+	}
+
 	public void dispose() {
 		eventRaiser.turnOff();
 
@@ -400,34 +416,21 @@ public class GamerHub {
 			Player player = event.getPlayer();
 			Gamer gamer = gamers.get(player.getUniqueId());
 
-			if(gamer != null) {
+			if(gamer != null && !gamer.hasBond()) {
 
 				event.setCancelled(true);
 
-				String message;
 				Bond bond = gamer.getBond();
+				MessageFormatter formatter = MessageFormatter.create()
+						.with(gamer)
+						.with(bond);
 
-				String teamStr = "[Team]";
-				String deadStr = GRAY + "[*Dead*]";
+				if(gamer.isAlive())
+					bond.broadcast(formatter.format("{bondColor}[{bond}] {BOLD}{gamer}{RESET}{bondColor}: {RESET}" + event.getMessage()));
+				else
+					GamerHub.this.broadcastDead(formatter.format("{GRAY}[dead][{bond}] {BOLD}{gamer}{RESET}{GRAY}: {RESET}" + event.getMessage()));
 
-				if(bond != null) {
-					teamStr = bond.getColor() + teamStr;
-					message = bond.getColor() + "[" + bond.getName() + "]" + BOLD + player.getName() + RESET + bond.getColor() + ":  " + event.getMessage();
-				} else
-					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
-
-				// TODO: implement sending message if player dead to spectators (outsiders, not gamers)
-				for(Player recipient : event.getRecipients()) {
-					Gamer recipientGamer = gamers.get(recipient.getUniqueId());
-					if(!gamer.isAlive()) {
-						if(!recipientGamer.isAlive())
-							recipient.sendMessage(deadStr + message);
-					} else if(recipientGamer.getBond()
-							.equals(gamer.getBond()))
-						recipient.sendMessage(teamStr + message);
-				}
 			}
-
 		}
 
 	}
