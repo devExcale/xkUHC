@@ -41,10 +41,10 @@ public class AllChatCommand {
 			Bond bond = gamer.getBond();
 
 			finalMessage = bond.getColor() + "[All][" + bond.getName() + "]" + ChatColor.BOLD + sender.getName() +
-					ChatColor.RESET + bond.getColor() + ": " + " " + message.toString();
+					ChatColor.RESET + bond.getColor() + ": " + message.toString();
 
 		} else
-			finalMessage = ChatColor.RED + "[CONSOLE] Admin: " + message.toString();
+			finalMessage = ChatColor.RED + "[CONSOLE]" + ChatColor.BOLD + " Admin" + ChatColor.RESET + ChatColor.RED + ": " + message.toString();
 
 		game.getHub()
 				.broadcast(finalMessage);
