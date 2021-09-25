@@ -16,8 +16,7 @@ import ovh.excale.discord.DiscordEndpoint;
 public class DiscordCommand {
 
 	@Subcommand("user")
-	public static void discord(CommandSender sender, @APlayerArgument Player player,
-			@ALongArgument long userId) throws WrapperCommandSyntaxException {
+	public static void discord(CommandSender sender, @APlayerArgument Player player, @ALongArgument long userId) throws WrapperCommandSyntaxException {
 
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 

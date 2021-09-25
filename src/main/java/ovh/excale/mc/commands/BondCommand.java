@@ -114,29 +114,29 @@ public class BondCommand {
 
 	}
 
-//	@Subcommand("create")
-//	public static void createBondColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
-//
-//		Game game = UHC.getGame();
-//
-//		if(game == null)
-//			CommandAPI.fail("No game found");
-//
-//		BondManager bondManager = game.getBondManager();
-//
-//		try {
-//
-//			game.getHub()
-//					.createBond(bondName)
-//					.setColor(color);
-//
-//		} catch(IllegalStateException | IllegalArgumentException e) {
-//			CommandAPI.fail(e.getMessage());
-//		}
-//
-//		sender.sendMessage("Bond created successfully");
-//
-//	}
+	//	@Subcommand("create")
+	//	public static void createBondColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
+	//
+	//		Game game = UHC.getGame();
+	//
+	//		if(game == null)
+	//			CommandAPI.fail("No game found");
+	//
+	//		BondManager bondManager = game.getBondManager();
+	//
+	//		try {
+	//
+	//			game.getHub()
+	//					.createBond(bondName)
+	//					.setColor(color);
+	//
+	//		} catch(IllegalStateException | IllegalArgumentException e) {
+	//			CommandAPI.fail(e.getMessage());
+	//		}
+	//
+	//		sender.sendMessage("Bond created successfully");
+	//
+	//	}
 
 	@Subcommand("break")
 	public static void breakBond(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {

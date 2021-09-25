@@ -31,7 +31,7 @@ public class GamerDeathEvent extends Event {
 
 		Player killer = null;
 		if(event instanceof EntityDamageByEntityEvent) {
-//
+			//
 			Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
 			if(damager instanceof Projectile) {
 				ProjectileSource shooter = ((Projectile) damager).getShooter();

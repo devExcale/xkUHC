@@ -70,23 +70,13 @@ public class Game implements Listener {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 
 		// GAMER RECONNECT EVENT
-		pluginManager.registerEvent(GamerReconnectEvent.class,
-				this,
-				EventPriority.HIGH,
-				(listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
+		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
 				UHC.plugin());
 		// GAMER DISCONNECT EVENT
-		pluginManager.registerEvent(GamerDisconnectEvent.class,
-				this,
-				EventPriority.HIGH,
-				(listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
+		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
 				UHC.plugin());
 		// GAMER DEATH EVENT
-		pluginManager.registerEvent(GamerDeathEvent.class,
-				this,
-				EventPriority.HIGH,
-				(listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event),
-				UHC.plugin());
+		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.plugin());
 
 		initScoreboardProcessor();
 
@@ -111,6 +101,7 @@ public class Game implements Listener {
 		// ( 1) [ 000, 00, 000 ]
 		// ( 0)
 
+		// TODO: USE MessageFormatter
 		// BOND
 		scoreboardProcessor.print(13, gamer -> {
 
@@ -159,9 +150,11 @@ public class Game implements Listener {
 		// STATUS
 		scoreboardProcessor.print(8, gamer -> {
 
-			String action = (currentAction == null) ? "none" : currentAction.getType()
-					.toString()
-					.toLowerCase() + "ing";
+			String action = (currentAction == null)
+					? "none"
+					: currentAction.getType()
+							.toString()
+							.toLowerCase() + "ing";
 
 			return "> " + BOLD + "Status: " + RESET + action;
 		});
@@ -177,18 +170,16 @@ public class Game implements Listener {
 		});
 
 		// BONDS
-		scoreboardProcessor.print(5,
-				gamer -> "> " + BOLD + "Bonds: " + RESET + (int) hub.getBonds()
-						.stream()
-						.filter(Bond::isAlive)
-						.count());
+		scoreboardProcessor.print(5, gamer -> "> " + BOLD + "Bonds: " + RESET + (int) hub.getBonds()
+				.stream()
+				.filter(Bond::isAlive)
+				.count());
 
 		// GAMERS
-		scoreboardProcessor.print(4,
-				gamer -> "> " + BOLD + "Gamers: " + RESET + (int) hub.getGamers()
-						.stream()
-						.filter(Gamer::isAlive)
-						.count());
+		scoreboardProcessor.print(4, gamer -> "> " + BOLD + "Gamers: " + RESET + (int) hub.getGamers()
+				.stream()
+				.filter(Gamer::isAlive)
+				.count());
 
 		// TIME
 		scoreboardProcessor.print(2, gamer -> {
@@ -435,9 +426,7 @@ public class Game implements Listener {
 
 		}
 
-		runTask = scheduler.runTaskLaterAsynchronously(UHC.plugin(),
-				borderActions.hasNext() ? this::run : this::endgame,
-				currentAction.getMinutes() * 1200L);
+		runTask = scheduler.runTaskLaterAsynchronously(UHC.plugin(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
 
 	}
 
@@ -488,9 +477,8 @@ public class Game implements Listener {
 
 		// Call GameStopEvent on game stop
 		Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.plugin(),
-						() -> Bukkit.getPluginManager()
-								.callEvent(new GameStopEvent(Game.this)));
+				.runTaskAsynchronously(UHC.plugin(), () -> Bukkit.getPluginManager()
+						.callEvent(new GameStopEvent(Game.this)));
 
 	}
 
@@ -519,19 +507,16 @@ public class Game implements Listener {
 
 		map.put("MainLoop", (runTask != null && !runTask.isCancelled()) ? running : still);
 		map.put("ScoreboardLoop", (runTask != null && !runTask.isCancelled()) ? running : still);
-		map.put("EventRaiser",
-				(hub.getEventRaiser()
-						.isOn()) ? running : still);
+		map.put("EventRaiser", (hub.getEventRaiser()
+				.isOn()) ? running : still);
 
 		map.put("WorldName", String.valueOf(world != null ? world.getName() : null));
 		map.put("Status", status.toString());
 
-		map.put("Gamers Count",
-				String.valueOf(hub.getGamers()
-						.size()));
-		map.put("Bonds Count",
-				String.valueOf(hub.getBonds()
-						.size()));
+		map.put("Gamers Count", String.valueOf(hub.getGamers()
+				.size()));
+		map.put("Bonds Count", String.valueOf(hub.getBonds()
+				.size()));
 
 		return map;
 	}

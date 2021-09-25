@@ -313,20 +313,14 @@ public class GamerHub {
 			executors.put(EntityDamageEvent.class, (listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
 
 			// CHAT EVENT EXECUTOR
-			executors.put(AsyncPlayerChatEvent.class,
-					(listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
+			executors.put(AsyncPlayerChatEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
 
 		}
 
 		public void turnOn() {
 
 			if(!on) {
-				executors.forEach((eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass,
-						EventRaiser.this,
-						EventPriority.HIGH,
-						eventExecutor,
-						UHC.plugin(),
-						true));
+				executors.forEach((eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, UHC.plugin(), true));
 				on = true;
 			}
 
@@ -418,8 +412,7 @@ public class GamerHub {
 
 				if(bond != null) {
 					teamStr = bond.getColor() + teamStr;
-					message = bond.getColor() + "[" + bond.getName() + "]" + BOLD + player.getName() + RESET +
-							bond.getColor() + ":  " + event.getMessage();
+					message = bond.getColor() + "[" + bond.getName() + "]" + BOLD + player.getName() + RESET + bond.getColor() + ":  " + event.getMessage();
 				} else
 					message = "[" + BOLD + player.getName() + RESET + "] " + GRAY + event.getMessage();
 

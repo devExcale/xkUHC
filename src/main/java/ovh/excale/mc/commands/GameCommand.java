@@ -5,9 +5,7 @@ import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AIntegerArgument;
-import dev.jorel.commandapi.annotations.arguments.ALiteralArgument;
 import dev.jorel.commandapi.annotations.arguments.AMultiLiteralArgument;
-import dev.jorel.commandapi.annotations.arguments.AStringArgument;
 import dev.jorel.commandapi.arguments.MultiLiteralArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
@@ -158,8 +156,7 @@ public class GameCommand {
 	}
 
 	@Subcommand("random")
-	public static void createRandomTeams(CommandSender sender,
-			@AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
+	public static void createRandomTeams(CommandSender sender, @AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
 
 		if(bondQty < 2)
 			CommandAPI.fail("Can't create less than two teams");
@@ -172,13 +169,6 @@ public class GameCommand {
 		// TODO: check for other bonds / game status
 
 		GamerHub hub = game.getHub();
-
-		if(hub.getBonds().size() > 0)
-			hub.getBonds().forEach(bond -> hub.removeBond(bond.getName()));
-
-		if(!game.getStatus().equals(Game.Status.PREPARING))
-			CommandAPI.fail("Game already started");
-
 		List<Gamer> gamers = new LinkedList<>();
 
 		Bukkit.getServer()
@@ -212,14 +202,15 @@ public class GameCommand {
 	}
 
 	@Subcommand("discord")
-	public static void discord(CommandSender sender,
-			@AMultiLiteralArgument({"enable", "disable"}) MultiLiteralArgument action) throws WrapperCommandSyntaxException {
+	public static void discord(CommandSender sender, @AMultiLiteralArgument({ "enable", "disable" }) MultiLiteralArgument action) throws WrapperCommandSyntaxException {
 
 		// TODO: GAME STATUS CHECK
 		Game game = UHC.getGame();
 
 		if(game == null)
 			CommandAPI.fail("No game found");
+
+		System.out.println(Arrays.toString(action.getLiterals()));
 
 		try {
 			switch(action.getLiterals()[0]) {
