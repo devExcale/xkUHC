@@ -36,7 +36,7 @@ public class MessageFormatter {
 
 	public MessageFormatter with(Gamer gamer) {
 
-		map.put("player", gamer.getPlayer()
+		map.put("gamer", gamer.getPlayer()
 				.getDisplayName());
 
 		return this;
