@@ -416,7 +416,7 @@ public class GamerHub {
 			Player player = event.getPlayer();
 			Gamer gamer = gamers.get(player.getUniqueId());
 
-			if(gamer != null && !gamer.hasBond()) {
+			if(gamer != null && gamer.hasBond()) {
 
 				event.setCancelled(true);
 

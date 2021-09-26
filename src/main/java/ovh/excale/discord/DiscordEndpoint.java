@@ -3,11 +3,16 @@ package ovh.excale.discord;
 import discord4j.common.util.Snowflake;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.core.object.VoiceState;
 import discord4j.core.object.entity.Guild;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.Category;
+import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import discord4j.core.shard.GatewayBootstrap;
+import discord4j.gateway.intent.Intent;
+import discord4j.gateway.intent.IntentSet;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,6 +27,8 @@ import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
 import reactor.core.publisher.Flux;
 
 import java.util.*;
+
+import static discord4j.core.object.entity.channel.Channel.Type.GUILD_VOICE;
 
 public class DiscordEndpoint implements Listener {
 
@@ -61,7 +68,7 @@ public class DiscordEndpoint implements Listener {
 
 	private final GatewayDiscordClient client;
 	private final Guild guild;
-	private final Map<Bond, VoiceChannel> channels;
+	private final Map<String, VoiceChannel> bondChannels;
 	private final Map<UUID, Member> users;
 
 	private Category category;
@@ -71,11 +78,14 @@ public class DiscordEndpoint implements Listener {
 	private DiscordEndpoint(String token, long guildId) throws RuntimeException {
 
 		users = Collections.synchronizedMap(new HashMap<>());
-		channels = Collections.synchronizedMap(new HashMap<>());
+		bondChannels = Collections.synchronizedMap(new HashMap<>());
 
 		client = DiscordClientBuilder.create(token)
 				.build()
 				.login()
+				.flatMap(gatewayDiscordClient -> GatewayBootstrap.create(gatewayDiscordClient.rest())
+						.setEnabledIntents(IntentSet.of(Intent.GUILDS, Intent.GUILD_MEMBERS, Intent.GUILD_VOICE_STATES))
+						.login())
 				.block();
 
 		//noinspection ConstantConditions
@@ -120,7 +130,7 @@ public class DiscordEndpoint implements Listener {
 							.setParentId(category.getId()))
 					.block();
 
-			channels.put(bond, channel);
+			bondChannels.put(bond.getName(), channel);
 			for(Gamer gamer : bond.getGamers())
 				moveUserToTeamChannel(gamer);
 
@@ -131,11 +141,29 @@ public class DiscordEndpoint implements Listener {
 	@EventHandler
 	private void onGameStop(GameStopEvent gameStopEvent) {
 
+		for(Member member : users.values()) {
+			VoiceChannel channel = member.getVoiceState()
+					.flatMap(VoiceState::getChannel)
+					.block();
+			System.out.println(member.getDisplayName() + ": " + (channel != null ? channel.getName() : null));
+		}
+
+		// Move all users
 		Flux.fromIterable(users.values())
+				.filter(member -> member.getVoiceState()
+						.flatMap(VoiceState::getChannel)
+						.block() != null)
 				.flatMap(member -> member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId())))
+				.blockLast();
+
+		// Delete all channels
+		Flux.fromIterable(bondChannels.values())
+				.flatMap(Channel::delete)
+				.then(spectChannel.delete())
 				.then(category.delete())
 				.block();
 
+		bondChannels.clear();
 		DiscordEndpoint.close();
 
 	}
@@ -153,12 +181,22 @@ public class DiscordEndpoint implements Listener {
 				.filter(Bond::isAlive)
 				.count() < 2;
 
-		if(!lastBond)
+		if(!lastBond) {
 			moveUserToSpectatorChannel(gamer);
+			if(!bond.isAlive())
+				deleteBondChannel(bond);
+		}
 
-		VoiceChannel channel = channels.get(bond);
-		if(!bond.isAlive())
-			channel.delete();
+	}
+
+	public void deleteBondChannel(Bond bond) {
+
+		Channel channel = bondChannels.get(bond.getName());
+		if(channel != null) {
+			bondChannels.remove(bond.getName());
+			channel.delete()
+					.block();
+		}
 
 	}
 
@@ -166,9 +204,11 @@ public class DiscordEndpoint implements Listener {
 	public void moveUserToTeamChannel(Gamer gamer) {
 
 		Member member = users.get(gamer.getUniqueId());
+		Bond bond = gamer.getBond();
 
-		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(channels.get(gamer.getBond())
-				.getId()));
+		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(bondChannels.get(bond.getName())
+						.getId()))
+				.block();
 
 	}
 
@@ -176,8 +216,8 @@ public class DiscordEndpoint implements Listener {
 	public void moveUserToMainChannel(Gamer gamer) {
 
 		Member member = users.get(gamer.getUniqueId());
-
-		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId()));
+		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId()))
+				.block();
 
 	}
 
@@ -185,13 +225,27 @@ public class DiscordEndpoint implements Listener {
 	public void moveUserToSpectatorChannel(Gamer gamer) {
 
 		Member member = users.get(gamer.getUniqueId());
-
-		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(spectChannel.getId()));
+		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(spectChannel.getId()))
+				.block();
 
 	}
 
+	public VoiceChannel setMainChannel(long channelId) throws IllegalArgumentException {
+
+		Channel channel = guild.getChannelById(Snowflake.of(channelId))
+				.block();
+
+		if(channel == null)
+			throw new IllegalArgumentException("Couldn't find a channel with such ID");
+
+		if(channel.getType() != GUILD_VOICE)
+			throw new IllegalArgumentException("Illegal channel type");
+
+		return mainChannel = (VoiceChannel) channel;
+	}
+
 	// bind gamer to Discord user by given Discord user id
-	public void bindPlayer(Player player, long userId) throws IllegalArgumentException {
+	public Member bindPlayer(Player player, long userId) throws IllegalArgumentException {
 
 		UUID uuid = player.getUniqueId();
 		Member member = client.getMemberById(guild.getId(), Snowflake.of(userId))
@@ -202,6 +256,7 @@ public class DiscordEndpoint implements Listener {
 
 		users.put(uuid, member);
 
+		return member;
 	}
 
 	// get Discord user by given gamer
