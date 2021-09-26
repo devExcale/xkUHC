@@ -4,7 +4,6 @@ import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
-import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AGreedyStringArgument;
 import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
@@ -20,7 +19,7 @@ import ovh.excale.mc.utils.MessageFormatter;
 public class ChatAllCommand {
 
 	@Default
-	public static void chatAll(Player player, @AGreedyStringArgument GreedyStringArgument message) throws WrapperCommandSyntaxException {
+	public static void chatAll(Player player, @AGreedyStringArgument String message) throws WrapperCommandSyntaxException {
 
 		// TODO: GAME CHECK
 		Game game = UHC.getGame();
@@ -40,7 +39,6 @@ public class ChatAllCommand {
 	}
 
 	// TODO: think about if we need to create boolean allChatMuted and isAllChat(), muteAllChat() and unmuteAllChat() methods on Gamer and use these commands:
-	@Subcommand("mute")
 	public static void muteAllChat(Player player) throws WrapperCommandSyntaxException {
 		CommandAPI.fail("Command not developed yet!");
 
@@ -58,7 +56,6 @@ public class ChatAllCommand {
 
 	}
 
-	@Subcommand("unmute")
 	public static void unmuteAllChat(Player player) throws WrapperCommandSyntaxException {
 		CommandAPI.fail("Command not developed yet!");
 

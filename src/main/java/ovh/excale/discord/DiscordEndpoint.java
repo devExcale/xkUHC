@@ -43,6 +43,14 @@ public class DiscordEndpoint implements Listener {
 
 		if(instance != null) {
 
+			// disable DiscordEndpoint listener
+			GameStartEvent.getHandlerList()
+					.unregister(instance);
+			GameStopEvent.getHandlerList()
+					.unregister(instance);
+			GamerDeathEvent.getHandlerList()
+					.unregister(instance);
+
 			instance.client.logout()
 					.block();
 

@@ -4,7 +4,10 @@ import dev.jorel.commandapi.CommandAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.commands.BondCommand;
+import ovh.excale.mc.commands.ChatAllCommand;
+import ovh.excale.mc.commands.DiscordCommand;
 import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.Game.Status;
@@ -62,11 +65,15 @@ public class UHC extends JavaPlugin {
 		// REGISTER COMMANDS
 		CommandAPI.registerCommand(GameCommand.class);
 		CommandAPI.registerCommand(BondCommand.class);
+		CommandAPI.registerCommand(DiscordCommand.class);
+		CommandAPI.registerCommand(ChatAllCommand.class);
 
 	}
 
 	@Override
 	public void onDisable() {
+
+		DiscordEndpoint.close();
 
 		if(coreGame != null)
 			try {
