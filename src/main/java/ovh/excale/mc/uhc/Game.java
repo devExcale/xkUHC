@@ -523,17 +523,19 @@ public class Game implements Listener {
 
 	public enum Status {
 
-		PREPARING(true),
-		READY(true),
-		STARTING(false),
-		RUNNING(false),
-		FINAL(false),
-		WORN(true);
+		PREPARING(true, true),
+		READY(true, true),
+		STARTING(false, false),
+		RUNNING(false, false),
+		FINAL(false, false),
+		WORN(false, true);
 
 		private final boolean editable;
+		private final boolean deletable;
 
-		Status(boolean editable) {
+		Status(boolean editable, boolean deletable) {
 			this.editable = editable;
+			this.deletable = deletable;
 		}
 
 		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -541,6 +543,13 @@ public class Game implements Listener {
 			return editable;
 		}
 
+		public boolean isDeletable() {
+			return deletable;
+		}
+
+		public boolean isStoppable() {
+			return !editable & !deletable;
+		}
 	}
 
 	@EventHandler

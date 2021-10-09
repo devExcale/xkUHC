@@ -23,6 +23,7 @@ import ovh.excale.mc.utils.MessageFormatter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -177,7 +178,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(Gamer::getScoreboard)
+				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(Team::unregister);
 
@@ -195,7 +196,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(Gamer::getScoreboard)
+				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.addEntry(gamer.getPlayer()
 						.getName()));
@@ -221,7 +222,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(Gamer::getScoreboard)
+				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.removeEntry(gamer.getPlayer()
 						.getName()));
@@ -239,7 +240,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(Gamer::getScoreboard)
+				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.setColor(color));
 
@@ -251,10 +252,15 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(Gamer::getScoreboard)
+				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.setAllowFriendlyFire(friendlyFire));
 
+	}
+
+	public void forEachPlayer(Consumer<? super Gamer> action) {
+		gamers.values()
+				.forEach(action);
 	}
 
 	public void broadcast(@NotNull String message) {
@@ -374,8 +380,11 @@ public class GamerHub {
 			Player player = event.getPlayer();
 			Gamer gamer = gamers.get(player.getUniqueId());
 
-			if(gamer != null)
+			if(gamer != null) {
+				gamer.takeSnapshot();
+				gamer.resetPlayer();
 				pluginManager.callEvent(new GamerDisconnectEvent(event, GamerHub.this));
+			}
 
 		}
 
@@ -386,7 +395,7 @@ public class GamerHub {
 			Gamer gamer = gamers.get(player.getUniqueId());
 
 			if(gamer != null) {
-				gamer.updateReference(player);
+				gamer.applySnapshot(player);
 				pluginManager.callEvent(new GamerReconnectEvent(event, GamerHub.this));
 			}
 		}
