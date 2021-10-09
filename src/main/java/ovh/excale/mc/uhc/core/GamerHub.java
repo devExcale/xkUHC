@@ -178,7 +178,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
+				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(Team::unregister);
 
@@ -196,7 +196,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
+				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.addEntry(gamer.getPlayer()
 						.getName()));
@@ -222,7 +222,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
+				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.removeEntry(gamer.getPlayer()
 						.getName()));
@@ -240,7 +240,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
+				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.setColor(color));
 
@@ -252,7 +252,7 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		gamers.values()
 				.stream()
-				.map(ovh.excale.mc.uhc.core.Gamer::getScoreboard)
+				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.setAllowFriendlyFire(friendlyFire));
 

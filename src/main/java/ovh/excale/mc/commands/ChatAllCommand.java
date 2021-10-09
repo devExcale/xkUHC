@@ -5,7 +5,6 @@ import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
 import dev.jorel.commandapi.annotations.arguments.AGreedyStringArgument;
-import dev.jorel.commandapi.arguments.GreedyStringArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
