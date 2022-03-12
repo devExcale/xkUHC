@@ -138,6 +138,8 @@ public class Gamer {
 
 	}
 
+	// TODO: UHC-MODE (apply effects/scale health)
+
 	// TODO: SNAPSHOT CLASS
 	protected void takeSnapshot() {
 
@@ -162,7 +164,7 @@ public class Gamer {
 		//noinspection ConstantConditions
 		this.player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
 				.setBaseValue(40d);
-		this.player.setHealthScale(healthSnapshot);
+		this.player.setHealth(healthSnapshot);
 
 		// set experience
 		this.player.setTotalExperience(xpSnapshot);

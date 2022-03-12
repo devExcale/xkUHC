@@ -347,6 +347,7 @@ public class Game implements Listener {
 
 		for(Player player : players) {
 
+			// TODO: set saturation
 			//noinspection ConstantConditions
 			player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
 					.setBaseValue(40);
