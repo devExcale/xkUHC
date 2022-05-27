@@ -60,6 +60,7 @@ public class UHC extends JavaPlugin {
 		if(Bukkit.getScoreboardManager() == null)
 			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
 
+		// TODO: boolean option: if true delete worlds, otherwise don't
 		UhcWorldUtil.purgeWorlds(worldCount -> logger().info("Removed " + worldCount + " world(s) from previous instances"));
 
 		// REGISTER COMMANDS

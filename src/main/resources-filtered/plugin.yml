@@ -6,6 +6,6 @@ authors:
   - Excale
   - Cr4zy5ky_U
   - dev_excale@hotmail.com
-api-version: "1.13"
+api-version: "1.18"
 website: ${project.url}
 load: POSTWORLD

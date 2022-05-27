@@ -6,17 +6,17 @@
 
 	<groupId>ovh.excale.mc</groupId>
 	<artifactId>xkuhc</artifactId>
-	<version>2.0-DEVELOP</version>
+	<version>3.0-DEVELOP</version>
 
 	<name>xkUHC</name>
 	<description>A simple single-instance UHC plugin</description>
 	<url>http://mc.excale.ovh/</url>
 
 	<properties>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.commandapi>5.12</version.commandapi>
+		<version.commandapi>8.2.0</version.commandapi>
 	</properties>
 
 	<repositories>
@@ -26,46 +26,47 @@
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 
-		<repository>
-			<id>jitpack.io</id>
-			<url>https://jitpack.io</url>
-		</repository>
-
 	</repositories>
 
 	<dependencies>
 
+		<!-- Plugin core -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.13.2-R0.1-SNAPSHOT</version>
+			<version>1.18.2-R0.1-SNAPSHOT</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- CommandAPI -->
+		<dependency>
+			<groupId>dev.jorel</groupId>
+			<artifactId>commandapi-core</artifactId>
+			<version>${version.commandapi}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>dev.jorel.CommandAPI</groupId>
-			<artifactId>commandapi-shade</artifactId>
-			<version>${version.commandapi}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>dev.jorel.CommandAPI</groupId>
+			<groupId>dev.jorel</groupId>
 			<artifactId>commandapi-annotations</artifactId>
 			<version>${version.commandapi}</version>
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- Discord integration -->
+		<dependency>
+			<groupId>com.discord4j</groupId>
+			<artifactId>discord4j-core</artifactId>
+			<version>3.2.2</version>
+		</dependency>
+
+		<!-- Better code -->
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
 			<version>22.0.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.discord4j</groupId>
-			<artifactId>discord4j-core</artifactId>
-			<version>3.1.7</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -133,18 +134,7 @@
 								<exclude>META-INF/*.MF</exclude>
 							</excludes>
 						</filter>
-						<filter>
-							<artifact>dev.jorel:commandapi-shade</artifact>
-							<excludes>
-								<exclude>META-INF/*.MF</exclude>
-							</excludes>
-						</filter>
 					</filters>
-					<relocations>
-						<relocation>
-							<pattern>dev.jorel.commandapi-shade</pattern>
-						</relocation>
-					</relocations>
 				</configuration>
 			</plugin>
 

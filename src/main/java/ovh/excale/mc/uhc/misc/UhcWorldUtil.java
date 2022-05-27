@@ -13,21 +13,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 
+import static org.bukkit.block.Biome.*;
+
+// TODO: make this class instance-based
 public class UhcWorldUtil {
 
 	private static final int[] sampleCoords = new int[] { -48, -32, -16, 0, 16, 32, 48 };
 
 	private static final Biome[] OCEANS = new Biome[] {
-			Biome.OCEAN,
-			Biome.COLD_OCEAN,
-			Biome.WARM_OCEAN,
-			Biome.FROZEN_OCEAN,
-			Biome.LUKEWARM_OCEAN,
-			Biome.DEEP_OCEAN,
-			Biome.DEEP_COLD_OCEAN,
-			Biome.DEEP_WARM_OCEAN,
-			Biome.DEEP_FROZEN_OCEAN,
-			Biome.DEEP_LUKEWARM_OCEAN
+			OCEAN, COLD_OCEAN, WARM_OCEAN, FROZEN_OCEAN, LUKEWARM_OCEAN, DEEP_OCEAN, DEEP_COLD_OCEAN, DEEP_FROZEN_OCEAN, DEEP_LUKEWARM_OCEAN,
 	};
 
 	private static boolean isOcean(Biome biome) {
