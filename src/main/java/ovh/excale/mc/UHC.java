@@ -12,7 +12,9 @@ import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.Game.Status;
 import ovh.excale.mc.uhc.misc.UhcWorldUtil;
+import ovh.excale.mc.utils.MessageBundles;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class UHC extends JavaPlugin {
@@ -21,6 +23,7 @@ public class UHC extends JavaPlugin {
 	private static UHC instance;
 
 	private Game coreGame;
+	private MessageBundles msg;
 
 	public static Plugin plugin() {
 		return instance;
@@ -43,25 +46,23 @@ public class UHC extends JavaPlugin {
 		instance = this;
 
 		saveDefaultConfig();
-		saveResource("lang/game-messages.yml", false);
+		saveResource("messages/game.yml", false);
 
-		//noinspection ConstantConditions
+		msg = new MessageBundles(this);
+
 		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
 				.toString());
 
-		CommandAPI.onLoad(DEBUG);
 	}
 
 	@Override
 	public void onEnable() {
 
-		CommandAPI.onEnable(this);
-
-		if(Bukkit.getScoreboardManager() == null)
-			throw new RuntimeException("Coudln't get ScoreboardManager. HINT: The plugin needs to load POST_WORLD.");
-
 		// TODO: boolean option: if true delete worlds, otherwise don't
-		UhcWorldUtil.purgeWorlds(worldCount -> logger().info("Removed " + worldCount + " world(s) from previous instances"));
+		UhcWorldUtil.purgeWorlds(worldCount -> Optional.of(worldCount)
+				.filter(count -> count > 0)
+				.map(count -> msg.main("removed_worlds", count))
+				.ifPresent(logger()::info));
 
 		// REGISTER COMMANDS
 		CommandAPI.registerCommand(GameCommand.class);

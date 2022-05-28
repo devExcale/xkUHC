@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<entry key="removed_worlds">Removed %d world(s) from previous instances</entry>
+	<entry key="no_game">No game found</entry>
+</properties>

@@ -13,6 +13,7 @@
 	<url>http://mc.excale.ovh/</url>
 
 	<properties>
+		<java.version>17</java.version>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -78,7 +79,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version>
+				<version>3.3.0</version>
 
 				<executions>
 					<execution>
@@ -126,7 +127,7 @@
 				</executions>
 
 				<configuration>
-					<outputFile>${project.build.directory}\${project.name}.jar</outputFile>
+					<outputFile>${project.build.directory}\${project.name}-${project.version}.jar</outputFile>
 					<filters>
 						<filter>
 							<artifact>org.jetbrains:annotations</artifact>

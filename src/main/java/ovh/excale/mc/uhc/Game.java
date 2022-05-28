@@ -241,12 +241,12 @@ public class Game implements Listener {
 			throw new IllegalStateException("Cannot start game with less than 2 bonds");
 
 		File file = new File(UHC.plugin()
-				.getDataFolder(), "lang/game-messages.yml");
+				.getDataFolder(), "messages/game.yml");
 
 		if(!file.exists()) {
 			UHC.logger()
-					.log(Level.SEVERE, "Cannot read resource game-messages.yml");
-			throw new IllegalStateException("Cannot read resource game-messages.yml");
+					.log(Level.SEVERE, "Cannot read resource game.yml");
+			throw new IllegalStateException("Cannot read resource game.yml");
 		}
 
 		borderActions = settings.getBorderActionIterator();

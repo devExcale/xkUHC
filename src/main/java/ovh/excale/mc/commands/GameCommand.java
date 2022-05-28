@@ -40,7 +40,7 @@ public class GameCommand {
 		try {
 
 			File file = new File(UHC.plugin()
-					.getDataFolder(), "lang/game-messages.yml");
+					.getDataFolder(), "messages/game.yml");
 
 			if(!file.canRead())
 				CommandAPI.fail("Cannot get game messages bundle.");
