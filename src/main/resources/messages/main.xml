@@ -2,5 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
 	<entry key="removed_worlds">Removed %d world(s) from previous instances</entry>
+	<entry key="cant_remove_files">Can't remove file "%s" from world "%s"</entry>
 	<entry key="no_game">No game found</entry>
+	<entry key="no_cmd">Command not developed yet!</entry>
 </properties>

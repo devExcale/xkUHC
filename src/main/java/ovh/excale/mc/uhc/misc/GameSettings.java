@@ -16,11 +16,11 @@ public class GameSettings {
 
 	private static final int MIN_STARTING_BORDER_SIZE = 500;
 
-	private static final Logger logger = UHC.logger();
+	private static final Logger logger = UHC.log();
 
 	public static GameSettings fromConfig() {
 
-		Plugin plugin = UHC.plugin();
+		Plugin plugin = UHC.instance();
 		plugin.reloadConfig();
 
 		ConfigurationSection config = plugin.getConfig();

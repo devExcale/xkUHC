@@ -2,7 +2,6 @@ package ovh.excale.mc;
 
 import dev.jorel.commandapi.CommandAPI;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.commands.BondCommand;
@@ -11,7 +10,7 @@ import ovh.excale.mc.commands.DiscordCommand;
 import ovh.excale.mc.commands.GameCommand;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.Game.Status;
-import ovh.excale.mc.uhc.misc.UhcWorldUtil;
+import ovh.excale.mc.uhc.world.WorldUtils;
 import ovh.excale.mc.utils.MessageBundles;
 
 import java.util.Optional;
@@ -22,14 +21,11 @@ public class UHC extends JavaPlugin {
 	public static boolean DEBUG;
 	private static UHC instance;
 
-	private Game coreGame;
-	private MessageBundles msg;
-
-	public static Plugin plugin() {
+	public static UHC instance() {
 		return instance;
 	}
 
-	public static Logger logger() {
+	public static Logger log() {
 		return instance != null ? instance.getLogger() : Bukkit.getLogger();
 	}
 
@@ -40,6 +36,9 @@ public class UHC extends JavaPlugin {
 	public static void setGame(Game game) {
 		instance.coreGame = game;
 	}
+
+	private Game coreGame;
+	private MessageBundles msg;
 
 	@Override
 	public void onLoad() {
@@ -59,10 +58,10 @@ public class UHC extends JavaPlugin {
 	public void onEnable() {
 
 		// TODO: boolean option: if true delete worlds, otherwise don't
-		UhcWorldUtil.purgeWorlds(worldCount -> Optional.of(worldCount)
+		WorldUtils.purgeWorlds(worldCount -> Optional.of(worldCount)
 				.filter(count -> count > 0)
 				.map(count -> msg.main("removed_worlds", count))
-				.ifPresent(logger()::info));
+				.ifPresent(log()::info));
 
 		// REGISTER COMMANDS
 		CommandAPI.registerCommand(GameCommand.class);
@@ -87,6 +86,10 @@ public class UHC extends JavaPlugin {
 			} catch(IllegalStateException ignored) {
 			}
 
+	}
+
+	public MessageBundles getMessages() {
+		return msg;
 	}
 
 }

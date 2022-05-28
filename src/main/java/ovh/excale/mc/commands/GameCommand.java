@@ -16,7 +16,7 @@ import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
-import ovh.excale.mc.uhc.misc.UhcWorldUtil;
+import ovh.excale.mc.uhc.world.WorldUtils;
 
 import java.io.File;
 import java.util.*;
@@ -39,7 +39,7 @@ public class GameCommand {
 
 		try {
 
-			File file = new File(UHC.plugin()
+			File file = new File(UHC.instance()
 					.getDataFolder(), "messages/game.yml");
 
 			if(!file.canRead())
@@ -48,7 +48,7 @@ public class GameCommand {
 			UHC.setGame(new Game(YamlConfiguration.loadConfiguration(file)));
 
 		} catch(Exception e) {
-			UHC.logger()
+			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
 			CommandAPI.fail("There has been an internal error");
 		}
@@ -72,7 +72,7 @@ public class GameCommand {
 		} catch(IllegalStateException e) {
 			CommandAPI.fail(e.getMessage());
 		} catch(Exception e) {
-			UHC.logger()
+			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
 			CommandAPI.fail("There has been an internal error");
 		}
@@ -97,7 +97,7 @@ public class GameCommand {
 		} catch(IllegalStateException e) {
 			CommandAPI.fail(e.getMessage());
 		} catch(Exception e) {
-			UHC.logger()
+			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
 			CommandAPI.fail("There has been an internal error");
 		}
@@ -127,7 +127,7 @@ public class GameCommand {
 	@Subcommand("clean")
 	public static void cleanWorlds(CommandSender sender) {
 
-		UhcWorldUtil.purgeWorlds(count -> sender.sendMessage("Removed " + count + " world(s) from previous instances"));
+		WorldUtils.purgeWorlds(count -> sender.sendMessage("Removed " + count + " world(s) from previous instances"));
 
 	}
 
@@ -139,7 +139,7 @@ public class GameCommand {
 		if(game != null && !game.getStatus()
 				.isEditable()) {
 
-			Plugin plugin = UHC.plugin();
+			Plugin plugin = UHC.instance();
 			plugin.reloadConfig();
 			UHC.DEBUG = plugin.getConfig()
 					.getBoolean("debug", false);

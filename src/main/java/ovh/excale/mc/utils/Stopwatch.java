@@ -18,7 +18,7 @@ public class Stopwatch {
 
 	public void start() {
 		task = Bukkit.getScheduler()
-				.runTaskTimerAsynchronously(UHC.plugin(), this::tick, 20, 20);
+				.runTaskTimerAsynchronously(UHC.instance(), this::tick, 20, 20);
 	}
 
 	public void stop() {

@@ -97,16 +97,16 @@ public class DiscordEndpoint implements Listener {
 
 		// REGISTER GAME START EVENT
 		Bukkit.getPluginManager()
-				.registerEvent(GameStartEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGameStart((GameStartEvent) event), UHC.plugin());
+				.registerEvent(GameStartEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGameStart((GameStartEvent) event), UHC.instance());
 
 		// REGISTER GAME STOP EVENT
 		Bukkit.getPluginManager()
-				.registerEvent(GameStopEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGameStop((GameStopEvent) event), UHC.plugin());
+				.registerEvent(GameStopEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGameStop((GameStopEvent) event), UHC.instance());
 
 		// REGISTER GAMER DEATH EVENT
 		Bukkit.getPluginManager()
 				.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGamerDeath((GamerDeathEvent) event),
-						UHC.plugin());
+						UHC.instance());
 
 	}
 

@@ -28,7 +28,7 @@ public class BondCommand {
 		Game game = UHC.getGame();
 
 		if(game == null)
-			CommandAPI.fail("No game found");
+			throw CommandAPI.fail("No game found");
 
 		GamerHub hub = game.getHub();
 		StringBuilder list = new StringBuilder("\n~~~ BONDS ~~~");

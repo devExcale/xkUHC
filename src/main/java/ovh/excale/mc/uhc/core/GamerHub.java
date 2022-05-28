@@ -342,7 +342,7 @@ public class GamerHub {
 		public void turnOn() {
 
 			if(!on) {
-				executors.forEach((eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, UHC.plugin(), true));
+				executors.forEach((eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, UHC.instance(), true));
 				on = true;
 			}
 
@@ -358,10 +358,10 @@ public class GamerHub {
 								.invoke(null)).unregister(EventRaiser.this);
 
 					} catch(NoSuchMethodException e) {
-						UHC.logger()
+						UHC.log()
 								.log(Level.SEVERE, "Event " + eventClass.getSimpleName() + " is missing static method getHandlerList()", e);
 					} catch(InvocationTargetException | IllegalAccessException e) {
-						UHC.logger()
+						UHC.log()
 								.log(Level.SEVERE, "Cannot access HandlerList in class " + eventClass.getSimpleName(), e);
 					}
 				}

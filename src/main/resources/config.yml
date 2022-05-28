@@ -1,4 +1,5 @@
 debug: true
+delWorlds: true
 
 discord:
   token: "TOKEN_HERE"

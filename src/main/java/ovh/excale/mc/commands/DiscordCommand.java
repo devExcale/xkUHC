@@ -36,7 +36,7 @@ public class DiscordCommand {
 				case "enable":
 
 					// Get token and guildId from config file
-					ConfigurationSection config = UHC.plugin()
+					ConfigurationSection config = UHC.instance()
 							.getConfig();
 					String token = config.getString("discord.token");
 					long guildId = config.getLong("discord.guildId");

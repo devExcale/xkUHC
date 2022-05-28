@@ -24,7 +24,7 @@ import ovh.excale.mc.uhc.core.events.*;
 import ovh.excale.mc.uhc.misc.BorderAction;
 import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
-import ovh.excale.mc.uhc.misc.UhcWorldUtil;
+import ovh.excale.mc.uhc.world.WorldUtils;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
@@ -71,12 +71,12 @@ public class Game implements Listener {
 
 		// GAMER RECONNECT EVENT
 		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
-				UHC.plugin());
+				UHC.instance());
 		// GAMER DISCONNECT EVENT
 		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
-				UHC.plugin());
+				UHC.instance());
 		// GAMER DEATH EVENT
-		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.plugin());
+		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.instance());
 
 		initScoreboardProcessor();
 
@@ -240,11 +240,11 @@ public class Game implements Listener {
 				.size() < 2)
 			throw new IllegalStateException("Cannot start game with less than 2 bonds");
 
-		File file = new File(UHC.plugin()
+		File file = new File(UHC.instance()
 				.getDataFolder(), "messages/game.yml");
 
 		if(!file.exists()) {
-			UHC.logger()
+			UHC.log()
 					.log(Level.SEVERE, "Cannot read resource game.yml");
 			throw new IllegalStateException("Cannot read resource game.yml");
 		}
@@ -252,7 +252,7 @@ public class Game implements Listener {
 		borderActions = settings.getBorderActionIterator();
 
 		Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.plugin(), this::start);
+				.runTaskAsynchronously(UHC.instance(), this::start);
 	}
 
 	private void start() {
@@ -261,7 +261,7 @@ public class Game implements Listener {
 		status = Status.STARTING;
 		hub.broadcast("Generating world, server may lag...");
 
-		Optional<World> optional = UhcWorldUtil.generate();
+		Optional<World> optional = WorldUtils.generate();
 		while(!optional.isPresent()) {
 
 			// Wait for the server to catch-up
@@ -272,7 +272,7 @@ public class Game implements Listener {
 			}
 
 			hub.broadcast("World generation failed. Generating again...");
-			optional = UhcWorldUtil.generate();
+			optional = WorldUtils.generate();
 
 		}
 
@@ -291,7 +291,7 @@ public class Game implements Listener {
 
 		try {
 			Bukkit.getScheduler()
-					.callSyncMethod(UHC.plugin(), () -> {
+					.callSyncMethod(UHC.instance(), () -> {
 
 						for(Gamer gamer : hub.getGamers()) {
 							gamer.resetKillCount();
@@ -304,7 +304,7 @@ public class Game implements Listener {
 					})
 					.get();
 		} catch(Exception e) {
-			UHC.logger()
+			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
 			hub.broadcast(ChatColor.RED + "An internal error has occurred");
 			status = Status.READY;
@@ -343,7 +343,7 @@ public class Game implements Listener {
 				.collect(Collectors.toSet());
 
 		Bukkit.getScheduler()
-				.runTaskLater(UHC.plugin(), () -> players.forEach(player -> player.setHealth(40)), 1);
+				.runTaskLater(UHC.instance(), () -> players.forEach(player -> player.setHealth(40)), 1);
 
 		for(Player player : players) {
 
@@ -370,7 +370,7 @@ public class Game implements Listener {
 
 		try {
 			Bukkit.getScheduler()
-					.callSyncMethod(UHC.plugin(), () -> {
+					.callSyncMethod(UHC.instance(), () -> {
 
 						for(Player player : players) {
 							player.setGameMode(GameMode.SURVIVAL);
@@ -382,7 +382,7 @@ public class Game implements Listener {
 					})
 					.get();
 		} catch(Exception e) {
-			UHC.logger()
+			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
 			hub.broadcast(ChatColor.RED + "An internal error has occurred");
 			status = Status.READY;
@@ -397,7 +397,7 @@ public class Game implements Listener {
 			player.sendTitle("UHC", "Let the ^^^ start!", 10, 70, 20);
 
 		runTask = Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.plugin(), this::run);
+				.runTaskAsynchronously(UHC.instance(), this::run);
 		status = Status.RUNNING;
 		stopwatch.start();
 
@@ -427,7 +427,7 @@ public class Game implements Listener {
 
 		}
 
-		runTask = scheduler.runTaskLaterAsynchronously(UHC.plugin(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
+		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
 
 	}
 
@@ -450,7 +450,7 @@ public class Game implements Listener {
 
 		// TODO: FIX: CANNOT STOP ON PLUGIN DISABLE (cannot schedule task while plugin is disabled)
 		Bukkit.getScheduler()
-				.runTaskLater(UHC.plugin(), () -> {
+				.runTaskLater(UHC.instance(), () -> {
 
 					World defWorld = Bukkit.getWorlds()
 							.get(0);
@@ -478,7 +478,7 @@ public class Game implements Listener {
 
 		// Call GameStopEvent on game stop
 		Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.plugin(), () -> Bukkit.getPluginManager()
+				.runTaskAsynchronously(UHC.instance(), () -> Bukkit.getPluginManager()
 						.callEvent(new GameStopEvent(Game.this)));
 
 	}

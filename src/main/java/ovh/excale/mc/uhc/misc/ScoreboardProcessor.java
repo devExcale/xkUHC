@@ -51,7 +51,7 @@ public class ScoreboardProcessor {
 
 		if(!isRunning())
 			task = Bukkit.getScheduler()
-					.runTaskTimerAsynchronously(UHC.plugin(), this::compute, 0L, 20L);
+					.runTaskTimerAsynchronously(UHC.instance(), this::compute, 0L, 20L);
 
 	}
 

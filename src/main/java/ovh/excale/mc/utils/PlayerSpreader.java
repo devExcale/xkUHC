@@ -44,7 +44,7 @@ public class PlayerSpreader {
 				player.teleport(finalLocation);
 		else
 			Bukkit.getScheduler()
-					.callSyncMethod(UHC.plugin(), () -> {
+					.callSyncMethod(UHC.instance(), () -> {
 
 						for(Player player : players)
 							player.teleport(finalLocation);
