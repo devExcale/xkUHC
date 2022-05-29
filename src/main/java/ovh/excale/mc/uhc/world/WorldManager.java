@@ -13,7 +13,6 @@ import ovh.excale.mc.UHC;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static org.bukkit.GameRule.*;
@@ -46,6 +45,7 @@ public class WorldManager implements Listener {
 	private boolean loadSpawn;
 
 	private World world;
+	private String worldName;
 	private long millis;
 
 	public WorldManager() {
@@ -65,7 +65,8 @@ public class WorldManager implements Listener {
 	public WorldManager generateOnce() {
 
 		millis = System.currentTimeMillis();
-		worldCreator = new WorldCreator(NAME_FORMAT.formatted(millis)).seed(millis);
+		worldName = NAME_FORMAT.formatted(millis);
+		worldCreator = new WorldCreator(worldName).seed(millis);
 
 		if(!loadSpawn)
 			Bukkit.getPluginManager()
@@ -119,10 +120,8 @@ public class WorldManager implements Listener {
 	public void worldInit(WorldInitEvent event) {
 
 		World eWorld = event.getWorld();
-		UUID eWorldUID = eWorld.getUID();
-		UUID worldUID = world.getUID();
 
-		if(eWorldUID.equals(worldUID)) {
+		if(worldName.equals(eWorld.getName())) {
 			eWorld.setKeepSpawnInMemory(false);
 			WorldInitEvent.getHandlerList()
 					.unregister(this);
