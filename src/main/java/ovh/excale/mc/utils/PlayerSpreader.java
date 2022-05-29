@@ -5,13 +5,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import ovh.excale.mc.UHC;
 
-import java.util.Arrays;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class PlayerSpreader {
 
@@ -25,7 +20,7 @@ public class PlayerSpreader {
 		random = new Random(System.currentTimeMillis());
 	}
 
-	public boolean spread(Player... players) {
+	public void spread(Player... players) {
 		Block block;
 		Location location;
 
@@ -43,16 +38,8 @@ public class PlayerSpreader {
 
 		} while(block.isLiquid());
 
-		final Location finalLocation = location;
-
-		// TODO: check all players teleported
-		return Arrays.stream(players)
-				.map(player -> PaperLib.teleportAsync(player, finalLocation))
-				// Collect futures so that all teleports start processing...
-				.collect(Collectors.collectingAndThen(Collectors.toList(), futures ->
-						// ... then do another stream to join (blocking) futures and collect all results
-						futures.stream()
-								.allMatch(CompletableFuture::join)));
+		for(Player player : players)
+			PaperLib.teleportAsync(player, location);
 
 	}
 

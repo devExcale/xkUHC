@@ -20,8 +20,6 @@ import static org.bukkit.block.Biome.*;
 
 public class WorldManager implements Listener {
 
-	private static final int[] SAMPLE_COORDS = new int[] { -48, -32, -16, 0, 16, 32, 48 };
-
 	private static final String NAME_FORMAT = "%x.xkuhc";
 
 	private static final Set<Biome> OCEAN_BIOMES;
@@ -41,12 +39,10 @@ public class WorldManager implements Listener {
 
 	}
 
-	private WorldCreator worldCreator;
 	private boolean loadSpawn;
 
 	private World world;
 	private String worldName;
-	private long millis;
 
 	public WorldManager() {
 
@@ -64,9 +60,9 @@ public class WorldManager implements Listener {
 
 	public WorldManager generateOnce() {
 
-		millis = System.currentTimeMillis();
+		long millis = System.currentTimeMillis();
 		worldName = NAME_FORMAT.formatted(millis);
-		worldCreator = new WorldCreator(worldName).seed(millis);
+		WorldCreator worldCreator = new WorldCreator(worldName).seed(millis);
 
 		if(!loadSpawn)
 			Bukkit.getPluginManager()

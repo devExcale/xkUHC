@@ -4,8 +4,6 @@ import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.APlayerArgument;
-import io.papermc.lib.PaperLib;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -56,7 +54,8 @@ public class TestCommand {
 
 		player.sendMessage("World generated, commencing teleport");
 
-		PaperLib.teleportAsync(player, new Location(world, 100, 100, 100));
+		PlayerSpreader spreader = new PlayerSpreader(world, 1000);
+		spreader.spread(player);
 
 		player.sendMessage("Teleported");
 
