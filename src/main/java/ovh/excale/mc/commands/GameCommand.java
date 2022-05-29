@@ -9,7 +9,6 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
@@ -17,8 +16,8 @@ import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.world.WorldUtils;
+import ovh.excale.mc.utils.MessageBundles;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -35,22 +34,16 @@ public class GameCommand {
 		Game game = UHC.getGame();
 
 		if(game != null)
-			CommandAPI.fail("There's already another session");
+			throw CommandAPI.fail("There's already another session");
 
 		try {
 
-			File file = new File(UHC.instance()
-					.getDataFolder(), "messages/game.yml");
-
-			if(!file.canRead())
-				CommandAPI.fail("Cannot get game messages bundle.");
-
-			UHC.setGame(new Game(YamlConfiguration.loadConfiguration(file)));
+			UHC.setGame(new Game());
 
 		} catch(Exception e) {
 			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
-			CommandAPI.fail("There has been an internal error");
+			throw CommandAPI.fail("There has been an internal error");
 		}
 
 		sender.sendMessage("Game created");
@@ -63,18 +56,18 @@ public class GameCommand {
 		Game game = UHC.getGame();
 
 		if(game == null)
-			CommandAPI.fail("No game found");
+			throw CommandAPI.fail("No game found");
 
 		try {
 
 			game.tryStart();
 
 		} catch(IllegalStateException e) {
-			CommandAPI.fail(e.getMessage());
+			throw CommandAPI.fail(e.getMessage());
 		} catch(Exception e) {
 			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
-			CommandAPI.fail("There has been an internal error");
+			throw CommandAPI.fail("There has been an internal error");
 		}
 
 	}
@@ -85,7 +78,7 @@ public class GameCommand {
 		Game game = UHC.getGame();
 
 		if(game == null)
-			CommandAPI.fail("No game found");
+			throw CommandAPI.fail("No game found");
 
 		try {
 
@@ -95,11 +88,11 @@ public class GameCommand {
 			UHC.setGame(null);
 
 		} catch(IllegalStateException e) {
-			CommandAPI.fail(e.getMessage());
+			throw CommandAPI.fail(e.getMessage());
 		} catch(Exception e) {
 			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
-			CommandAPI.fail("There has been an internal error");
+			throw CommandAPI.fail("There has been an internal error");
 		}
 
 	}
@@ -110,7 +103,7 @@ public class GameCommand {
 		Game game = UHC.getGame();
 
 		if(game == null)
-			CommandAPI.fail("No game found");
+			throw CommandAPI.fail("No game found");
 
 		StringBuilder sb = new StringBuilder("\n [Game dump]");
 		game.dump()
@@ -127,7 +120,10 @@ public class GameCommand {
 	@Subcommand("clean")
 	public static void cleanWorlds(CommandSender sender) {
 
-		WorldUtils.purgeWorlds(count -> sender.sendMessage("Removed " + count + " world(s) from previous instances"));
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
+		WorldUtils.purgeWorlds(count -> sender.sendMessage(msg.main("removed_worlds", count)));
 
 	}
 
@@ -145,7 +141,7 @@ public class GameCommand {
 					.getBoolean("debug", false);
 
 		} else
-			CommandAPI.fail("Game is running");
+			throw CommandAPI.fail("Game is running");
 
 		sender.sendMessage("Configuration reloaded.");
 
@@ -155,12 +151,12 @@ public class GameCommand {
 	public static void createRandomTeams(CommandSender sender, @AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
 
 		if(bondQty < 2)
-			CommandAPI.fail("Can't create less than two teams");
+			throw CommandAPI.fail("Can't create less than two teams");
 
 		Game game = UHC.getGame();
 
 		if(game == null)
-			CommandAPI.fail("No game found");
+			throw CommandAPI.fail("No game found");
 
 		// TODO: check for other bonds / game status
 
@@ -179,7 +175,7 @@ public class GameCommand {
 		Collections.shuffle(gamers);
 
 		if(gamers.size() < bondQty)
-			CommandAPI.fail("Too many teams");
+			throw CommandAPI.fail("Too many teams");
 
 		List<ChatColor> colors = Arrays.stream(ChatColor.values())
 				.filter(ChatColor::isColor)

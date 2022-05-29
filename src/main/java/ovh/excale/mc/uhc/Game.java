@@ -4,7 +4,6 @@ import org.bukkit.*;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -25,6 +24,7 @@ import ovh.excale.mc.uhc.misc.BorderAction;
 import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
 import ovh.excale.mc.uhc.world.WorldUtils;
+import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
@@ -42,7 +42,7 @@ public class Game implements Listener {
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
 	private final ScoreboardProcessor scoreboardProcessor;
-	private final YamlConfiguration messages;
+	private final MessageBundles msg;
 
 	private BukkitTask runTask;
 	private Status status;
@@ -54,11 +54,13 @@ public class Game implements Listener {
 	private Iterator<BorderAction> borderActions;
 	private BorderAction currentAction;
 
-	public Game(YamlConfiguration messages) {
+	public Game() {
 		hub = new GamerHub(this);
 		stopwatch = new Stopwatch();
 		scoreboardProcessor = new ScoreboardProcessor();
-		this.messages = Objects.requireNonNull(messages);
+
+		msg = UHC.instance()
+				.getMessages();
 
 		runTask = null;
 		status = Status.PREPARING;
@@ -486,7 +488,7 @@ public class Game implements Listener {
 	public void dispose() throws IllegalStateException {
 
 		if(!status.isEditable())
-			throw new IllegalStateException(messages.getString("game.not_editable"));
+			throw new IllegalStateException(msg.game("game.not_editable"));
 
 		scoreboardProcessor.untrackAll();
 
@@ -500,8 +502,8 @@ public class Game implements Listener {
 
 		LinkedHashMap<String, String> map = new LinkedHashMap<>();
 
-		final String running = messages.getString("game.options.running");
-		final String still = messages.getString("game.options.still");
+		final String running = msg.game("game.options.running");
+		final String still = msg.game("game.options.still");
 
 		map.put("StopwatchStatus", stopwatch.isRunning() ? running : still);
 		map.put("StopwatchCount", stopwatch.getTotalSeconds() + "s");
@@ -599,30 +601,11 @@ public class Game implements Listener {
 			String message;
 			boolean isPK = event.byGamer();
 
-			switch(event.getDamageCause()) {
-
-				case PROJECTILE:
-
-					message = messages.getString("death.PROJECTILE." + (isPK ? "player" : "default"), "?");
-
-					break;
-
-				case ENTITY_ATTACK:
-
-					if(isPK) {
-
-						List<String> list = messages.getStringList("death.ENTITY_ATTACK.player");
-						message = list.isEmpty() ? "?" : list.get(new Random().nextInt(list.size()));
-
-					} else
-						message = messages.getString("death.ENTITY_ATTACK.default", "?");
-
-					break;
-
-				default:
-					message = messages.getString("death." + event.getDamageCause(), "?");
-
-			}
+			message = switch(event.getDamageCause()) {
+				case PROJECTILE -> msg.game("death.PROJECTILE." + (isPK ? "player" : "default"), "?");
+				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.ENTITY_ATTACK.player") : msg.game("death.ENTITY_ATTACK.default");
+				default -> msg.game("death." + event.getDamageCause(), "?");
+			};
 
 			ChatColor bondColor = bond.getColor();
 			String gamerName = player.getName();
