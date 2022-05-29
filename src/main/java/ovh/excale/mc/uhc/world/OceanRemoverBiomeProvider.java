@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.bukkit.block.Biome.*;
@@ -32,8 +33,8 @@ public class OceanRemoverBiomeProvider extends BiomeProvider {
 
 	private final BiomeProvider rootProvider;
 
-	public OceanRemoverBiomeProvider(BiomeProvider rootProvider) {
-		this.rootProvider = rootProvider;
+	public OceanRemoverBiomeProvider(@NotNull BiomeProvider rootProvider) {
+		this.rootProvider = Objects.requireNonNull(rootProvider);
 	}
 
 	@NotNull

@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.block.Biome;
+import org.bukkit.generator.BiomeProvider;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
 
@@ -22,15 +23,7 @@ public class WorldUtils {
 	private static final int[] sampleCoords = new int[] { -48, -32, -16, 0, 16, 32, 48 };
 
 	private static final Biome[] OCEANS = new Biome[] {
-			OCEAN,
-			COLD_OCEAN,
-			WARM_OCEAN,
-			FROZEN_OCEAN,
-			LUKEWARM_OCEAN,
-			DEEP_OCEAN,
-			DEEP_COLD_OCEAN,
-			DEEP_FROZEN_OCEAN,
-			DEEP_LUKEWARM_OCEAN,
+			OCEAN, COLD_OCEAN, WARM_OCEAN, FROZEN_OCEAN, LUKEWARM_OCEAN, DEEP_OCEAN, DEEP_COLD_OCEAN, DEEP_FROZEN_OCEAN, DEEP_LUKEWARM_OCEAN,
 	};
 
 	private static boolean isOcean(Biome biome) {
@@ -52,25 +45,36 @@ public class WorldUtils {
 		return notOcean;
 	}
 
-	public static @NotNull Optional<World> generate() {
-		Optional<World> optional = Optional.empty();
+	@NotNull
+	public static Optional<World> generate() {
+
 		long millis = System.currentTimeMillis();
 		String name = "%x.xkuhc".formatted(millis);
 
-		WorldCreator worldCreator = new WorldCreator(name).seed(millis);
+		BiomeProvider defBiomeProvider = Bukkit.getWorlds()
+				.get(0)
+				.getBiomeProvider();
+
+		//noinspection ConstantConditions
+		WorldCreator worldCreator = new WorldCreator(name).seed(millis)
+				.biomeProvider(new OceanRemoverBiomeProvider(defBiomeProvider));
+
+		Optional<World> optional = Optional.empty();
 		World world = null;
 
-		if(Bukkit.isPrimaryThread())
-			world = worldCreator.createWorld();
-		else
+		if(!Bukkit.isPrimaryThread())
 			try {
+
 				world = Bukkit.getScheduler()
 						.callSyncMethod(UHC.instance(), worldCreator::createWorld)
 						.get();
+
 			} catch(Exception e) {
 				UHC.log()
 						.log(Level.WARNING, e.getMessage(), e);
 			}
+		else
+			world = worldCreator.createWorld();
 
 		if(world != null && notOcean(world)) {
 

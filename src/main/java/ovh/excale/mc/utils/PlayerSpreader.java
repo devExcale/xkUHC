@@ -1,13 +1,17 @@
 package ovh.excale.mc.utils;
 
-import org.bukkit.Bukkit;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class PlayerSpreader {
 
@@ -21,36 +25,35 @@ public class PlayerSpreader {
 		random = new Random(System.currentTimeMillis());
 	}
 
-	public void spread(Player... players) {
+	public boolean spread(Player... players) {
 		Block block;
 		Location location;
 
 		do {
-			int x = random.nextInt(size - 2), z = random.nextInt(size - 2), y;
+
+			int x = random.nextInt(size - 2);
+			int z = random.nextInt(size - 2);
 			x -= size / 2;
 			z -= size / 2;
-			y = world.getHighestBlockYAt(x, z);
 
-			block = world.getBlockAt(x, y, z);
+			block = world.getHighestBlockAt(x, z);
+
 			location = block.getLocation();
 			location.setY(location.getY() + 1);
 
 		} while(block.isLiquid());
 
-		Location finalLocation = location;
+		final Location finalLocation = location;
 
-		if(Bukkit.isPrimaryThread())
-			for(Player player : players)
-				player.teleport(finalLocation);
-		else
-			Bukkit.getScheduler()
-					.callSyncMethod(UHC.instance(), () -> {
+		// TODO: check all players teleported
+		return Arrays.stream(players)
+				.map(player -> PaperLib.teleportAsync(player, finalLocation))
+				// Collect futures so that all teleports start processing...
+				.collect(Collectors.collectingAndThen(Collectors.toList(), futures ->
+						// ... then do another stream to join (blocking) futures and collect all results
+						futures.stream()
+								.allMatch(CompletableFuture::join)));
 
-						for(Player player : players)
-							player.teleport(finalLocation);
-						return Void.TYPE;
-
-					});
 	}
 
 }

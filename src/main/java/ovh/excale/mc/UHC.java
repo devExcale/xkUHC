@@ -1,13 +1,11 @@
 package ovh.excale.mc;
 
 import dev.jorel.commandapi.CommandAPI;
+import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.discord.DiscordEndpoint;
-import ovh.excale.mc.commands.BondCommand;
-import ovh.excale.mc.commands.ChatAllCommand;
-import ovh.excale.mc.commands.DiscordCommand;
-import ovh.excale.mc.commands.GameCommand;
+import ovh.excale.mc.commands.*;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.Game.Status;
 import ovh.excale.mc.uhc.world.WorldUtils;
@@ -57,6 +55,8 @@ public class UHC extends JavaPlugin {
 	@Override
 	public void onEnable() {
 
+		PaperLib.suggestPaper(this);
+
 		// TODO: boolean option: if true delete worlds, otherwise don't
 		WorldUtils.purgeWorlds(worldCount -> Optional.of(worldCount)
 				.filter(count -> count > 0)
@@ -68,6 +68,8 @@ public class UHC extends JavaPlugin {
 		CommandAPI.registerCommand(BondCommand.class);
 		CommandAPI.registerCommand(DiscordCommand.class);
 		CommandAPI.registerCommand(ChatAllCommand.class);
+
+		CommandAPI.registerCommand(TestCommand.class);
 
 	}
 

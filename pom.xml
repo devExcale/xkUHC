@@ -27,6 +27,11 @@
 			<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
 		</repository>
 
+		<repository>
+			<id>papermc</id>
+			<url>https://papermc.io/repo/repository/maven-public/</url>
+		</repository>
+
 	</repositories>
 
 	<dependencies>
@@ -37,6 +42,14 @@
 			<artifactId>spigot-api</artifactId>
 			<version>1.18.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
+		</dependency>
+
+		<!-- PaperMC integration -->
+		<dependency>
+			<groupId>io.papermc</groupId>
+			<artifactId>paperlib</artifactId>
+			<version>1.0.7</version>
+			<scope>compile</scope>
 		</dependency>
 
 		<!-- CommandAPI -->
@@ -120,6 +133,10 @@
 								<relocation>
 									<pattern>com.fasterxml</pattern>
 									<shadedPattern>com.discord4j.shaded.com.fasterxml</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>io.papermc.lib</pattern>
+									<shadedPattern>ovh.excale.mc.uhc.paperlib</shadedPattern>
 								</relocation>
 							</relocations>
 						</configuration>
