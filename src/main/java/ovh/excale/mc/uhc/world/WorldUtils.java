@@ -55,9 +55,7 @@ public class WorldUtils {
 				.get(0)
 				.getBiomeProvider();
 
-		//noinspection ConstantConditions
-		WorldCreator worldCreator = new WorldCreator(name).seed(millis)
-				.biomeProvider(new OceanRemoverBiomeProvider(defBiomeProvider));
+		WorldCreator worldCreator = new WorldCreator(name).seed(millis);
 
 		Optional<World> optional = Optional.empty();
 		World world = null;
