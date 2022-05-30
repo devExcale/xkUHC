@@ -1,10 +1,12 @@
 package ovh.excale.mc.utils;
 
 import io.papermc.lib.PaperLib;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import ovh.excale.mc.UHC;
 
 import java.util.Random;
 
@@ -38,8 +40,20 @@ public class PlayerSpreader {
 
 		} while(block.isLiquid());
 
-		for(Player player : players)
-			PaperLib.teleportAsync(player, location);
+		final Location loc = location;
+
+		if(!Bukkit.isPrimaryThread())
+			Bukkit.getScheduler()
+					.callSyncMethod(UHC.instance(), () -> {
+
+						for(Player player : players)
+							PaperLib.teleportAsync(player, loc);
+
+						return Void.TYPE;
+					});
+		else
+			for(Player player : players)
+				PaperLib.teleportAsync(player, loc);
 
 	}
 

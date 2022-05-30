@@ -4,9 +4,11 @@ import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.APlayerArgument;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.world.WorldManager;
 import ovh.excale.mc.utils.PlayerSpreader;
 
@@ -58,6 +60,23 @@ public class TestCommand {
 		spreader.spread(player);
 
 		player.sendMessage("Teleported");
+
+	}
+
+	@Subcommand("jump")
+	public static void jump(Player player) {
+
+		Bukkit.getScheduler()
+				.runTaskAsynchronously(UHC.instance(), () -> {
+
+					World world = new WorldManager().loadSpawn(false)
+							.generateUntilClearCenter()
+							.applyRules()
+							.getWorld();
+
+					new PlayerSpreader(world, 2000).spread(player);
+
+				});
 
 	}
 
