@@ -13,6 +13,7 @@ import ovh.excale.mc.UHC;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.IntStream;
 
 import static org.bukkit.GameRule.*;
@@ -68,7 +69,20 @@ public class WorldManager implements Listener {
 			Bukkit.getPluginManager()
 					.registerEvents(this, UHC.instance());
 
-		world = worldCreator.createWorld();
+		if(!Bukkit.isPrimaryThread())
+			try {
+
+				world = Bukkit.getScheduler()
+						.callSyncMethod(UHC.instance(), worldCreator::createWorld)
+						.get();
+
+			} catch(Exception e) {
+				// TODO: PROPAGATE EXCEPTION
+				UHC.log()
+						.log(Level.SEVERE, e.getMessage(), e);
+			}
+		else
+			world = worldCreator.createWorld();
 
 		return this;
 	}
@@ -97,12 +111,27 @@ public class WorldManager implements Listener {
 
 	public WorldManager applyRules() {
 
-		world.setGameRule(SPECTATORS_GENERATE_CHUNKS, false);
-		world.setGameRule(NATURAL_REGENERATION, false);
-		world.setGameRule(SHOW_DEATH_MESSAGES, false);
-		world.setGameRule(DO_WEATHER_CYCLE, false);
-		world.setGameRule(DO_INSOMNIA, false);
-		world.setWeatherDuration(0);
+		try {
+
+			Bukkit.getScheduler()
+					.callSyncMethod(UHC.instance(), () -> {
+
+						world.setGameRule(SPECTATORS_GENERATE_CHUNKS, false);
+						world.setGameRule(NATURAL_REGENERATION, false);
+						world.setGameRule(SHOW_DEATH_MESSAGES, false);
+						world.setGameRule(DO_WEATHER_CYCLE, false);
+						world.setGameRule(DO_INSOMNIA, false);
+						world.setWeatherDuration(0);
+
+						return Void.TYPE;
+					})
+					.get();
+
+		} catch(Exception e) {
+			// TODO: PROPAGATE EXCEPTION
+			UHC.log()
+					.log(Level.SEVERE, e.getMessage(), e);
+		}
 
 		return this;
 	}

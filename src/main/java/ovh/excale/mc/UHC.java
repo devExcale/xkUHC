@@ -70,6 +70,8 @@ public class UHC extends JavaPlugin {
 		CommandAPI.registerCommand(ChatAllCommand.class);
 
 		CommandAPI.registerCommand(TestCommand.class);
+		BondCommand.createBondFullArgs()
+				.register();
 
 	}
 

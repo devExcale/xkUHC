@@ -23,7 +23,7 @@ import ovh.excale.mc.uhc.core.events.*;
 import ovh.excale.mc.uhc.misc.BorderAction;
 import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
-import ovh.excale.mc.uhc.world.WorldUtils;
+import ovh.excale.mc.uhc.world.WorldManager;
 import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
@@ -263,25 +263,20 @@ public class Game implements Listener {
 		status = Status.STARTING;
 		hub.broadcast("Generating world, server may lag...");
 
-		Optional<World> optional = WorldUtils.generate();
-		while(!optional.isPresent()) {
+		world = new WorldManager().loadSpawn(false)
+				.generateUntilClearCenter()
+				.applyRules()
+				.getWorld();
 
-			// Wait for the server to catch-up
-			try {
-				//noinspection BusyWait
-				Thread.sleep(1000L);
-			} catch(Exception ignored) {
-			}
-
-			hub.broadcast("World generation failed. Generating again...");
-			optional = WorldUtils.generate();
-
-		}
-
-		world = optional.get();
+		//noinspection ConstantConditions
 		WorldBorder border = world.getWorldBorder();
 		int initialBorder = settings.getInitialBorderSize();
-		border.setSize(initialBorder);
+
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> {
+					border.setSize(initialBorder);
+					return Void.TYPE;
+				});
 
 		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
 
@@ -317,21 +312,22 @@ public class Game implements Listener {
 
 		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 160);
 
-		for(Bond bond : hub.getBonds()) {
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> {
 
-			hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
-			spreader.spread(bond.getGamers()
-					.stream()
-					.map(Gamer::getPlayer)
-					.toArray(Player[]::new));
+					for(Bond bond : hub.getBonds()) {
 
-			// Wait for chunks to load
-			try {
-				Thread.sleep(1000);
-			} catch(InterruptedException ignored) {
-			}
+						hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
+						spreader.spread(bond.getGamers()
+								.stream()
+								.map(Gamer::getPlayer)
+								.toArray(Player[]::new));
 
-		}
+					}
+
+					return Void.TYPE;
+				});
+
 
 		// Wait for chunks to load
 		try {
