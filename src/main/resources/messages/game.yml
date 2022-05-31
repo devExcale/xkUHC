@@ -1,5 +1,8 @@
 game:
-  start: ""
+  title: "xkUHC"
+  subtitle: "Get fighting!"
+  loading: "Loading game..."
+  teleporting: "Now teleporting to new world..."
   not_editable: "Game ain't currently editable"
   options:
     running: "running"

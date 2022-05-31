@@ -8,7 +8,11 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import ovh.excale.mc.UHC;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 public class PlayerSpreader {
 
@@ -16,10 +20,13 @@ public class PlayerSpreader {
 	private final World world;
 	private final int size;
 
+	private final List<CompletableFuture<Void>> futures;
+
 	public PlayerSpreader(World world, int size) {
 		this.world = world;
 		this.size = size;
 		random = new Random(System.currentTimeMillis());
+		futures = new LinkedList<>();
 	}
 
 	public void spread(Player... players) {
@@ -44,16 +51,20 @@ public class PlayerSpreader {
 
 		if(!Bukkit.isPrimaryThread())
 			Bukkit.getScheduler()
-					.callSyncMethod(UHC.instance(), () -> {
-
-						for(Player player : players)
-							PaperLib.teleportAsync(player, loc);
-
-						return Void.TYPE;
-					});
+					.callSyncMethod(UHC.instance(), () -> futures.add(CompletableFuture.allOf(Arrays.stream(players)
+							.map(player -> PaperLib.teleportAsync(player, loc))
+							.toArray(CompletableFuture[]::new))));
 		else
-			for(Player player : players)
-				PaperLib.teleportAsync(player, loc);
+			futures.add(CompletableFuture.allOf(Arrays.stream(players)
+					.map(player -> PaperLib.teleportAsync(player, loc))
+					.toArray(CompletableFuture[]::new)));
+
+	}
+
+	public void awaitAll() {
+
+		CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new))
+				.join();
 
 	}
 

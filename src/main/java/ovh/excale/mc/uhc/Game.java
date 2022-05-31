@@ -28,13 +28,15 @@ import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
-import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.BOLD;
 import static org.bukkit.ChatColor.RESET;
+import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
+import static ovh.excale.mc.uhc.Game.Status.RUNNING;
+import static ovh.excale.mc.uhc.Game.Status.STARTING;
 import static ovh.excale.mc.uhc.misc.BorderAction.ActionType;
 
 public class Game implements Listener {
@@ -242,25 +244,116 @@ public class Game implements Listener {
 				.size() < 2)
 			throw new IllegalStateException("Cannot start game with less than 2 bonds");
 
-		File file = new File(UHC.instance()
-				.getDataFolder(), "messages/game.yml");
-
-		if(!file.exists()) {
-			UHC.log()
-					.log(Level.SEVERE, "Cannot read resource game.yml");
-			throw new IllegalStateException("Cannot read resource game.yml");
-		}
-
 		borderActions = settings.getBorderActionIterator();
 
 		Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.instance(), this::start);
+				.runTaskAsynchronously(UHC.instance(), this::newStart);
+	}
+
+	private void newStart() {
+
+		status = STARTING;
+
+		hub.broadcast(msg.game("game.loading"));
+
+		world = new WorldManager().loadSpawn(false)
+				.generateUntilClearCenter()
+				.applyRules()
+				.getWorld();
+
+		//noinspection ConstantConditions
+		WorldBorder border = world.getWorldBorder();
+		int initialBorder = settings.getInitialBorderSize();
+
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> {
+					border.setSize(initialBorder);
+					return null;
+				});
+
+		// broadcast world stats
+
+		for(Gamer gamer : hub.getGamers())
+			gamer.initForGame(true);
+
+		hub.broadcast(msg.game("game.teleporting"));
+
+		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 80);
+
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> {
+
+					for(Bond bond : hub.getBonds()) {
+
+						hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
+						spreader.spread(bond.getGamers()
+								.stream()
+								.map(Gamer::getPlayer)
+								.toArray(Player[]::new));
+
+					}
+
+					return null;
+				});
+
+		spreader.awaitAll();
+
+		try {
+			Thread.sleep(1000);
+		} catch(InterruptedException ignored) {
+		}
+
+		hub.broadcastTitle("3", "", 5, 15, 0);
+		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
+
+		try {
+			Thread.sleep(1000);
+		} catch(InterruptedException ignored) {
+		}
+
+		hub.broadcastTitle("2", "");
+		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
+
+		try {
+			Thread.sleep(1000);
+		} catch(InterruptedException ignored) {
+		}
+
+		hub.broadcastTitle("1", "");
+		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
+
+		try {
+			Thread.sleep(1000);
+		} catch(InterruptedException ignored) {
+		}
+
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> {
+
+					for(Gamer gamer : hub.getGamers())
+						gamer.removePotionEffects();
+
+					return null;
+				});
+
+		// Call GameStartEvent on game start
+		Bukkit.getPluginManager()
+				.callEvent(new GameStartEvent(this));
+
+		hub.broadcastTitle(msg.game("game.title"), msg.game("game.subtitle"), 10, 70, 20);
+		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 1);
+
+		runTask = Bukkit.getScheduler()
+				.runTaskAsynchronously(UHC.instance(), this::run);
+		status = RUNNING;
+		stopwatch.start();
+
 	}
 
 	private void start() {
 
 		hub.broadcast("Loading game...");
-		status = Status.STARTING;
+		status = STARTING;
 		hub.broadcast("Generating world, server may lag...");
 
 		world = new WorldManager().loadSpawn(false)
@@ -396,7 +489,7 @@ public class Game implements Listener {
 
 		runTask = Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.instance(), this::run);
-		status = Status.RUNNING;
+		status = RUNNING;
 		stopwatch.start();
 
 	}
@@ -410,9 +503,16 @@ public class Game implements Listener {
 		Sound sound;
 
 		if(currentAction.getType() == ActionType.SHRINK) {
-			world.getWorldBorder()
-					.setSize(currentAction.getBorderSize(), currentAction.getMinutes() * 60L);
+
+			WorldBorder border = world.getWorldBorder();
+			Bukkit.getScheduler()
+					.callSyncMethod(UHC.instance(), () -> {
+						border.setSize(currentAction.getBorderSize(), currentAction.getMinutes() * 60L);
+						return null;
+					});
+
 			sound = Sound.ENTITY_PLAYER_BREATH;
+
 		} else
 			sound = Sound.BLOCK_ANVIL_PLACE;
 
@@ -435,7 +535,7 @@ public class Game implements Listener {
 
 	public void stop() throws IllegalStateException {
 
-		if(!status.equals(Status.RUNNING))
+		if(!status.equals(RUNNING))
 			throw new IllegalStateException("Game ain't running");
 
 		if(!runTask.isCancelled())
@@ -571,7 +671,7 @@ public class Game implements Listener {
 		Gamer gamer = event.getGamer();
 		Player player = gamer.getPlayer();
 
-		if(status.equals(Status.RUNNING) && gamer.isAlive() && gamer.hasBond()) {
+		if(status.equals(RUNNING) && gamer.isAlive() && gamer.hasBond()) {
 
 			World world = player.getWorld();
 			Location location = player.getLocation();

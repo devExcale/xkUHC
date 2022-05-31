@@ -3,6 +3,7 @@ package ovh.excale.mc.uhc.core;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -293,6 +294,20 @@ public class GamerHub {
 				gamer.getPlayer()
 						.spigot()
 						.sendMessage(message);
+	}
+
+	public void broadcastTitle(String title, String subtitle, int fadeIn, int stay, int fadeOut) {
+		gamers.forEach((uuid, gamer) -> gamer.getPlayer()
+				.sendTitle(title, subtitle, fadeIn, stay, fadeOut));
+	}
+
+	public void broadcastTitle(String title, String subtitle) {
+		broadcastTitle(title, subtitle, -1, -1, -1);
+	}
+
+	public void broadcastSound(Sound sound, float volume, float pitch) {
+		gamers.forEach((uuid, gamer) -> gamer.getPlayer()
+				.playSound(gamer.getPlayer(), sound, volume, pitch));
 	}
 
 	public void dispose() {
