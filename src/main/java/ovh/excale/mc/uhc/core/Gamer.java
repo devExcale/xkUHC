@@ -33,6 +33,8 @@ public class Gamer {
 	private ItemStack[] inventorySnapshot;
 	private Collection<PotionEffect> activeEffectsSnapshot;
 
+	private Gamer compassTracking;
+
 	protected Gamer(Game game, Player player) {
 		this.player = player;
 		this.game = game;
@@ -44,6 +46,7 @@ public class Gamer {
 		locationSnapshot = null;
 		inventorySnapshot = null;
 		activeEffectsSnapshot = null;
+		compassTracking = null;
 
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
@@ -178,6 +181,25 @@ public class Gamer {
 
 		for(PotionEffect effect : activeEffectsSnapshot)
 			this.player.addPotionEffect(effect, true);
+
+	}
+
+	public Gamer setCompassTracking(Gamer target) {
+
+		compassTracking = target;
+		updateCompassTracking();
+
+		return this;
+	}
+
+	public Gamer getCompassTracking() {
+		return compassTracking;
+	}
+
+	public void updateCompassTracking() {
+
+		if(compassTracking != null)
+			player.setCompassTarget(compassTracking.player.getLocation());
 
 	}
 

@@ -5,6 +5,12 @@ game:
     running: "running"
     still: "still"
 
+compass:
+  no_teammates: "No teammates to track"
+  now_tracking: "Now tracking %s"
+  update_tracking: "Updated %s's position"
+  no_tracking: "You're tracking no one currently"
+
 border:
   SHRINK: ""
   HOLD: ""

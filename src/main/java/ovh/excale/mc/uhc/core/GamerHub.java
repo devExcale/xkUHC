@@ -15,6 +15,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.eventhandlers.MateFindingCompassHandler;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
 import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
@@ -39,6 +40,8 @@ public class GamerHub {
 	private final EventRaiser eventRaiser;
 	private final Game game;
 
+	private final MateFindingCompassHandler compassHandler;
+
 	public GamerHub(Game game) {
 		this.game = game;
 		gamers = Collections.synchronizedMap(new HashMap<>());
@@ -46,6 +49,9 @@ public class GamerHub {
 
 		eventRaiser = new EventRaiser();
 		eventRaiser.turnOn();
+
+		compassHandler = new MateFindingCompassHandler(this);
+		compassHandler.activate();
 	}
 
 	public Gamer register(Player player) throws IllegalArgumentException, IllegalStateException {
@@ -310,6 +316,10 @@ public class GamerHub {
 
 	}
 
+	public MateFindingCompassHandler getCompassHandler() {
+		return compassHandler;
+	}
+
 	public EventRaiser getEventRaiser() {
 		return eventRaiser;
 	}
@@ -342,7 +352,8 @@ public class GamerHub {
 		public void turnOn() {
 
 			if(!on) {
-				executors.forEach((eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, UHC.instance(), true));
+				executors.forEach(
+						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, UHC.instance(), true));
 				on = true;
 			}
 
