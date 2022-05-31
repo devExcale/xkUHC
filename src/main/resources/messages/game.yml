@@ -18,11 +18,9 @@ border:
   SHRINK: ""
   HOLD: ""
 
-bond:
-  death: "Bond {bond} has been broken"
-
-gamer:
-  death:
+death:
+  bond: "Bond {bond} has been broken"
+  reason:
     ENTITY_ATTACK:
       default: "{gamer} has been beaten up!"
       player:
@@ -31,7 +29,7 @@ gamer:
     PROJECTILE:
       default: "{gamer} has been shot!"
       player: "{gamer} has been shot dead by {killer}!"
-    CUSTOM: "{gamer} has misteriously died"
+    CUSTOM: "{gamer} has mysteriously died"
     THORNS: "{gamer} met his end by their hand"
     ENTITY_EXPLOSION: "{gamer} hugged a creeper"
     BLOCK_EXPLOSION: "{gamer} hugger a TNT"

@@ -242,7 +242,7 @@ public class Game implements Listener {
 
 		if(hub.getBonds()
 				.size() < 2)
-			throw new IllegalStateException("Cannot start game with less than 2 bonds");
+			throw new IllegalStateException(msg.main("game_no_bonds"));
 
 		borderActions = settings.getBorderActionIterator();
 
@@ -536,15 +536,14 @@ public class Game implements Listener {
 	public void stop() throws IllegalStateException {
 
 		if(!status.equals(RUNNING))
-			throw new IllegalStateException("Game ain't running");
+			throw new IllegalStateException(msg.main("game_not_running"));
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
 		stopwatch.stop();
 		scoreboardProcessor.stop();
 
-		// TODO: AND_THEN CALLABLE
-		hub.broadcast("Teleporting all players back in 40 seconds...");
+		hub.broadcast(msg.main("game_end_tp"));
 
 		// TODO: FIX: CANNOT STOP ON PLUGIN DISABLE (cannot schedule task while plugin is disabled)
 		Bukkit.getScheduler()
@@ -698,9 +697,9 @@ public class Game implements Listener {
 			boolean isPK = event.byGamer();
 
 			message = switch(event.getDamageCause()) {
-				case PROJECTILE -> msg.game("death.PROJECTILE." + (isPK ? "player" : "default"), "?");
-				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.ENTITY_ATTACK.player") : msg.game("death.ENTITY_ATTACK.default");
-				default -> msg.game("death." + event.getDamageCause(), "?");
+				case PROJECTILE -> msg.game("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
+				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.game("death.reason.ENTITY_ATTACK.default");
+				default -> msg.game("death.reason." + event.getDamageCause());
 			};
 
 			ChatColor bondColor = bond.getColor();
@@ -726,7 +725,7 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				hub.broadcast("Bond " + bond.getColor() + bond.getName() + RESET + " has been broken!");
+				hub.broadcast(msg.game("death.bond").replaceAll("\\{bond}", bond.getName()));
 
 				List<Bond> bondsLeft = hub.getBonds()
 						.stream()
