@@ -3,8 +3,11 @@ package ovh.excale.mc.commands;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
 import dev.jorel.commandapi.annotations.Subcommand;
+import dev.jorel.commandapi.annotations.arguments.AFloatArgument;
 import dev.jorel.commandapi.annotations.arguments.APlayerArgument;
+import dev.jorel.commandapi.annotations.arguments.ASoundArgument;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -78,6 +81,16 @@ public class TestCommand {
 
 				});
 
+	}
+
+	@Subcommand("sound")
+	public static void sound(Player player, @ASoundArgument Sound sound, @AFloatArgument float pitch, @AFloatArgument float volume) {
+		player.playSound(player, sound, volume, pitch);
+	}
+
+	@Subcommand("sound")
+	public static void soundNoVolume(Player player, @ASoundArgument Sound sound, @AFloatArgument float pitch) {
+		sound(player, sound, pitch, 100f);
 	}
 
 }
