@@ -311,7 +311,9 @@ public class GamerHub {
 	}
 
 	public void dispose() {
+
 		eventRaiser.turnOff();
+		compassHandler.deactivate();
 
 		gamers.values()
 				.forEach(this::unregister);

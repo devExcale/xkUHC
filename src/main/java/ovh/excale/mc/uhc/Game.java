@@ -540,6 +540,7 @@ public class Game implements Listener {
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
+
 		stopwatch.stop();
 		scoreboardProcessor.stop();
 
