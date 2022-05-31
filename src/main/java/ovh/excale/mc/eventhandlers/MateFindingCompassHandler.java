@@ -1,20 +1,21 @@
 package ovh.excale.mc.eventhandlers;
 
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import ovh.excale.mc.UHC;
+import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
-import ovh.excale.mc.utils.MessageBundles;
+
+import java.util.Collections;
+import java.util.Set;
 
 import static net.md_5.bungee.api.ChatColor.GOLD;
 import static net.md_5.bungee.api.ChatMessageType.ACTION_BAR;
@@ -23,46 +24,47 @@ import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
 
-public class MateFindingCompassHandler implements Listener {
+public class MateFindingCompassHandler extends PlayerInteractionHandler {
 
 	private static final Sound USE_SOUND = ENTITY_EXPERIENCE_ORB_PICKUP;
 
+	private static final Set<Action> ENABLED_ACTIONS;
+	private static final Set<Material> ENABLED_MATERIALS;
+
+	static {
+		ENABLED_ACTIONS = Set.of(RIGHT_CLICK_AIR, RIGHT_CLICK_BLOCK);
+		ENABLED_MATERIALS = Set.of(COMPASS);
+	}
+
 	private final GamerHub hub;
-	private final MessageBundles msg;
 
 	public MateFindingCompassHandler(GamerHub hub) {
+		super();
 
 		this.hub = hub;
-		msg = UHC.instance()
-				.getMessages();
 
 	}
 
-	public void activate() {
-
-		Bukkit.getPluginManager()
-				.registerEvents(this, UHC.instance());
-
+	@Override
+	public @NotNull Set<Action> enabledActionTypes() {
+		return ENABLED_ACTIONS;
 	}
 
-	public void deactivate() {
+	@Override
+	public @NotNull Set<Material> enabledMaterials() {
+		return ENABLED_MATERIALS;
+	}
 
-		PlayerInteractEvent.getHandlerList()
-				.unregister(this);
-
+	@Override
+	public @NotNull Set<Block> enabledBlocks() {
+		return Collections.emptySet();
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
-	private void onCompassInteract(PlayerInteractEvent event) {
+	@Override
+	public void onInteract(PlayerInteractEvent event) {
 
-		Action action = event.getAction();
-
-		if(!RIGHT_CLICK_AIR.equals(action) && !RIGHT_CLICK_BLOCK.equals(action))
-			return;
-
-		ItemStack item = event.getItem();
-
-		if(item == null || !COMPASS.equals(item.getType()))
+		if(!accepts(event))
 			return;
 
 		Player player = event.getPlayer();

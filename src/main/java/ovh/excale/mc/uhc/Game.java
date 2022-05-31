@@ -16,6 +16,7 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.eventhandlers.BedInteractionHandler;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
@@ -44,6 +45,7 @@ public class Game implements Listener {
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
 	private final ScoreboardProcessor scoreboardProcessor;
+	private final BedInteractionHandler bedHandler;
 	private final MessageBundles msg;
 
 	private BukkitTask runTask;
@@ -60,6 +62,7 @@ public class Game implements Listener {
 		hub = new GamerHub(this);
 		stopwatch = new Stopwatch();
 		scoreboardProcessor = new ScoreboardProcessor();
+		bedHandler = new BedInteractionHandler();
 
 		msg = UHC.instance()
 				.getMessages();
@@ -346,7 +349,9 @@ public class Game implements Listener {
 		runTask = Bukkit.getScheduler()
 				.runTaskAsynchronously(UHC.instance(), this::run);
 		status = RUNNING;
+
 		stopwatch.start();
+		bedHandler.activate();
 
 	}
 
@@ -543,6 +548,7 @@ public class Game implements Listener {
 
 		stopwatch.stop();
 		scoreboardProcessor.stop();
+		bedHandler.deactivate();
 
 		hub.broadcast(msg.main("game_end_tp"));
 
@@ -726,7 +732,8 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				hub.broadcast(msg.game("death.bond").replaceAll("\\{bond}", bond.getName()));
+				hub.broadcast(msg.game("death.bond")
+						.replaceAll("\\{bond}", bond.getName()));
 
 				List<Bond> bondsLeft = hub.getBonds()
 						.stream()
