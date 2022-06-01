@@ -145,20 +145,22 @@ public class Gamer {
 		player.getInventory()
 				.clear();
 
-		Iterator<Advancement> iter = Bukkit.advancementIterator();
-		if(revokeAdvancements)
-			while(iter.hasNext()) {
-
-				Advancement advancement = iter.next();
-				AdvancementProgress progress = player.getAdvancementProgress(advancement);
-				progress.getAwardedCriteria()
-						.forEach(progress::revokeCriteria);
-
-			}
-
 		Callable<Void> doSync = () -> {
+
 			player.setGameMode(SURVIVAL);
 			player.addPotionEffect(new PotionEffect(BLINDNESS, 3600, 12, false, false, false));
+
+			Iterator<Advancement> iter = Bukkit.advancementIterator();
+			if(revokeAdvancements)
+				while(iter.hasNext()) {
+
+					Advancement advancement = iter.next();
+					AdvancementProgress progress = player.getAdvancementProgress(advancement);
+					progress.getAwardedCriteria()
+							.forEach(progress::revokeCriteria);
+
+				}
+
 			return null;
 		};
 

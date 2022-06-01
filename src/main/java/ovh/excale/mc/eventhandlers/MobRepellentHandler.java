@@ -2,6 +2,7 @@ package ovh.excale.mc.eventhandlers;
 
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -26,10 +27,13 @@ import java.util.Objects;
 import java.util.Set;
 
 import static net.md_5.bungee.api.ChatColor.GOLD;
+import static net.md_5.bungee.api.ChatColor.GRAY;
 import static net.md_5.bungee.api.ChatMessageType.ACTION_BAR;
 import static org.bukkit.Material.GHAST_TEAR;
+import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
+import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
 import static ovh.excale.mc.uhc.Game.Status.RUNNING;
 
 public class MobRepellentHandler extends PlayerInteractionHandler {
@@ -51,7 +55,8 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 	public void activate() {
 		super.activate();
 
-		Bukkit.addRecipe(CaveRepellentEffect.recipe());
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> Bukkit.addRecipe(CaveRepellentEffect.recipe()));
 
 		clock = Bukkit.getScheduler()
 				.runTaskTimerAsynchronously(UHC.instance(), this::updateEffects, 0, 5);
@@ -62,7 +67,8 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 	public void deactivate() {
 		super.deactivate();
 
-		Bukkit.removeRecipe(CaveRepellentEffect.key());
+		Bukkit.getScheduler()
+				.callSyncMethod(UHC.instance(), () -> Bukkit.removeRecipe(CaveRepellentEffect.key()));
 
 		clock.cancel();
 
@@ -96,7 +102,7 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 			Instant endTime = effect.getStartTime()
 					.plusMillis(effect.getDuration() * 50);
 
-			if(endTime.isAfter(now)) {
+			if(endTime.isBefore(now)) {
 
 				gamer.removeCustomEffect();
 				gamer.getPlayer()
@@ -109,9 +115,7 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 				long remaining = endTime.getEpochSecond() - now.getEpochSecond();
 				gamer.getPlayer()
 						.spigot()
-						.sendMessage(ACTION_BAR, new ComponentBuilder(
-								"[Cave Repellent] Remaining %dm:%ds".formatted(remaining / 60, remaining % 60)).color(
-										GOLD)
+						.sendMessage(ACTION_BAR, new ComponentBuilder("[Cave Repellent] Remaining %dm:%ds".formatted(remaining / 60, remaining % 60)).color(GOLD)
 								.create());
 			}
 
@@ -135,7 +139,31 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 		Player player = event.getPlayer();
 		Gamer gamer = hub.getGamer(player.getUniqueId());
 
-		// TODO
+		if(gamer == null)
+			return;
+
+		item.setAmount(item.getAmount() - 1);
+		player.playSound(player, ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
+
+		CaveRepellentEffect effect = gamer.getCustomEffect();
+
+		if(effect == null) {
+
+			gamer.setCustomEffect(new CaveRepellentEffect(6000L));
+			player.spigot()
+					.sendMessage(new ComponentBuilder(msg.game("repellent.apply")).color(GRAY)
+							.italic(true)
+							.create());
+
+		} else {
+
+			effect.addDuration(6000L);
+			player.spigot()
+					.sendMessage(new ComponentBuilder(msg.game("repellent.reapply")).color(GRAY)
+							.italic(true)
+							.create());
+
+		}
 
 	}
 
@@ -148,12 +176,22 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 		if(!(event.getTarget() instanceof Player target))
 			return;
 
-		Gamer gamer = hub.getGamer(target.getUniqueId());
-
-		if(gamer == null)
+		if(!CLOSEST_PLAYER.equals(event.getReason()))
 			return;
 
-		// TODO
+		Gamer gamer = hub.getGamer(target.getUniqueId());
+
+		if(gamer != null && gamer.getCustomEffect() != null) {
+
+			Location loc = target.getLocation();
+
+			int highestBlock = target.getWorld()
+					.getHighestBlockYAt(loc);
+
+			if(highestBlock - loc.getY() > 16)
+				event.setCancelled(true);
+
+		}
 
 	}
 

@@ -8,7 +8,6 @@ import ovh.excale.mc.UHC;
 import ovh.excale.mc.utils.MessageBundles;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.List;
 
 import static org.bukkit.ChatColor.ITALIC;
@@ -31,6 +30,8 @@ public class CaveRepellentEffect {
 		//noinspection ConstantConditions
 		meta.setDisplayName(ITALIC + msg.game("repellent.name"));
 		meta.setLore(List.of(msg.game("repellent.description")));
+
+		tear.setItemMeta(meta);
 
 		return new ShapelessRecipe(key(), tear).addIngredient(DIAMOND)
 				.addIngredient(SUGAR)

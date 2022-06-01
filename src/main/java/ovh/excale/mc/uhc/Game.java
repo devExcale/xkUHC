@@ -16,7 +16,9 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.eventhandlers.AsyncTeleportAnchor;
 import ovh.excale.mc.eventhandlers.BedInteractionHandler;
+import ovh.excale.mc.eventhandlers.MobRepellentHandler;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
@@ -46,8 +48,10 @@ public class Game implements Listener {
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
 	private final ScoreboardProcessor scoreboardProcessor;
-	private final BedInteractionHandler bedHandler;
 	private final MessageBundles msg;
+
+	private final BedInteractionHandler bedHandler;
+	private final MobRepellentHandler mobRepellent;
 
 	private BukkitTask runTask;
 	private Status status;
@@ -63,7 +67,9 @@ public class Game implements Listener {
 		hub = new GamerHub(this);
 		stopwatch = new Stopwatch();
 		scoreboardProcessor = new ScoreboardProcessor();
+
 		bedHandler = new BedInteractionHandler();
+		mobRepellent = new MobRepellentHandler(this);
 
 		msg = UHC.instance()
 				.getMessages();
@@ -78,14 +84,13 @@ public class Game implements Listener {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 
 		// GAMER RECONNECT EVENT
-		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH,
-				(listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event), UHC.instance());
+		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
+				UHC.instance());
 		// GAMER DISCONNECT EVENT
-		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH,
-				(listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event), UHC.instance());
+		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
+				UHC.instance());
 		// GAMER DEATH EVENT
-		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH,
-				(listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.instance());
+		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.instance());
 
 		initScoreboardProcessor();
 
@@ -173,8 +178,7 @@ public class Game implements Listener {
 
 			String s = "> " + BOLD + "Remaining:" + RESET + " N/A";
 			if(currentAction != null)
-				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) +
-						"s";
+				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) + "s";
 
 			return s;
 		});
@@ -285,6 +289,7 @@ public class Game implements Listener {
 		hub.broadcast(msg.game("game.teleporting"));
 
 		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 80);
+		AsyncTeleportAnchor tpAnchor = new AsyncTeleportAnchor();
 
 		Bukkit.getScheduler()
 				.callSyncMethod(UHC.instance(), () -> {
@@ -292,20 +297,24 @@ public class Game implements Listener {
 					for(Bond bond : hub.getBonds()) {
 
 						hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
-						spreader.spread(bond.getGamers()
+
+						Player[] players = bond.getGamers()
 								.stream()
 								.map(Gamer::getPlayer)
-								.toArray(Player[]::new));
+								.toArray(Player[]::new);
+
+						spreader.spread(players);
+						tpAnchor.waitFor(players);
 
 					}
 
 					return null;
 				});
 
-		spreader.awaitAll();
+		tpAnchor.await();
 
 		try {
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 		} catch(InterruptedException ignored) {
 		}
 
@@ -355,6 +364,7 @@ public class Game implements Listener {
 
 		stopwatch.start();
 		bedHandler.activate();
+		mobRepellent.activate();
 
 	}
 
@@ -533,8 +543,7 @@ public class Game implements Listener {
 
 		}
 
-		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(),
-				borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
+		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
 
 	}
 
@@ -552,7 +561,9 @@ public class Game implements Listener {
 
 		stopwatch.stop();
 		scoreboardProcessor.stop();
+
 		bedHandler.deactivate();
+		mobRepellent.deactivate();
 
 		hub.broadcast(msg.main("game.end_tp"));
 
@@ -712,9 +723,7 @@ public class Game implements Listener {
 
 			message = switch(event.getDamageCause()) {
 				case PROJECTILE -> msg.game("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
-				case ENTITY_ATTACK -> (isPK)
-						? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player")
-						: msg.game("death.reason.ENTITY_ATTACK.default");
+				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.game("death.reason.ENTITY_ATTACK.default");
 				default -> msg.game("death.reason." + event.getDamageCause());
 			};
 
