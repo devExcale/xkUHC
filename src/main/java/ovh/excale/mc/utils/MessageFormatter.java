@@ -78,6 +78,20 @@ public class MessageFormatter {
 		return this;
 	}
 
+	public MessageFormatter killer(Gamer gamer) {
+
+		map.put("killer", gamer.getPlayer()
+				.getName());
+
+		Bond bond = gamer.getBond();
+
+		map.put("killerBond", bond.getName());
+		map.put("killerBondColor", bond.getColor()
+				.toString());
+
+		return this;
+	}
+
 	public MessageFormatter custom(String key, Object value) {
 
 		map.put(key, value.toString());

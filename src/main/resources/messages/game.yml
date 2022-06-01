@@ -6,6 +6,7 @@ game:
   not_editable: "Game ain't currently editable"
   cant_sleep: "There is a time and place for everything. Not now."
   stop_force: "Game stopped forcefully"
+  win: "Bond {BOLD}{bondColor}{bond}{RESET} is the last one standing!"
   options:
     running: "running"
     still: "still"

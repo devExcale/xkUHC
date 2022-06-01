@@ -26,6 +26,7 @@ import ovh.excale.mc.uhc.misc.GameSettings;
 import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
 import ovh.excale.mc.uhc.world.WorldManager;
 import ovh.excale.mc.utils.MessageBundles;
+import ovh.excale.mc.utils.MessageFormatter;
 import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
@@ -717,22 +718,13 @@ public class Game implements Listener {
 				default -> msg.game("death.reason." + event.getDamageCause());
 			};
 
-			ChatColor bondColor = bond.getColor();
-			String gamerName = player.getName();
+			MessageFormatter formatter = MessageFormatter.with(gamer, bond);
 
-			message = Objects.requireNonNull(message)
-					.replaceAll("\\{gamer}", bondColor.toString() + gamerName + ChatColor.WHITE);
-			if(isPK) {
-				Gamer killer = event.getKiller();
-				Player killerPlayer = killer.getPlayer();
-				Bond killerBond = killer.getBond();
-				ChatColor killerColor = killerBond.getColor();
-				String killerName = killerPlayer.getName();
-				message = message.replaceAll("\\{killer}", killerColor.toString() + killerName + ChatColor.WHITE);
-			}
+			if(isPK)
+				formatter.killer(event.getKiller());
 
 			// Broadcast death message
-			hub.broadcast(message);
+			hub.broadcast(formatter.format(message));
 
 			boolean bondDead = bond.getGamers()
 					.stream()
@@ -740,22 +732,20 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				hub.broadcast(msg.game("death.bond")
-						.replaceAll("\\{bond}", bond.getName()));
+				hub.broadcast(formatter.format(msg.game("death.bond")));
 
 				List<Bond> bondsLeft = hub.getBonds()
 						.stream()
 						.filter(bond1 -> bond1.getGamers()
 								.stream()
 								.anyMatch(Gamer::isAlive))
-						.collect(Collectors.toList());
+						.toList();
 
 				if(bondsLeft.size() == 1) {
 
 					Bond winnerBond = bondsLeft.get(0);
-					hub.broadcast(
-							"There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() +
-									RESET + " wins!");
+					hub.broadcast(formatter.bond(winnerBond)
+							.format(msg.game("game.win")));
 
 					stop();
 
