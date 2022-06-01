@@ -1,6 +1,5 @@
 package ovh.excale.mc.eventhandlers;
 
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -9,16 +8,21 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static net.md_5.bungee.api.ChatColor.GOLD;
-import static net.md_5.bungee.api.ChatMessageType.ACTION_BAR;
+import static net.md_5.bungee.api.ChatColor.ITALIC;
 import static org.bukkit.Material.COMPASS;
 import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
@@ -83,6 +87,10 @@ public class MateFindingCompassHandler extends PlayerInteractionHandler {
 		Gamer target;
 		String targetName;
 
+		ItemStack item = Objects.requireNonNull(event.getItem());
+		ItemMeta itemMeta = Objects.requireNonNull(item.getItemMeta());
+		String itemName = GOLD.toString() + ITALIC;
+
 		if(player.isSneaking()) {
 
 			Gamer[] teammates = bond.getGamers()
@@ -92,23 +100,18 @@ public class MateFindingCompassHandler extends PlayerInteractionHandler {
 							.equals(gamer.getUniqueId()))
 					.toArray(Gamer[]::new);
 
-			if(teammates.length == 0) {
+			if(teammates.length != 0) {
 
-				player.spigot()
-						.sendMessage(ACTION_BAR, new ComponentBuilder(msg.game("compass.no_teammates")).color(GOLD)
-								.create());
-				return;
-			}
+				target = teammates[(int) (teammates.length * Math.random())];
+				targetName = target.getPlayer()
+						.getName();
 
-			target = teammates[(int) (teammates.length * Math.random())];
-			targetName = target.getPlayer()
-					.getName();
+				gamer.setCompassTracking(target);
 
-			gamer.setCompassTracking(target);
+				itemName += targetName;
 
-			player.spigot()
-					.sendMessage(ACTION_BAR, new ComponentBuilder(msg.game("compass.now_tracking", targetName)).color(GOLD)
-							.create());
+			} else
+				itemName += msg.game("compass.no_teammates");
 
 		} else {
 
@@ -117,22 +120,27 @@ public class MateFindingCompassHandler extends PlayerInteractionHandler {
 			if(target == null || !target.isAlive()) {
 
 				gamer.setCompassTracking(null);
-				player.spigot()
-						.sendMessage(ACTION_BAR, new ComponentBuilder(msg.game("compass.no_tracking")).color(GOLD)
-								.create());
+				itemName += msg.game("compass.no_tracking");
 
-				return;
+			} else {
+
+				gamer.updateCompassTracking();
+				targetName = target.getPlayer()
+						.getName();
+
+				itemName += targetName;
+
 			}
 
-			gamer.updateCompassTracking();
-			targetName = target.getPlayer()
-					.getName();
-
-			player.spigot()
-					.sendMessage(ACTION_BAR, new ComponentBuilder(msg.game("compass.update_tracking", targetName)).color(GOLD)
-							.create());
-
 		}
+
+		itemMeta.setDisplayName(itemName);
+		itemMeta.setLore(List.of(msg.game("compass.tooltip")));
+
+		item.setItemMeta(itemMeta);
+
+		PlayerInventory playerInv = player.getInventory();
+		playerInv.setItemInMainHand(item);
 
 	}
 

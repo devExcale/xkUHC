@@ -12,10 +12,11 @@ game:
     still: "still"
 
 compass:
-  no_teammates: "No teammates to track"
+  no_teammates: "No teammates"
   now_tracking: "Now tracking %s"
   update_tracking: "Updated %s's position"
-  no_tracking: "You're tracking no one currently"
+  no_tracking: "Not tracking"
+  tooltip: "[Crouch + Right Click] to start tracking"
 
 border:
   SHRINK: ""
