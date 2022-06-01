@@ -5,6 +5,7 @@ game:
   teleporting: "Now teleporting to new world..."
   not_editable: "Game ain't currently editable"
   cant_sleep: "There is a time and place for everything. Not now."
+  stop_force: "Game stopped forcefully"
   options:
     running: "running"
     still: "still"
@@ -19,8 +20,14 @@ border:
   SHRINK: ""
   HOLD: ""
 
+chat:
+  bond: "[bond] {bondColor}<{bond}/{BOLD}{gamer}{RESET}{bondColor}> {RESET}{message}"
+  dead: "[dead] {bondColor}<{bond}/{BOLD}{gamer}{RESET}{bondColor}> {GRAY}{ITALIC}{message}"
+  all: "[ALL] {bondColor}<{bond}/{BOLD}{gamer}{RESET}{bondColor}> {RESET}{message}"
+  dead_all_err: "You're dead, chat with other dead people"
+
 death:
-  bond: "Bond {bond} has been broken"
+  bond: "Bond {bond} has been eliminated"
   reason:
     ENTITY_ATTACK:
       default: "{gamer} has been beaten up!"

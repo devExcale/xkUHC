@@ -60,7 +60,7 @@ public class UHC extends JavaPlugin {
 		// TODO: boolean option: if true delete worlds, otherwise don't
 		WorldUtils.purgeWorlds(worldCount -> Optional.of(worldCount)
 				.filter(count -> count > 0)
-				.map(count -> msg.main("removed_worlds", count))
+				.map(count -> msg.main("misc.removed_worlds", count))
 				.ifPresent(log()::info));
 
 		// REGISTER COMMANDS

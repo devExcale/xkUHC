@@ -17,6 +17,7 @@ import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.world.WorldUtils;
 import ovh.excale.mc.utils.MessageBundles;
+import ovh.excale.mc.utils.MessageFormatter;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,10 +32,12 @@ public class GameCommand {
 	@Subcommand("create")
 	public static void createGame(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getGame();
+		MessageBundles msg = UHC.instance()
+				.getMessages();
 
+		Game game = UHC.getGame();
 		if(game != null)
-			throw CommandAPI.fail("There's already another session");
+			throw CommandAPI.fail(msg.main("game.another_session"));
 
 		try {
 
@@ -43,20 +46,23 @@ public class GameCommand {
 		} catch(Exception e) {
 			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
-			throw CommandAPI.fail("There has been an internal error");
+			throw CommandAPI.fail(msg.main("error.internal"));
 		}
 
-		sender.sendMessage("Game created");
+		sender.sendMessage(new MessageFormatter().addColors()
+				.formatFine(msg.main("game.created")));
 
 	}
 
 	@Subcommand("start")
 	public static void startGame(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getGame();
+		MessageBundles msg = UHC.instance()
+				.getMessages();
 
+		Game game = UHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail("No game found");
+			throw CommandAPI.fail(msg.main("game.no_game"));
 
 		try {
 
@@ -67,7 +73,7 @@ public class GameCommand {
 		} catch(Exception e) {
 			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
-			throw CommandAPI.fail("There has been an internal error");
+			throw CommandAPI.fail(msg.main("error.internal"));
 		}
 
 	}
@@ -75,16 +81,18 @@ public class GameCommand {
 	@Subcommand("stop")
 	public static void stopGame(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getGame();
+		MessageBundles msg = UHC.instance()
+				.getMessages();
 
+		Game game = UHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail("No game found");
+			throw CommandAPI.fail(msg.main("game.no_game"));
 
 		try {
 
 			game.stop();
 			game.getHub()
-					.broadcast("Game stopped forcefully.");
+					.broadcast(msg.game("game.stop_force"));
 			UHC.setGame(null);
 
 		} catch(IllegalStateException e) {
@@ -92,7 +100,7 @@ public class GameCommand {
 		} catch(Exception e) {
 			UHC.log()
 					.log(Level.SEVERE, e.getMessage(), e);
-			throw CommandAPI.fail("There has been an internal error");
+			throw CommandAPI.fail(msg.main("error.internal"));
 		}
 
 	}
@@ -100,10 +108,12 @@ public class GameCommand {
 	@Subcommand("dump")
 	public static void dump(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		Game game = UHC.getGame();
+		MessageBundles msg = UHC.instance()
+				.getMessages();
 
+		Game game = UHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail("No game found");
+			throw CommandAPI.fail(msg.main("game.no_game"));
 
 		StringBuilder sb = new StringBuilder("\n [Game dump]");
 		game.dump()
@@ -123,12 +133,15 @@ public class GameCommand {
 		MessageBundles msg = UHC.instance()
 				.getMessages();
 
-		WorldUtils.purgeWorlds(count -> sender.sendMessage(msg.main("removed_worlds", count)));
+		WorldUtils.purgeWorlds(count -> sender.sendMessage(msg.main("misc.removed_worlds", count)));
 
 	}
 
 	@Subcommand("reload")
 	public static void reloadConfiguration(CommandSender sender) throws WrapperCommandSyntaxException {
+
+		MessageBundles msg = UHC.instance()
+				.getMessages();
 
 		Game game = UHC.getGame();
 
@@ -141,14 +154,16 @@ public class GameCommand {
 					.getBoolean("debug", false);
 
 		} else
-			throw CommandAPI.fail("Game is running");
+			throw CommandAPI.fail(msg.main("game.running"));
 
-		sender.sendMessage("Configuration reloaded.");
+		sender.sendMessage(new MessageFormatter().addColors()
+				.formatFine(msg.main("config.reloaded")));
 
 	}
 
 	@Subcommand("random")
-	public static void createRandomTeams(CommandSender sender, @AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
+	public static void createRandomTeams(CommandSender sender,
+			@AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
 
 		if(bondQty < 2)
 			throw CommandAPI.fail("Can't create less than two teams");

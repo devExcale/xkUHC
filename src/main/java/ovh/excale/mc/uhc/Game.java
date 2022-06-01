@@ -245,7 +245,7 @@ public class Game implements Listener {
 
 		if(hub.getBonds()
 				.size() < 2)
-			throw new IllegalStateException(msg.main("game_no_bonds"));
+			throw new IllegalStateException(msg.main("game.no_bonds"));
 
 		borderActions = settings.getBorderActionIterator();
 
@@ -541,7 +541,7 @@ public class Game implements Listener {
 	public void stop() throws IllegalStateException {
 
 		if(!status.equals(RUNNING))
-			throw new IllegalStateException(msg.main("game_not_running"));
+			throw new IllegalStateException(msg.main("game.not_running"));
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
@@ -550,7 +550,7 @@ public class Game implements Listener {
 		scoreboardProcessor.stop();
 		bedHandler.deactivate();
 
-		hub.broadcast(msg.main("game_end_tp"));
+		hub.broadcast(msg.main("game.end_tp"));
 
 		// TODO: FIX: CANNOT STOP ON PLUGIN DISABLE (cannot schedule task while plugin is disabled)
 		Bukkit.getScheduler()

@@ -7,6 +7,7 @@ import org.bukkit.block.Biome;
 import org.bukkit.generator.BiomeProvider;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.utils.MessageBundles;
 
 import java.io.File;
 import java.util.Optional;
@@ -23,7 +24,15 @@ public class WorldUtils {
 	private static final int[] sampleCoords = new int[] { -48, -32, -16, 0, 16, 32, 48 };
 
 	private static final Biome[] OCEANS = new Biome[] {
-			OCEAN, COLD_OCEAN, WARM_OCEAN, FROZEN_OCEAN, LUKEWARM_OCEAN, DEEP_OCEAN, DEEP_COLD_OCEAN, DEEP_FROZEN_OCEAN, DEEP_LUKEWARM_OCEAN,
+			OCEAN,
+			COLD_OCEAN,
+			WARM_OCEAN,
+			FROZEN_OCEAN,
+			LUKEWARM_OCEAN,
+			DEEP_OCEAN,
+			DEEP_COLD_OCEAN,
+			DEEP_FROZEN_OCEAN,
+			DEEP_LUKEWARM_OCEAN,
 	};
 
 	private static boolean isOcean(Biome biome) {
@@ -111,12 +120,16 @@ public class WorldUtils {
 	}
 
 	private static boolean deleteFile(File master, File file) {
+
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
 		File[] files = file.listFiles();
 		if(files != null)
 			for(File file1 : files)
 				if(!deleteFile(master, file1))
 					UHC.log()
-							.warning("Can't delete file " + file1.getName() + " from world " + master.getName());
+							.warning(msg.main("error.cant_remove_files", file1.getName(), master.getName()));
 		return file.delete();
 	}
 

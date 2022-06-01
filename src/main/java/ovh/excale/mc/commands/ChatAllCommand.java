@@ -18,16 +18,15 @@ import ovh.excale.mc.utils.MessageFormatter;
 @Command("all")
 public class ChatAllCommand {
 
-	private final MessageBundles msg;
-
 	public ChatAllCommand() {
-		msg = UHC.instance()
-				.getMessages();
 	}
 
 	@Default
 	public static void chatAll(Player player,
 			@AGreedyStringArgument String message) throws WrapperCommandSyntaxException {
+
+		MessageBundles msg = UHC.instance()
+				.getMessages();
 
 		// TODO: GAME CHECK
 		Game game = UHC.getGame();
@@ -35,27 +34,30 @@ public class ChatAllCommand {
 		Gamer gamer = hub.getGamer(player.getUniqueId());
 
 		if(!gamer.isAlive())
-			throw CommandAPI.fail("You can only chat by default with dead players");
+			throw CommandAPI.fail(msg.game("chat.dead_all_err"));
 
-		MessageFormatter formatter = MessageFormatter.create()
-				.with(gamer)
-				.with(gamer.getBond());
-
-		// ex: [All][BondName] Cr4zy5ky_U: this is a message
-		hub.broadcast(formatter.format("[All]{bondColor}[{bond}] {BOLD}{gamer}{RESET}{bondColor}: {RESET}" + message));
+		hub.broadcast(MessageFormatter.with(gamer, gamer.getBond())
+				.custom("message", message)
+				.format(msg.game("chat.all")));
 
 	}
 
 	// TODO: think about if we need to create boolean allChatMuted and isAllChat(), muteAllChat() and unmuteAllChat() methods on Gamer and use these commands:
 	public static void muteAllChat(Player player) throws WrapperCommandSyntaxException {
 
-		throw CommandAPI.fail("Command not developed yet!");
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
+		throw CommandAPI.fail(msg.main("error.undeveloped"));
 
 	}
 
 	public static void unmuteAllChat(Player player) throws WrapperCommandSyntaxException {
 
-		throw CommandAPI.fail("Command not developed yet!");
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
+		throw CommandAPI.fail(msg.main("error.undeveloped"));
 
 	}
 

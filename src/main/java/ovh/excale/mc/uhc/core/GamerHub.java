@@ -21,6 +21,7 @@ import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
 import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
 import ovh.excale.mc.uhc.core.events.GamerReconnectEvent;
+import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.MessageFormatter;
 
 import java.lang.reflect.InvocationTargetException;
@@ -41,12 +42,17 @@ public class GamerHub {
 	private final EventRaiser eventRaiser;
 	private final Game game;
 
+	private final MessageBundles msg;
+
 	private final MateFindingCompassHandler compassHandler;
 
 	public GamerHub(Game game) {
 		this.game = game;
 		gamers = Collections.synchronizedMap(new HashMap<>());
 		bonds = Collections.synchronizedMap(new HashMap<>());
+
+		msg = UHC.instance()
+				.getMessages();
 
 		eventRaiser = new EventRaiser();
 		eventRaiser.turnOn();
@@ -353,16 +359,20 @@ public class GamerHub {
 			on = false;
 
 			// JOIN EVENT EXECUTOR
-			executors.put(PlayerJoinEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerJoin((PlayerJoinEvent) event));
+			executors.put(PlayerJoinEvent.class,
+					(listener, event) -> ((EventRaiser) listener).onPlayerJoin((PlayerJoinEvent) event));
 
 			// QUIT EVENT EXECUTOR
-			executors.put(PlayerQuitEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerQuit((PlayerQuitEvent) event));
+			executors.put(PlayerQuitEvent.class,
+					(listener, event) -> ((EventRaiser) listener).onPlayerQuit((PlayerQuitEvent) event));
 
 			// DAMAGE EVENT EXECUTOR
-			executors.put(EntityDamageEvent.class, (listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
+			executors.put(EntityDamageEvent.class,
+					(listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
 
 			// CHAT EVENT EXECUTOR
-			executors.put(AsyncPlayerChatEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
+			executors.put(AsyncPlayerChatEvent.class,
+					(listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
 
 		}
 
@@ -370,7 +380,8 @@ public class GamerHub {
 
 			if(!on) {
 				executors.forEach(
-						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, UHC.instance(), true));
+						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this,
+								EventPriority.HIGH, eventExecutor, UHC.instance(), true));
 				on = true;
 			}
 
@@ -387,10 +398,12 @@ public class GamerHub {
 
 					} catch(NoSuchMethodException e) {
 						UHC.log()
-								.log(Level.SEVERE, "Event " + eventClass.getSimpleName() + " is missing static method getHandlerList()", e);
+								.log(Level.SEVERE, "Event " + eventClass.getSimpleName() +
+										" is missing static method getHandlerList()", e);
 					} catch(InvocationTargetException | IllegalAccessException e) {
 						UHC.log()
-								.log(Level.SEVERE, "Cannot access HandlerList in class " + eventClass.getSimpleName(), e);
+								.log(Level.SEVERE, "Cannot access HandlerList in class " + eventClass.getSimpleName(),
+										e);
 					}
 				}
 				on = false;
@@ -458,14 +471,13 @@ public class GamerHub {
 				event.setCancelled(true);
 
 				Bond bond = gamer.getBond();
-				MessageFormatter formatter = MessageFormatter.create()
-						.with(gamer)
-						.with(bond);
+				MessageFormatter formatter = MessageFormatter.with(gamer, bond)
+						.custom("message", event.getMessage());
 
 				if(gamer.isAlive())
-					bond.broadcast(formatter.format("{bondColor}[{bond}] {BOLD}{gamer}{RESET}{bondColor}: {RESET}" + event.getMessage()));
+					bond.broadcast(formatter.format(msg.game("chat.bond")));
 				else
-					GamerHub.this.broadcastDead(formatter.format("{GRAY}[dead][{bond}] {BOLD}{gamer}{RESET}{GRAY}: {RESET}" + event.getMessage()));
+					GamerHub.this.broadcastDead(formatter.format(msg.game("chat.dead")));
 
 			}
 		}
