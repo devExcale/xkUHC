@@ -12,6 +12,7 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.effects.CaveRepellentEffect;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.misc.ScoreboardPrinter;
 
@@ -42,6 +43,8 @@ public class Gamer {
 	private ItemStack[] inventorySnapshot;
 	private Collection<PotionEffect> activeEffectsSnapshot;
 
+	private CaveRepellentEffect customEffect;
+
 	private Gamer compassTracking;
 
 	protected Gamer(Game game, Player player) {
@@ -56,6 +59,7 @@ public class Gamer {
 		inventorySnapshot = null;
 		activeEffectsSnapshot = null;
 		compassTracking = null;
+		customEffect = null;
 
 		//noinspection ConstantConditions
 		scoreboard = Bukkit.getScoreboardManager()
@@ -177,6 +181,18 @@ public class Gamer {
 	public void removePotionEffects() {
 		for(PotionEffect effect : player.getActivePotionEffects())
 			player.removePotionEffect(effect.getType());
+	}
+
+	public void removeCustomEffect() {
+		customEffect = null;
+	}
+
+	public void setCustomEffect(CaveRepellentEffect effect) {
+		customEffect = effect;
+	}
+
+	public CaveRepellentEffect getCustomEffect() {
+		return customEffect;
 	}
 
 	/**

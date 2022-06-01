@@ -18,6 +18,13 @@ compass:
   no_tracking: "Not tracking"
   tooltip: "[Crouch + Right Click] to start tracking"
 
+repellent:
+  name: "Cave Repellent"
+  description: "Don't fear mobs with this repellent!"
+  apply: "Mobs don't seem to notice you while in the caves..."
+  reapply: "You feel more protected in the caves..."
+  end: "You don't feel protected anymore..."
+
 border:
   SHRINK: ""
   HOLD: ""
