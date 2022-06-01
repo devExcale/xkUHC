@@ -1,4 +1,4 @@
-package ovh.excale.mc.utils;
+package ovh.excale.mc.eventhandlers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

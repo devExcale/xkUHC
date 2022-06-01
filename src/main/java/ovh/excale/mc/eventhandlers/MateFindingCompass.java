@@ -28,7 +28,7 @@ import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
 
-public class MateFindingCompassHandler extends PlayerInteractionHandler {
+public class MateFindingCompass extends PlayerInteractionHandler {
 
 	private static final Sound USE_SOUND = ENTITY_EXPERIENCE_ORB_PICKUP;
 
@@ -42,7 +42,7 @@ public class MateFindingCompassHandler extends PlayerInteractionHandler {
 
 	private final GamerHub hub;
 
-	public MateFindingCompassHandler(GamerHub hub) {
+	public MateFindingCompass(GamerHub hub) {
 		super();
 
 		this.hub = hub;

@@ -16,7 +16,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
-import ovh.excale.mc.eventhandlers.MateFindingCompassHandler;
+import ovh.excale.mc.eventhandlers.MateFindingCompass;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
 import ovh.excale.mc.uhc.core.events.GamerDisconnectEvent;
@@ -44,7 +44,7 @@ public class GamerHub {
 
 	private final MessageBundles msg;
 
-	private final MateFindingCompassHandler compassHandler;
+	private final MateFindingCompass compassHandler;
 
 	public GamerHub(Game game) {
 		this.game = game;
@@ -57,7 +57,7 @@ public class GamerHub {
 		eventRaiser = new EventRaiser();
 		eventRaiser.turnOn();
 
-		compassHandler = new MateFindingCompassHandler(this);
+		compassHandler = new MateFindingCompass(this);
 		compassHandler.activate();
 	}
 
@@ -339,7 +339,7 @@ public class GamerHub {
 
 	}
 
-	public MateFindingCompassHandler getCompassHandler() {
+	public MateFindingCompass getCompassHandler() {
 		return compassHandler;
 	}
 

@@ -1,8 +1,6 @@
 package ovh.excale.mc.uhc;
 
 import org.bukkit.*;
-import org.bukkit.advancement.Advancement;
-import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,8 +8,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +29,6 @@ import ovh.excale.mc.utils.PlayerSpreader;
 import ovh.excale.mc.utils.Stopwatch;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.BOLD;
@@ -257,10 +252,10 @@ public class Game implements Listener {
 		borderActions = settings.getBorderActionIterator();
 
 		Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.instance(), this::newStart);
+				.runTaskAsynchronously(UHC.instance(), this::start);
 	}
 
-	private void newStart() {
+	private void start() {
 
 		status = STARTING;
 
@@ -314,7 +309,7 @@ public class Game implements Listener {
 		tpAnchor.await();
 
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(10000);
 		} catch(InterruptedException ignored) {
 		}
 
@@ -365,150 +360,6 @@ public class Game implements Listener {
 		stopwatch.start();
 		bedHandler.activate();
 		mobRepellent.activate();
-
-	}
-
-	private void start() {
-
-		hub.broadcast("Loading game...");
-		status = STARTING;
-		hub.broadcast("Generating world, server may lag...");
-
-		world = new WorldManager().loadSpawn(false)
-				.generateUntilClearCenter()
-				.applyRules()
-				.getWorld();
-
-		//noinspection ConstantConditions
-		WorldBorder border = world.getWorldBorder();
-		int initialBorder = settings.getInitialBorderSize();
-
-		Bukkit.getScheduler()
-				.callSyncMethod(UHC.instance(), () -> {
-					border.setSize(initialBorder);
-					return Void.TYPE;
-				});
-
-		hub.broadcast("World generated!\n - WorldName: " + world.getName() + "\n - BorderSize: " + initialBorder);
-
-		PotionEffect[] effects = new PotionEffect[] {
-				new PotionEffect(PotionEffectType.BLINDNESS, 3600, 12, false, false, false),
-				new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 3600, 12, false, false, false),
-				new PotionEffect(PotionEffectType.REGENERATION, 3600, 12, false, false, false)
-		};
-
-		try {
-			Bukkit.getScheduler()
-					.callSyncMethod(UHC.instance(), () -> {
-
-						for(Gamer gamer : hub.getGamers()) {
-							gamer.resetKillCount();
-							Player player = gamer.getPlayer();
-							for(PotionEffect effect : effects)
-								player.addPotionEffect(effect, true);
-						}
-
-						return Void.TYPE;
-					})
-					.get();
-		} catch(Exception e) {
-			UHC.log()
-					.log(Level.SEVERE, e.getMessage(), e);
-			hub.broadcast(ChatColor.RED + "An internal error has occurred");
-			status = Status.READY;
-			return;
-		}
-
-		hub.broadcast("Teleporting players...");
-
-		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 160);
-
-		Bukkit.getScheduler()
-				.callSyncMethod(UHC.instance(), () -> {
-
-					for(Bond bond : hub.getBonds()) {
-
-						hub.setEnableFriendlyFire(bond, settings.isFriendlyFireEnabled());
-						spreader.spread(bond.getGamers()
-								.stream()
-								.map(Gamer::getPlayer)
-								.toArray(Player[]::new));
-
-					}
-
-					return Void.TYPE;
-				});
-
-
-		// Wait for chunks to load
-		try {
-			Thread.sleep(4000);
-		} catch(InterruptedException ignored) {
-		}
-
-		Set<Player> players = hub.getGamers()
-				.stream()
-				.map(Gamer::getPlayer)
-				.collect(Collectors.toSet());
-
-		Bukkit.getScheduler()
-				.runTaskLater(UHC.instance(), () -> players.forEach(player -> player.setHealth(40)), 1);
-
-		for(Player player : players) {
-
-			// TODO: set saturation
-			//noinspection ConstantConditions
-			player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
-					.setBaseValue(40);
-			player.setFoodLevel(20);
-			player.setHealth(39);
-			player.setLevel(0);
-			player.getInventory()
-					.clear();
-
-			// REVOKE ALL ADVANCEMENTS | TODO: optional feature
-			Iterator<Advancement> iter = Bukkit.advancementIterator();
-			while(iter.hasNext()) {
-				Advancement advancement = iter.next();
-				AdvancementProgress progress = player.getAdvancementProgress(advancement);
-				progress.getAwardedCriteria()
-						.forEach(progress::revokeCriteria);
-			}
-
-		}
-
-		try {
-			Bukkit.getScheduler()
-					.callSyncMethod(UHC.instance(), () -> {
-
-						for(Player player : players) {
-							player.setGameMode(GameMode.SURVIVAL);
-							for(PotionEffect effect : player.getActivePotionEffects())
-								player.removePotionEffect(effect.getType());
-						}
-
-						return Void.TYPE;
-					})
-					.get();
-		} catch(Exception e) {
-			UHC.log()
-					.log(Level.SEVERE, e.getMessage(), e);
-			hub.broadcast(ChatColor.RED + "An internal error has occurred");
-			status = Status.READY;
-			return;
-		}
-
-		// Call GameStartEvent on game start
-		Bukkit.getPluginManager()
-				.callEvent(new GameStartEvent(this));
-
-		for(Player player : players)
-			player.sendTitle("UHC", "Let the ^^^ start!", 10, 70, 20);
-
-		runTask = Bukkit.getScheduler()
-				.runTaskAsynchronously(UHC.instance(), this::run);
-		status = RUNNING;
-		stopwatch.start();
 
 	}
 
