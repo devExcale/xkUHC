@@ -77,13 +77,14 @@ public class Game implements Listener {
 		PluginManager pluginManager = Bukkit.getPluginManager();
 
 		// GAMER RECONNECT EVENT
-		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
-				UHC.instance());
+		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH,
+				(listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event), UHC.instance());
 		// GAMER DISCONNECT EVENT
-		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
-				UHC.instance());
+		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH,
+				(listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event), UHC.instance());
 		// GAMER DEATH EVENT
-		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.instance());
+		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH,
+				(listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), UHC.instance());
 
 		initScoreboardProcessor();
 
@@ -171,7 +172,8 @@ public class Game implements Listener {
 
 			String s = "> " + BOLD + "Remaining:" + RESET + " N/A";
 			if(currentAction != null)
-				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) + "s";
+				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) +
+						"s";
 
 			return s;
 		});
@@ -530,7 +532,8 @@ public class Game implements Listener {
 
 		}
 
-		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
+		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(),
+				borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
 
 	}
 
@@ -687,6 +690,9 @@ public class Game implements Listener {
 				if(itemStack != null)
 					world.dropItemNaturally(location, itemStack);
 
+			// Play death sound
+			player.playSound(player, Sound.ENTITY_PLAYER_DEATH, 100, 0);
+
 			// clear inventory after dropping
 			player.getInventory()
 					.clear();
@@ -705,7 +711,9 @@ public class Game implements Listener {
 
 			message = switch(event.getDamageCause()) {
 				case PROJECTILE -> msg.game("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
-				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.game("death.reason.ENTITY_ATTACK.default");
+				case ENTITY_ATTACK -> (isPK)
+						? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player")
+						: msg.game("death.reason.ENTITY_ATTACK.default");
 				default -> msg.game("death.reason." + event.getDamageCause());
 			};
 
@@ -745,7 +753,9 @@ public class Game implements Listener {
 				if(bondsLeft.size() == 1) {
 
 					Bond winnerBond = bondsLeft.get(0);
-					hub.broadcast("There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() + RESET + " wins!");
+					hub.broadcast(
+							"There only is one bond remaining. Bond " + winnerBond.getColor() + winnerBond.getName() +
+									RESET + " wins!");
 
 					stop();
 
