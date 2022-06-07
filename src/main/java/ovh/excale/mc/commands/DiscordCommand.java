@@ -11,6 +11,7 @@ import dev.jorel.commandapi.annotations.arguments.APlayerArgument;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.channel.VoiceChannel;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -37,51 +38,68 @@ public class DiscordCommand {
 
 		MessageFormatter formatter = new MessageFormatter();
 
-		try {
-			switch(action) {
+		switch(action) {
 
-				case "enable" -> {
+			case "enable" -> {
 
-					// Get token and guildId from config file
-					ConfigurationSection config = UHC.instance()
-							.getConfig();
+				if(DiscordEndpoint.getInstance() != null)
+					throw CommandAPI.fail(formatter.formatFail(msg.discord("integration.is_enabled")));
 
-					String token = config.getString("discord.token");
-					long guildId = config.getLong("discord.guildId");
+				// Get token and guildId from config file
+				ConfigurationSection config = UHC.instance()
+						.getConfig();
 
-					try {
+				String token = config.getString("discord.token");
+				long guildId = config.getLong("discord.guildId");
 
-						DiscordEndpoint.open(token, guildId);
+				Bukkit.getScheduler()
+						.runTaskAsynchronously(UHC.instance(), () -> {
 
-					} catch(IllegalStateException e) {
-						throw CommandAPI.fail(msg.discord("integration.is_enabled"));
-					}
+							sender.sendMessage(formatter.formatFine(msg.discord("integration.loading")));
 
-					sender.sendMessage(formatter.formatFine(msg.discord("integration.enabled")));
+							try {
 
-				}
+								DiscordEndpoint.open(token, guildId);
+								sender.sendMessage(formatter.formatFine(msg.discord("integration.enabled")));
 
-				case "disable" -> {
+							} catch(Exception e) {
 
-					DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
+								sender.sendMessage(formatter.formatFail(e.getMessage()));
+								DiscordEndpoint.close();
 
-					if(endpoint == null)
-						throw CommandAPI.fail(msg.discord("integration.is_disabled"));
+							}
 
-					DiscordEndpoint.close();
-
-					sender.sendMessage(formatter.formatFine(msg.discord("integration.disabled")));
-
-				}
-
-				default -> throw CommandAPI.fail(msg.main("error.unknown_option"));
+						});
 
 			}
 
-		} catch(RuntimeException e) {
+			case "disable" -> {
 
-			DiscordEndpoint.close();
-			throw CommandAPI.fail(e.getMessage());
+				DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
+
+				if(endpoint == null)
+					throw CommandAPI.fail(msg.discord("integration.is_disabled"));
+
+				Bukkit.getScheduler()
+						.runTaskAsynchronously(UHC.instance(), () -> {
+
+							try {
+
+								DiscordEndpoint.close();
+								sender.sendMessage(formatter.formatFine(msg.discord("integration.disabled")));
+
+							} catch(Exception e) {
+
+								sender.sendMessage(formatter.formatFail(e.getMessage()));
+								DiscordEndpoint.close();
+
+							}
+
+						});
+
+			}
+
+			default -> throw CommandAPI.fail(msg.main("error.unknown_option"));
 
 		}
 
