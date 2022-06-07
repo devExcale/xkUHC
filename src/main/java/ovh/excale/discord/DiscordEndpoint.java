@@ -11,12 +11,13 @@ import discord4j.core.object.entity.channel.Category;
 import discord4j.core.object.entity.channel.Channel;
 import discord4j.core.object.entity.channel.VoiceChannel;
 import discord4j.core.shard.GatewayBootstrap;
+import discord4j.core.spec.GuildMemberEditSpec;
+import discord4j.core.spec.VoiceChannelCreateSpec;
 import discord4j.gateway.intent.Intent;
 import discord4j.gateway.intent.IntentSet;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.core.Bond;
@@ -116,8 +117,10 @@ public class DiscordEndpoint implements Listener {
 		category = guild.createCategory(categoryCreateSpec -> categoryCreateSpec.setName("xkUHC"))
 				.block();
 
-		spectChannel = guild.createVoiceChannel(channelSpec -> channelSpec.setName("Spectators")
-						.setParentId(category.getId()))
+		spectChannel = guild.createVoiceChannel(VoiceChannelCreateSpec.builder()
+						.name("Spectators")
+						.parentId(category.getId())
+						.build())
 				.block();
 
 		Set<Bond> bonds = gameStartEvent.getGame()
@@ -126,8 +129,10 @@ public class DiscordEndpoint implements Listener {
 
 		for(Bond bond : bonds) {
 
-			VoiceChannel channel = guild.createVoiceChannel(channelSpec -> channelSpec.setName(bond.getName())
-							.setParentId(category.getId()))
+			VoiceChannel channel = guild.createVoiceChannel(VoiceChannelCreateSpec.builder()
+							.name(bond.getName())
+							.parentId(category.getId())
+							.build())
 					.block();
 
 			bondChannels.put(bond.getName(), channel);
@@ -153,7 +158,7 @@ public class DiscordEndpoint implements Listener {
 				.filter(member -> member.getVoiceState()
 						.flatMap(VoiceState::getChannel)
 						.block() != null)
-				.flatMap(member -> member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId())))
+				.flatMap(this::moveUserToMainChannel)
 				.blockLast();
 
 		// Delete all channels
@@ -206,8 +211,10 @@ public class DiscordEndpoint implements Listener {
 		Member member = users.get(gamer.getUniqueId());
 		Bond bond = gamer.getBond();
 
-		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(bondChannels.get(bond.getName())
-						.getId()))
+		member.edit(GuildMemberEditSpec.builder()
+						.newVoiceChannelOrNull(bondChannels.get(bond.getName())
+								.getId())
+						.build())
 				.block();
 
 	}
@@ -216,8 +223,19 @@ public class DiscordEndpoint implements Listener {
 	public void moveUserToMainChannel(Gamer gamer) {
 
 		Member member = users.get(gamer.getUniqueId());
-		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(mainChannel.getId()))
+		member.edit(GuildMemberEditSpec.builder()
+						.newVoiceChannelOrNull(mainChannel.getId())
+						.build())
 				.block();
+
+	}
+
+	// move user (Discord) to main channel
+	public Mono<Member> moveUserToMainChannel(Member member) {
+
+		return member.edit(GuildMemberEditSpec.builder()
+				.newVoiceChannelOrNull(mainChannel.getId())
+				.build());
 
 	}
 
@@ -225,7 +243,9 @@ public class DiscordEndpoint implements Listener {
 	public void moveUserToSpectatorChannel(Gamer gamer) {
 
 		Member member = users.get(gamer.getUniqueId());
-		member.edit(memberSpec -> memberSpec.setNewVoiceChannel(spectChannel.getId()))
+		member.edit(GuildMemberEditSpec.builder()
+						.newVoiceChannelOrNull(spectChannel.getId())
+						.build())
 				.block();
 
 	}
