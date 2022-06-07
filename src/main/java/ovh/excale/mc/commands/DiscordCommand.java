@@ -17,6 +17,8 @@ import org.bukkit.entity.Player;
 import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.utils.MessageBundles;
+import ovh.excale.mc.utils.MessageFormatter;
 
 @Alias("ds")
 @Command("discord")
@@ -25,11 +27,15 @@ public class DiscordCommand {
 	@Default
 	public static void toggleEnable(CommandSender sender, @AMultiLiteralArgument({ "enable", "disable" }) String action) throws WrapperCommandSyntaxException {
 
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
 		// TODO: GAME STATUS CHECK
 		Game game = UHC.getGame();
-
 		if(game == null)
-			throw CommandAPI.fail("No game found");
+			throw CommandAPI.fail(msg.main("game.no_game"));
+
+		MessageFormatter formatter = new MessageFormatter();
 
 		try {
 			switch(action) {
@@ -48,10 +54,10 @@ public class DiscordCommand {
 						DiscordEndpoint.open(token, guildId);
 
 					} catch(IllegalStateException e) {
-						throw CommandAPI.fail("Discord integration already enabled");
+						throw CommandAPI.fail(msg.discord("integration.is_enabled"));
 					}
 
-					sender.sendMessage("Discord integration successfully enabled");
+					sender.sendMessage(formatter.formatFine(msg.discord("integration.enabled")));
 
 				}
 
@@ -60,14 +66,15 @@ public class DiscordCommand {
 					DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 					if(endpoint == null)
-						throw CommandAPI.fail("Discord integration is already disabled");
+						throw CommandAPI.fail(msg.discord("integration.is_disabled"));
 
 					DiscordEndpoint.close();
-					sender.sendMessage("Discord integration disabled");
+
+					sender.sendMessage(formatter.formatFine(msg.discord("integration.disabled")));
 
 				}
 
-				default -> throw CommandAPI.fail("Unknown option");
+				default -> throw CommandAPI.fail(msg.main("error.unknown_option"));
 
 			}
 
@@ -83,15 +90,22 @@ public class DiscordCommand {
 	@Subcommand("user")
 	public static void bindUser(CommandSender sender, @APlayerArgument Player player, @ALongArgument long userId) throws WrapperCommandSyntaxException {
 
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 		if(endpoint == null)
-			throw CommandAPI.fail("Discord integration is not enabled");
+			throw CommandAPI.fail(msg.discord("integration.not_enabled"));
+
+		MessageFormatter formatter = new MessageFormatter();
 
 		try {
 
 			Member member = endpoint.bindPlayer(player, userId);
-			sender.sendMessage("Player " + player.getDisplayName() + " bound correctly to " + member.getDisplayName());
+			sender.sendMessage(formatter.custom("gamer", player.getDisplayName())
+					.custom("user", member.getDisplayName())
+					.formatFine(msg.discord("player.linked")));
 
 		} catch(IllegalArgumentException e) {
 			throw CommandAPI.fail(e.getMessage());
@@ -102,15 +116,21 @@ public class DiscordCommand {
 	@Subcommand("mainchannel")
 	public static void mainChannel(CommandSender sender, @ALongArgument long channelId) throws WrapperCommandSyntaxException {
 
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 		if(endpoint == null)
-			throw CommandAPI.fail("Discord integration is not enabled");
+			throw CommandAPI.fail(msg.discord("integration.not_enabled"));
+
+		MessageFormatter formatter = new MessageFormatter();
 
 		try {
 
 			VoiceChannel channel = endpoint.setMainChannel(channelId);
-			sender.sendMessage("Set <" + channel.getName() + "> as main channel");
+			sender.sendMessage(formatter.custom("channelName", channel.getName())
+					.formatFine(msg.discord("channel.set_main")));
 
 		} catch(IllegalArgumentException e) {
 			throw CommandAPI.fail(e.getMessage());

@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 public class MessageBundles {
 
 	private final ResourceBundle main;
+	private final ResourceBundle discord;
 	private final YamlConfiguration gameOriginal;
 	private final YamlConfiguration gameUser;
 
@@ -22,8 +23,10 @@ public class MessageBundles {
 
 	public MessageBundles(@NotNull Plugin plugin) {
 
-		main = ResourceBundle.getBundle("messages.main");
 		log = plugin.getLogger();
+
+		main = ResourceBundle.getBundle("messages.main");
+		discord = ResourceBundle.getBundle("messages.discord");
 
 		//noinspection ConstantConditions
 		gameOriginal = YamlConfiguration.loadConfiguration(new InputStreamReader(getClass().getClassLoader()
@@ -47,6 +50,22 @@ public class MessageBundles {
 
 		} else
 			msg = main.getString(key)
+					.formatted(args);
+
+		return msg;
+	}
+
+	public String discord(@NotNull String key, Object... args) {
+
+		String msg;
+
+		if(!discord.containsKey(key)) {
+
+			log.warning("Could not find discord message with key " + key);
+			msg = key;
+
+		} else
+			msg = discord.getString(key)
 					.formatted(args);
 
 		return msg;
