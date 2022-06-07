@@ -26,11 +26,13 @@ import ovh.excale.mc.uhc.core.events.GameStartEvent;
 import ovh.excale.mc.uhc.core.events.GameStopEvent;
 import ovh.excale.mc.uhc.core.events.GamerDeathEvent;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.*;
 
 import static discord4j.core.object.entity.channel.Channel.Type.GUILD_VOICE;
 
+@SuppressWarnings("BlockingMethodInNonBlockingContext")
 public class DiscordEndpoint implements Listener {
 
 	private static DiscordEndpoint instance;
@@ -96,26 +98,16 @@ public class DiscordEndpoint implements Listener {
 		if(guild == null)
 			throw new RuntimeException("Couldn't find guild with provided id: " + guildId);
 
-		// REGISTER GAME START EVENT
 		Bukkit.getPluginManager()
-				.registerEvent(GameStartEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGameStart((GameStartEvent) event), UHC.instance());
-
-		// REGISTER GAME STOP EVENT
-		Bukkit.getPluginManager()
-				.registerEvent(GameStopEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGameStop((GameStopEvent) event), UHC.instance());
-
-		// REGISTER GAMER DEATH EVENT
-		Bukkit.getPluginManager()
-				.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((DiscordEndpoint) listener).onGamerDeath((GamerDeathEvent) event),
-						UHC.instance());
+				.registerEvents(this, UHC.instance());
 
 	}
 
 	@EventHandler
 	private void onGameStart(GameStartEvent gameStartEvent) {
 
-		category = guild.createCategory(categoryCreateSpec -> categoryCreateSpec.setName("xkUHC"))
-				.block();
+		category = Objects.requireNonNull(guild.createCategory("xkUHC")
+				.block());
 
 		spectChannel = guild.createVoiceChannel(VoiceChannelCreateSpec.builder()
 						.name("Spectators")
