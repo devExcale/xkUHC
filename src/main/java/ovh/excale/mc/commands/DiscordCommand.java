@@ -29,46 +29,53 @@ public class DiscordCommand {
 		Game game = UHC.getGame();
 
 		if(game == null)
-			CommandAPI.fail("No game found");
+			throw CommandAPI.fail("No game found");
 
 		try {
 			switch(action) {
-				case "enable":
+
+				case "enable" -> {
 
 					// Get token and guildId from config file
 					ConfigurationSection config = UHC.instance()
 							.getConfig();
+
 					String token = config.getString("discord.token");
 					long guildId = config.getLong("discord.guildId");
 
 					try {
+
 						DiscordEndpoint.open(token, guildId);
+
 					} catch(IllegalStateException e) {
-						CommandAPI.fail("Discord integration already enabled");
+						throw CommandAPI.fail("Discord integration already enabled");
 					}
 
 					sender.sendMessage("Discord integration successfully enabled");
 
-					break;
+				}
 
-				case "disable":
+				case "disable" -> {
 
 					DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
+
 					if(endpoint == null)
-						CommandAPI.fail("Discord integration is already disabled");
+						throw CommandAPI.fail("Discord integration is already disabled");
 
 					DiscordEndpoint.close();
 					sender.sendMessage("Discord integration disabled");
 
-					break;
+				}
 
-				default:
-					CommandAPI.fail("Unknown option");
+				default -> throw CommandAPI.fail("Unknown option");
 
 			}
+
 		} catch(RuntimeException e) {
+
 			DiscordEndpoint.close();
-			CommandAPI.fail(e.getMessage());
+			throw CommandAPI.fail(e.getMessage());
+
 		}
 
 	}
@@ -79,7 +86,7 @@ public class DiscordCommand {
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 		if(endpoint == null)
-			CommandAPI.fail("Discord integration is not enabled");
+			throw CommandAPI.fail("Discord integration is not enabled");
 
 		try {
 
@@ -87,7 +94,7 @@ public class DiscordCommand {
 			sender.sendMessage("Player " + player.getDisplayName() + " bound correctly to " + member.getDisplayName());
 
 		} catch(IllegalArgumentException e) {
-			CommandAPI.fail(e.getMessage());
+			throw CommandAPI.fail(e.getMessage());
 		}
 
 	}
@@ -98,7 +105,7 @@ public class DiscordCommand {
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 		if(endpoint == null)
-			CommandAPI.fail("Discord integration is not enabled");
+			throw CommandAPI.fail("Discord integration is not enabled");
 
 		try {
 
@@ -106,7 +113,7 @@ public class DiscordCommand {
 			sender.sendMessage("Set <" + channel.getName() + "> as main channel");
 
 		} catch(IllegalArgumentException e) {
-			CommandAPI.fail(e.getMessage());
+			throw CommandAPI.fail(e.getMessage());
 		}
 
 	}

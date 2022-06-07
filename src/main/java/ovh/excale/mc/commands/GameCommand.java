@@ -145,7 +145,7 @@ public class GameCommand {
 
 		Game game = UHC.getGame();
 
-		if(game != null && !game.getStatus()
+		if(game == null || !game.getStatus()
 				.isEditable()) {
 
 			Plugin plugin = UHC.instance();
