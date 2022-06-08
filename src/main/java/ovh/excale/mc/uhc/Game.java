@@ -2,6 +2,7 @@ package ovh.excale.mc.uhc;
 
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -15,6 +16,7 @@ import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.eventhandlers.AsyncTeleportAnchor;
 import ovh.excale.mc.eventhandlers.BedInteractionHandler;
+import ovh.excale.mc.eventhandlers.GodModeHandler;
 import ovh.excale.mc.eventhandlers.MobRepellentHandler;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
@@ -48,6 +50,7 @@ public class Game implements Listener {
 
 	private final BedInteractionHandler bedHandler;
 	private final MobRepellentHandler mobRepellent;
+	private final GodModeHandler godMode;
 
 	private BukkitTask runTask;
 	private Status status;
@@ -67,6 +70,7 @@ public class Game implements Listener {
 
 		bedHandler = new BedInteractionHandler();
 		mobRepellent = new MobRepellentHandler(this);
+		godMode = new GodModeHandler();
 
 		msg = UHC.instance()
 				.getMessages();
@@ -320,6 +324,13 @@ public class Game implements Listener {
 		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 80);
 		AsyncTeleportAnchor tpAnchor = new AsyncTeleportAnchor();
 
+		godMode.setIds(hub.getGamers()
+				.stream()
+				.map(Gamer::getPlayer)
+				.map(Entity::getUniqueId)
+				.collect(Collectors.toSet()));
+		godMode.enable();
+
 		Bukkit.getScheduler()
 				.callSyncMethod(UHC.instance(), () -> {
 
@@ -391,6 +402,8 @@ public class Game implements Listener {
 				.runTaskAsynchronously(UHC.instance(), this::run);
 		status = RUNNING;
 
+		godMode.enableTime(200);
+
 		stopwatch.start();
 		bedHandler.activate();
 		mobRepellent.activate();
@@ -449,6 +462,8 @@ public class Game implements Listener {
 
 		bedHandler.deactivate();
 		mobRepellent.deactivate();
+
+		godMode.enableTime(820);
 
 		hub.broadcast(msg.main("game.end_tp"));
 
