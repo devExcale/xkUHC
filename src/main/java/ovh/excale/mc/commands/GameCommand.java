@@ -78,6 +78,22 @@ public class GameCommand {
 
 	}
 
+	@Subcommand("confirm")
+	public static void confirmStart(CommandSender sender) throws WrapperCommandSyntaxException {
+
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
+		Game game = UHC.getGame();
+		if(game == null)
+			throw CommandAPI.fail(msg.main("game.no_game"));
+
+		game.setConfirmStart(true);
+
+		sender.sendMessage(new MessageFormatter().formatFine(msg.main("game.confirmed")));
+
+	}
+
 	@Subcommand("stop")
 	public static void stopGame(CommandSender sender) throws WrapperCommandSyntaxException {
 
@@ -162,8 +178,7 @@ public class GameCommand {
 	}
 
 	@Subcommand("random")
-	public static void createRandomTeams(CommandSender sender,
-			@AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
+	public static void createRandomTeams(CommandSender sender, @AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
 
 		if(bondQty < 2)
 			throw CommandAPI.fail("Can't create less than two teams");

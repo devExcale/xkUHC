@@ -11,6 +11,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.eventhandlers.AsyncTeleportAnchor;
 import ovh.excale.mc.eventhandlers.BedInteractionHandler;
@@ -57,6 +58,7 @@ public class Game implements Listener {
 	private GameSettings settings;
 	private Iterator<BorderAction> borderActions;
 	private BorderAction currentAction;
+	private boolean confirmStart;
 
 	public Game() {
 		hub = new GamerHub(this);
@@ -75,6 +77,7 @@ public class Game implements Listener {
 		world = null;
 		settings = null;
 		currentAction = null;
+		confirmStart = false;
 
 		PluginManager pluginManager = Bukkit.getPluginManager();
 
@@ -227,6 +230,15 @@ public class Game implements Listener {
 		return scoreboardProcessor;
 	}
 
+	public boolean getConfirmStart() {
+		return confirmStart;
+	}
+
+	public Game setConfirmStart(boolean confirm) {
+		confirmStart = confirm;
+		return this;
+	}
+
 	public void tryStart() throws IllegalStateException {
 		settings = GameSettings.fromConfig();
 		if(!settings.isLegal())
@@ -248,6 +260,28 @@ public class Game implements Listener {
 		if(hub.getBonds()
 				.size() < 2)
 			throw new IllegalStateException(msg.main("game.no_bonds"));
+
+		DiscordEndpoint discord = DiscordEndpoint.getInstance();
+		if(discord != null) {
+
+			if(!discord.hasMainChannel())
+				throw new IllegalStateException(msg.discord("error.no_main_ch"));
+
+			Set<UUID> linked = discord.getLinkedPlayers();
+			String unlinked = hub.getGamers()
+					.stream()
+					.map(Gamer::getPlayer)
+					.filter(player -> !linked.contains(player.getUniqueId()))
+					.map(Player::getDisplayName)
+					.collect(Collectors.joining(", "));
+
+			String message = new MessageFormatter().custom("unlinked", unlinked)
+					.format(msg.discord("error.unlinked"));
+
+			if(!unlinked.isEmpty() && !confirmStart)
+				throw new IllegalStateException(message);
+
+		}
 
 		borderActions = settings.getBorderActionIterator();
 

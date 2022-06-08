@@ -106,7 +106,7 @@ public class DiscordCommand {
 	}
 
 	@Subcommand("user")
-	public static void bindUser(CommandSender sender, @APlayerArgument Player player, @ALongArgument long userId) throws WrapperCommandSyntaxException {
+	public static void linkUser(CommandSender sender, @APlayerArgument Player player, @ALongArgument long userId) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = UHC.instance()
 				.getMessages();
@@ -120,7 +120,7 @@ public class DiscordCommand {
 
 		try {
 
-			Member member = endpoint.bindPlayer(player, userId);
+			Member member = endpoint.linkPlayer(player, userId);
 			sender.sendMessage(formatter.custom("gamer", player.getDisplayName())
 					.custom("user", member.getDisplayName())
 					.formatFine(msg.discord("player.linked")));

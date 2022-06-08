@@ -83,6 +83,10 @@ public class DiscordEndpoint implements Listener {
 		users = Collections.synchronizedMap(new HashMap<>());
 		bondChannels = Collections.synchronizedMap(new HashMap<>());
 
+		category = null;
+		mainChannel = null;
+		spectChannel = null;
+
 		client = DiscordClientBuilder.create(token)
 				.build()
 				.login()
@@ -101,6 +105,10 @@ public class DiscordEndpoint implements Listener {
 		Bukkit.getPluginManager()
 				.registerEvents(this, UHC.instance());
 
+	}
+
+	public boolean hasMainChannel() {
+		return mainChannel != null;
 	}
 
 	@EventHandler
@@ -200,8 +208,11 @@ public class DiscordEndpoint implements Listener {
 	// get user (Discord) from gamer (MC) and move him to team channel
 	public void moveUserToTeamChannel(Gamer gamer) {
 
-		Member member = users.get(gamer.getUniqueId());
 		Bond bond = gamer.getBond();
+		Member member = users.get(gamer.getUniqueId());
+
+		if(member == null)
+			return;
 
 		member.edit(GuildMemberEditSpec.builder()
 						.newVoiceChannelOrNull(bondChannels.get(bond.getName())
@@ -256,8 +267,8 @@ public class DiscordEndpoint implements Listener {
 		return mainChannel = (VoiceChannel) channel;
 	}
 
-	// bind gamer to Discord user by given Discord user id
-	public Member bindPlayer(Player player, long userId) throws IllegalArgumentException {
+	// link gamer to Discord user by given Discord user id
+	public Member linkPlayer(Player player, long userId) throws IllegalArgumentException {
 
 		UUID uuid = player.getUniqueId();
 		Member member = client.getMemberById(guild.getId(), Snowflake.of(userId))
@@ -269,6 +280,10 @@ public class DiscordEndpoint implements Listener {
 		users.put(uuid, member);
 
 		return member;
+	}
+
+	public Set<UUID> getLinkedPlayers() {
+		return Set.copyOf(users.keySet());
 	}
 
 	// get Discord user by given gamer
