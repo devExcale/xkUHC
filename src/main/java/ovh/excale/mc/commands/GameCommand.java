@@ -16,6 +16,7 @@ import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.world.WorldUtils;
+import ovh.excale.mc.utils.FakerWrapper;
 import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.MessageFormatter;
 
@@ -180,21 +181,31 @@ public class GameCommand {
 	@Subcommand("random")
 	public static void createRandomTeams(CommandSender sender, @AIntegerArgument Integer bondQty) throws WrapperCommandSyntaxException {
 
+		MessageBundles msg = UHC.instance()
+				.getMessages();
+
 		if(bondQty < 2)
-			throw CommandAPI.fail("Can't create less than two teams");
+			throw CommandAPI.fail(msg.main("bond.less_two"));
 
 		Game game = UHC.getGame();
 
 		if(game == null)
-			throw CommandAPI.fail("No game found");
+			throw CommandAPI.fail(msg.main("game.no_game"));
 
 		// TODO: check for other bonds / game status
 
 		GamerHub hub = game.getHub();
 		List<Gamer> gamers = new LinkedList<>();
 
+		Set<UUID> bounded = hub.getGamers()
+				.stream()
+				.map(Gamer::getUniqueId)
+				.collect(Collectors.toSet());
+
 		Bukkit.getServer()
 				.getOnlinePlayers()
+				.stream()
+				.filter(player -> !bounded.contains(player.getUniqueId()))
 				.forEach(player -> {
 
 					Gamer gamer = hub.register(player);
@@ -202,10 +213,13 @@ public class GameCommand {
 
 				});
 
+		if(gamers.size() == 0)
+			throw CommandAPI.fail(msg.main("bond.gamers_all_bound"));
+
 		Collections.shuffle(gamers);
 
 		if(gamers.size() < bondQty)
-			throw CommandAPI.fail("Too many teams");
+			throw CommandAPI.fail(msg.main("bond.too_many_bounds"));
 
 		List<ChatColor> colors = Arrays.stream(ChatColor.values())
 				.filter(ChatColor::isColor)
@@ -213,13 +227,30 @@ public class GameCommand {
 		Collections.shuffle(colors);
 		Iterator<ChatColor> iterColors = colors.iterator();
 
+		String fakerString = UHC.instance()
+				.getConfig()
+				.getString("faker", "esports.team");
+		FakerWrapper faker;
+		try {
+			faker = new FakerWrapper(fakerString);
+		} catch(IllegalArgumentException e) {
+			throw CommandAPI.fail(msg.main("error.illegal_faker"));
+		}
+
 		Bond[] bonds = IntStream.range(1, bondQty + 1)
-				.mapToObj(i -> hub.createBond("Team" + i))
+				.mapToObj(i -> hub.createBond(faker.getString())) //"Team" + i
 				.peek(bond -> hub.setBondColor(bond, iterColors.next()))
 				.toArray(Bond[]::new);
 		AtomicInteger iBonds = new AtomicInteger(0);
 
 		gamers.forEach(gamer -> hub.boundGamer(bonds[iBonds.getAndIncrement() % bondQty], gamer));
+
+		MessageFormatter formatter = new MessageFormatter()
+				.addColors();
+
+		sender.sendMessage(formatter.custom("nBonds", bonds.length)
+				.custom("nGamers", gamers.size())
+				.formatFine(msg.game("bond.created_n")));
 
 	}
 

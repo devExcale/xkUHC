@@ -11,6 +11,7 @@ import ovh.excale.mc.uhc.Game.Status;
 import ovh.excale.mc.uhc.world.WorldUtils;
 import ovh.excale.mc.utils.MessageBundles;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -18,6 +19,7 @@ public class UHC extends JavaPlugin {
 
 	public static boolean DEBUG;
 	private static UHC instance;
+	private static Locale defaultLocale;
 
 	public static UHC instance() {
 		return instance;
@@ -35,6 +37,10 @@ public class UHC extends JavaPlugin {
 		instance.coreGame = game;
 	}
 
+	public static Locale getDefaultLocale() {
+		return  defaultLocale;
+	}
+
 	private Game coreGame;
 	private MessageBundles msg;
 
@@ -49,6 +55,8 @@ public class UHC extends JavaPlugin {
 
 		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
 				.toString());
+
+		defaultLocale = new Locale(getConfig().getString("locale", "en-US"));
 
 	}
 
