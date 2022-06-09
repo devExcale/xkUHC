@@ -34,7 +34,7 @@ public class FakerWrapper {
 	}
 
 	/**
-	 * A methot wich returns the string passed in the constructor
+	 * A method which returns the string passed in the constructor
 	 *
 	 * @return The {@link String} passed in the constructor
 	 */
@@ -43,7 +43,7 @@ public class FakerWrapper {
 	}
 
 	/**
-	 * The Enumerator class wich handles the conversion from string to faker method
+	 * The Enumerator class which handles the conversion from string to faker method
 	 */
 	public enum FakerEnum {
 		// TODO: create enum for all faker random methods
@@ -61,7 +61,7 @@ public class FakerWrapper {
 		}
 
 		/**
-		 * The method wich list all the {@link FakerEnum} entries and return the entry wich name corrispond to the given string
+		 * The method which list all the {@link FakerEnum} entries and return the entry which name correspond to the given string
 		 *
 		 * @param name The {@link String} to search in the entries names
 		 * @return The {@link FakerEnum} entry if the string matches, if not returns null
@@ -77,9 +77,9 @@ public class FakerWrapper {
 	}
 
 	/**
-	 * The method wich invokes the faker method and returns the random {@link String}
+	 * The method which invokes the faker method and returns the random {@link String}
 	 *
-	 * @return The random {@link String} wich the {@link Faker} method returns
+	 * @return The random {@link String} which the {@link Faker} method returns
 	 */
 	public String getString() {
 		return fakerEnum.function.get();
