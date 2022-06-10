@@ -10,7 +10,6 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.core.Bond;
@@ -159,21 +158,18 @@ public class GameCommand {
 	@Subcommand("reload")
 	public static void reloadConfiguration(CommandSender sender) throws WrapperCommandSyntaxException {
 
-		MessageBundles msg = UHC.instance()
-				.getMessages();
+		UHC instance = UHC.instance();
+		MessageBundles msg = instance.getMessages();
 
 		Game game = UHC.getGame();
 
-		if(game == null || !game.getStatus()
-				.isEditable()) {
-
-			Plugin plugin = UHC.instance();
-			plugin.reloadConfig();
-			UHC.DEBUG = plugin.getConfig()
-					.getBoolean("debug", false);
-
-		} else
+		if(game != null && !game.getStatus()
+				.isEditable())
 			throw CommandAPI.fail(msg.main("game.running"));
+
+		instance.reloadConfig();
+		UHC.DEBUG = instance.getConfig()
+				.getBoolean("debug", false);
 
 		sender.sendMessage(new MessageFormatter().addColors()
 				.formatFine(msg.main("config.reloaded")));
