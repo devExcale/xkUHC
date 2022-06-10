@@ -1,7 +1,6 @@
 package ovh.excale.mc.uhc;
 
 import org.bukkit.*;
-import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,10 +35,13 @@ import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.BOLD;
 import static org.bukkit.ChatColor.RESET;
+import static org.bukkit.GameMode.SPECTATOR;
 import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
+import static org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT;
+import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static ovh.excale.mc.uhc.Game.Status.RUNNING;
 import static ovh.excale.mc.uhc.Game.Status.STARTING;
-import static ovh.excale.mc.uhc.misc.BorderAction.ActionType;
+import static ovh.excale.mc.uhc.misc.BorderAction.ActionType.SHRINK;
 
 public class Game implements Listener {
 
@@ -413,33 +415,24 @@ public class Game implements Listener {
 	private void run() {
 
 		stopwatch.lap();
+
 		currentAction = borderActions.next();
+		BorderAction.ActionType actionType = currentAction.getType();
+
 		BukkitScheduler scheduler = Bukkit.getScheduler();
 
-		Sound sound;
+		if(actionType == SHRINK)
+			scheduler.callSyncMethod(UHC.instance(), () -> {
 
-		if(currentAction.getType() == ActionType.SHRINK) {
+				world.getWorldBorder()
+						.setSize(currentAction.getBorderSize(), currentAction.getMinutes() * 60L);
+				return null;
 
-			WorldBorder border = world.getWorldBorder();
-			Bukkit.getScheduler()
-					.callSyncMethod(UHC.instance(), () -> {
-						border.setSize(currentAction.getBorderSize(), currentAction.getMinutes() * 60L);
-						return null;
-					});
+			});
 
-			sound = Sound.ENTITY_PLAYER_BREATH;
-
-		} else
-			sound = Sound.BLOCK_ANVIL_PLACE;
-
-		for(Gamer gamer : hub.getGamers()) {
-			Player player = gamer.getPlayer();
-
-			player.playSound(player.getLocation(), sound, 1, 1);
-			player.sendMessage(currentAction.getType()
-					.getMessage());
-
-		}
+		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
+		hub.broadcast(new MessageFormatter().addColors()
+				.formatFine(msg.game(actionType.getMessageKey())));
 
 		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
 
@@ -479,7 +472,7 @@ public class Game implements Listener {
 						Player player = gamer.getPlayer();
 
 						//noinspection ConstantConditions
-						player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+						player.getAttribute(GENERIC_MAX_HEALTH)
 								.setBaseValue(20);
 						player.setHealth(20);
 						player.setFoodLevel(20);
@@ -603,7 +596,7 @@ public class Game implements Listener {
 					world.dropItemNaturally(location, itemStack);
 
 			// Play death sound
-			player.playSound(player, Sound.ENTITY_PLAYER_DEATH, 100, 0);
+			player.playSound(player, ENTITY_PLAYER_ATTACK_CRIT, 100, 0);
 
 			// clear inventory after dropping
 			player.getInventory()
@@ -612,10 +605,10 @@ public class Game implements Listener {
 			Bond bond = gamer.getBond();
 
 			//noinspection ConstantConditions
-			player.getAttribute(Attribute.GENERIC_MAX_HEALTH)
+			player.getAttribute(GENERIC_MAX_HEALTH)
 					.setBaseValue(20);
 			player.setHealth(20);
-			player.setGameMode(GameMode.SPECTATOR);
+			player.setGameMode(SPECTATOR);
 			gamer.setAlive(false);
 
 			String message;
@@ -660,6 +653,7 @@ public class Game implements Listener {
 
 				}
 			}
+
 		} else
 			player.setHealth(0);
 

@@ -32,17 +32,17 @@ public class BorderAction {
 
 	public enum ActionType {
 
-		HOLD("The border is holding still..."),
-		SHRINK("The border is shrinking!");
+		HOLD("border.hold"),
+		SHRINK("border.shrink");
 
-		private final String message;
+		private final String msgKey;
 
-		ActionType(String message) {
-			this.message = message;
+		ActionType(String msgKey) {
+			this.msgKey = msgKey;
 		}
 
-		public String getMessage() {
-			return message;
+		public String getMessageKey() {
+			return msgKey;
 		}
 
 		public static @Nullable ActionType parse(String value) {
