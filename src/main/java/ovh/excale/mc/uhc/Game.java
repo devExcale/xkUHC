@@ -21,9 +21,9 @@ import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.core.events.*;
-import ovh.excale.mc.uhc.misc.BorderAction;
-import ovh.excale.mc.uhc.misc.GameSettings;
-import ovh.excale.mc.uhc.misc.ScoreboardProcessor;
+import ovh.excale.mc.uhc.configuration.BorderAction;
+import ovh.excale.mc.uhc.configuration.GameSettings;
+import ovh.excale.mc.uhc.configuration.ScoreboardProcessor;
 import ovh.excale.mc.uhc.world.WorldManager;
 import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.MessageFormatter;
@@ -41,7 +41,7 @@ import static org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static ovh.excale.mc.uhc.Game.Status.RUNNING;
 import static ovh.excale.mc.uhc.Game.Status.STARTING;
-import static ovh.excale.mc.uhc.misc.BorderAction.ActionType.SHRINK;
+import static ovh.excale.mc.uhc.configuration.BorderAction.ActionType.MOVE;
 
 public class Game implements Listener {
 
@@ -240,9 +240,8 @@ public class Game implements Listener {
 		return confirmStart;
 	}
 
-	public Game setConfirmStart(boolean confirm) {
+	public void setConfirmStart(boolean confirm) {
 		confirmStart = confirm;
-		return this;
 	}
 
 	public void tryStart() throws IllegalStateException {
@@ -422,7 +421,7 @@ public class Game implements Listener {
 
 		BukkitScheduler scheduler = Bukkit.getScheduler();
 
-		if(actionType == SHRINK)
+		if(actionType == MOVE)
 			scheduler.callSyncMethod(UHC.instance(), () -> {
 
 				world.getWorldBorder()

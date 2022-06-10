@@ -1,75 +1,91 @@
-debug: true
-delWorlds: true
+# Used case: Pascal Case / Upper Camel Case
 
-faker:
-  locale: it
-  key: "esport.teams"
+# Misc configuration
+Debug: true               # Whether to activate debug mode
+DelWorlds: true           # Whether to delete used .xkuhc worlds on startup
 
-discord:
-  token: "TOKEN_HERE"
-  guildId: 0000
+# Faker configuration
+Faker:
+  Locale: "it"            # Custom Locale to use with Faker.
+  Key: "esport.teams"     # TODO: hint
 
-uhc:
-  border:
-    InitialSize: 1500
-    actions:
+# Discord configuration
+Discord:
+  Token: "TOKEN_HERE"     # Discord bot's token
+  GuildId: 0000           # The Id of the guild where the players are
 
-      - BorderSize: 1500
-        Minutes: 5
-        Action: Hold
+# Game configuration
+Game:
 
-      - Minutes: 5
-        Action: Shrink
+  # Whether friendly fire is enabled in-game
+  FriendlyFire: false
+
+  # Whether to enable repellent crafting TODO
+  EnableRepellent: true
+
+  # Time after which logging out becomes lethal (seconds)
+  LethalDisconnectTime: 1800    # 30 min
+
+  # Border specific configuration
+  Border:
+    InitialSize: 1500     # Initial border size (whole square side length)
+    Actions:
+
+      # Action: <Hold|Move>
+      # (Whether to move the border or leave it as is.)
+      #
+      # BorderSize: <Integer>
+      # (Length of the whole side of the border, not from the centre.)
+      # (Required only on Action=Move, the border will move to the specified size.)
+      #
+      # Time: <Integer>
+      # (How much time to perform the action. Measured in seconds.)
+
+      - Action: Hold
+        Time: 300
+
+      - Action: Move
         BorderSize: 1250
+        Time: 300
 
-      - BorderSize: 1250
-        Minutes: 5
-        Action: Hold
+      - Action: Hold
+        Time: 300
 
-      - Minutes: 5
-        Action: Shrink
+      - Action: Move
         BorderSize: 1000
+        Time: 300
 
-      - BorderSize: 1000
-        Minutes: 5
-        Action: Hold
+      - Action: Hold
+        Time: 300
 
-      - Minutes: 5
-        Action: Shrink
+      - Action: Move
         BorderSize: 500
+        Time: 300
 
-      - BorderSize: 500
-        Minutes: 5
-        Action: Hold
+      - Action: Hold
+        Time: 300
 
-      - BorderSize: 500
-        Minutes: 5
-        Action: Hold
-
-      - Minutes: 5
-        Action: Shrink
+      - Action: Move
         BorderSize: 350
+        Time: 300
 
-      - BorderSize: 350
-        Minutes: 5
-        Action: Hold
+      - Action: Hold
+        Time: 300
 
-      - Minutes: 5
-        Action: Shrink
+      - Action: Move
         BorderSize: 200
+        Time: 300
 
-      - BorderSize: 200
-        Minutes: 5
-        Action: Hold
+      - Action: Hold
+        Time: 300
 
-      - Minutes: 5
-        Action: Shrink
+      - Action: Move
         BorderSize: 50
+        Time: 300
 
-      - BorderSize: 50
-        Minutes: 5
-        Action: Hold
+      - Action: Hold
+        Time: 300
 
-      - Minutes: 20
-        Action: Shrink
+      - Action: Move
         BorderSize: 2
+        Time: 600

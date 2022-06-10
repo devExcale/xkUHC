@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc.misc;
+package ovh.excale.mc.uhc.configuration;
 
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;

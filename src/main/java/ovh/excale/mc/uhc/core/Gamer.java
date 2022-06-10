@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.effects.CaveRepellentEffect;
 import ovh.excale.mc.uhc.Game;
-import ovh.excale.mc.uhc.misc.ScoreboardPrinter;
+import ovh.excale.mc.uhc.configuration.ScoreboardPrinter;
 
 import java.util.Collection;
 import java.util.Iterator;

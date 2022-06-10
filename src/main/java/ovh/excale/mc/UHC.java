@@ -3,23 +3,24 @@ package ovh.excale.mc;
 import dev.jorel.commandapi.CommandAPI;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.commands.*;
 import ovh.excale.mc.uhc.Game;
 import ovh.excale.mc.uhc.Game.Status;
+import ovh.excale.mc.uhc.configuration.ConfigKeys;
 import ovh.excale.mc.uhc.world.WorldUtils;
 import ovh.excale.mc.utils.MessageBundles;
 
-import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.Logger;
 
 public class UHC extends JavaPlugin {
 
-	public static boolean DEBUG;
 	private static UHC instance;
-	private static Locale defaultLocale;
+
+	public static boolean DEBUG;
 
 	public static UHC instance() {
 		return instance;
@@ -37,12 +38,10 @@ public class UHC extends JavaPlugin {
 		instance.coreGame = game;
 	}
 
-	public static Locale getDefaultLocale() {
-		return  defaultLocale;
-	}
-
 	private Game coreGame;
 	private MessageBundles msg;
+
+	private boolean delWorlds = true;
 
 	@Override
 	public void onLoad() {
@@ -53,10 +52,10 @@ public class UHC extends JavaPlugin {
 
 		msg = new MessageBundles(this);
 
-		DEBUG = Boolean.parseBoolean(getConfig().get("debug", false)
-				.toString());
+		FileConfiguration config = getConfig();
 
-		defaultLocale = new Locale(getConfig().getString("locale", "en-US"));
+		DEBUG = config.getBoolean(ConfigKeys.DEBUG, false);
+		delWorlds = config.getBoolean(ConfigKeys.DEL_WORLDS, true);
 
 	}
 
@@ -65,11 +64,11 @@ public class UHC extends JavaPlugin {
 
 		PaperLib.suggestPaper(this);
 
-		// TODO: boolean option: if true delete worlds, otherwise don't
-		WorldUtils.purgeWorlds(worldCount -> Optional.of(worldCount)
-				.filter(count -> count > 0)
-				.map(count -> msg.main("misc.removed_worlds", count))
-				.ifPresent(log()::info));
+		if(delWorlds)
+			WorldUtils.purgeWorlds(worldCount -> Optional.of(worldCount)
+					.filter(count -> count > 0)
+					.map(count -> msg.main("misc.removed_worlds", count))
+					.ifPresent(getLogger()::info));
 
 		// REGISTER COMMANDS
 		CommandAPI.registerCommand(GameCommand.class);

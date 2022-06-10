@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import ovh.excale.discord.DiscordEndpoint;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.configuration.ConfigKeys;
 import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.MessageFormatter;
 
@@ -49,8 +50,8 @@ public class DiscordCommand {
 				ConfigurationSection config = UHC.instance()
 						.getConfig();
 
-				String token = config.getString("discord.token");
-				long guildId = config.getLong("discord.guildId");
+				String token = config.getString(ConfigKeys.DISCORD_TOKEN);
+				long guildId = config.getLong(ConfigKeys.DISCORD_GUILD_ID);
 
 				Bukkit.getScheduler()
 						.runTaskAsynchronously(UHC.instance(), () -> {

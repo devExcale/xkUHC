@@ -1,4 +1,4 @@
-package ovh.excale.mc.uhc.misc;
+package ovh.excale.mc.uhc.configuration;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;

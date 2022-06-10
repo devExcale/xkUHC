@@ -2,7 +2,9 @@ package ovh.excale.mc.utils;
 
 import com.github.javafaker.Faker;
 import ovh.excale.mc.UHC;
+import ovh.excale.mc.uhc.configuration.ConfigKeys;
 
+import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
@@ -11,7 +13,9 @@ import java.util.function.Supplier;
  */
 public class FakerWrapper {
 
-	private final static Faker faker = Faker.instance(UHC.getDefaultLocale());
+	private final static Faker faker = Faker.instance(new Locale(UHC.instance()
+			.getConfig()
+			.getString(ConfigKeys.FAKER_LOCALE, "en")));
 
 	private final String fakerString;
 

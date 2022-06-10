@@ -12,6 +12,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import ovh.excale.mc.UHC;
 import ovh.excale.mc.uhc.Game;
+import ovh.excale.mc.uhc.configuration.ConfigKeys;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
@@ -169,7 +170,7 @@ public class GameCommand {
 
 		instance.reloadConfig();
 		UHC.DEBUG = instance.getConfig()
-				.getBoolean("debug", false);
+				.getBoolean(ConfigKeys.DEBUG, false);
 
 		sender.sendMessage(new MessageFormatter().addColors()
 				.formatFine(msg.main("config.reloaded")));
@@ -229,11 +230,11 @@ public class GameCommand {
 
 		String fakerKey = UHC.instance()
 				.getConfig()
-				.getString("faker.key", "esports.team");
+				.getString(ConfigKeys.FAKER_KEY, "esport.teams");
 
 		Faker faker = new Faker(new Locale(UHC.instance()
 				.getConfig()
-				.getString("faker.locale", "EN")));
+				.getString(ConfigKeys.FAKER_LOCALE, "EN")));
 
 		try {
 

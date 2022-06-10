@@ -1,21 +1,27 @@
-package ovh.excale.mc.uhc.misc;
+package ovh.excale.mc.uhc.configuration;
 
 import org.jetbrains.annotations.Nullable;
 
+import static ovh.excale.mc.uhc.configuration.BorderAction.ActionType.MOVE;
+
 public class BorderAction {
 
+	private final ActionType actionType;
 	private final int minutes;
 	private final int borderSize;
-	private final ActionType actionType;
 
-	protected BorderAction(int minutes, int borderSize, ActionType actionType) throws IllegalArgumentException {
+	protected BorderAction(ActionType actionType, int seconds, int borderSize) throws IllegalArgumentException {
 
-		if(minutes < 1)
-			throw new IllegalArgumentException("Parameter Minutes must be positive");
+		if(seconds < 1)
+			throw new IllegalArgumentException("Expected positive integer parameter seconds, received: " + seconds);
 
-		this.minutes = minutes;
-		this.borderSize = borderSize;
+		if(actionType == MOVE && borderSize < 2)
+			throw new IllegalArgumentException("Expected integer parameter borderSize > 2, received: " + borderSize);
+
 		this.actionType = actionType;
+		this.minutes = seconds;
+		this.borderSize = (actionType == MOVE) ? borderSize : 0;
+
 	}
 
 	public int getMinutes() {
@@ -33,7 +39,7 @@ public class BorderAction {
 	public enum ActionType {
 
 		HOLD("border.hold"),
-		SHRINK("border.shrink");
+		MOVE("border.move");
 
 		private final String msgKey;
 
