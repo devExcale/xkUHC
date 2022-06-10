@@ -246,6 +246,7 @@ public class Game implements Listener {
 	}
 
 	public void tryStart() throws IllegalStateException {
+
 		settings = GameSettings.fromConfig();
 		if(!settings.isLegal())
 			throw new IllegalStateException(settings.getErrorMessage());

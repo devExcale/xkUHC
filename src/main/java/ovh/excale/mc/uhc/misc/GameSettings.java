@@ -38,7 +38,7 @@ public class GameSettings {
 				throw new IllegalArgumentException("InitialSize is too small!");
 
 			List<Map<?, ?>> actions = config.getMapList("uhc.border.actions");
-			actions.forEach(map -> map.forEach((o, o2) -> System.out.println(o.toString() + " : " + o2.toString())));
+//			actions.forEach(map -> map.forEach((o, o2) -> System.out.println(o.toString() + " : " + o2.toString())));
 			for(int i = 0; i < actions.size(); i++) {
 
 				//noinspection unchecked
