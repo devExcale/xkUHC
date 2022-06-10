@@ -35,7 +35,7 @@ import static ovh.excale.mc.uhc.Game.Status;
 
 public class GamerHub {
 
-	private static final Pattern BOND_NAME_REGEX = Pattern.compile("([#@\\[a-zA-Z0-9~\\]_+-.]){3,}");
+	public static final Pattern BOND_NAME_REGEX = Pattern.compile("([#@\\[a-zA-Z0-9~\\]_+-.]){3,}");
 
 	private final Map<UUID, Gamer> gamers;
 	private final Map<String, Bond> bonds;
@@ -158,7 +158,7 @@ public class GamerHub {
 
 		if(name == null || !BOND_NAME_REGEX.matcher(name)
 				.matches())
-			throw new IllegalArgumentException("Illegal bond name");
+			throw new IllegalArgumentException("Illegal bond name: " + name);
 
 		Bond bond = bonds.get(name);
 		if(bond != null)

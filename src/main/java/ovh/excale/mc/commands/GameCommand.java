@@ -1,5 +1,6 @@
 package ovh.excale.mc.commands;
 
+import com.github.javafaker.Faker;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Alias;
 import dev.jorel.commandapi.annotations.Command;
@@ -16,7 +17,6 @@ import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.world.WorldUtils;
-import ovh.excale.mc.utils.FakerWrapper;
 import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.MessageFormatter;
 
@@ -24,7 +24,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import static java.util.logging.Level.WARNING;
 
 @Alias("xkuhc")
 @Command("uhc")
@@ -195,23 +197,20 @@ public class GameCommand {
 		// TODO: check for other bonds / game status
 
 		GamerHub hub = game.getHub();
-		List<Gamer> gamers = new LinkedList<>();
 
 		Set<UUID> bounded = hub.getGamers()
 				.stream()
+				.filter(Gamer::hasBond)
 				.map(Gamer::getUniqueId)
 				.collect(Collectors.toSet());
 
-		Bukkit.getServer()
+		List<Gamer> gamers = Bukkit.getServer()
 				.getOnlinePlayers()
 				.stream()
 				.filter(player -> !bounded.contains(player.getUniqueId()))
-				.forEach(player -> {
-
-					Gamer gamer = hub.register(player);
-					gamers.add(gamer);
-
-				});
+				.map(player -> Optional.ofNullable(hub.getGamer(player.getUniqueId()))
+						.orElseGet(() -> hub.register(player)))
+				.collect(Collectors.toCollection(ArrayList::new));
 
 		if(gamers.size() == 0)
 			throw CommandAPI.fail(msg.main("bond.gamers_all_bound"));
@@ -221,36 +220,60 @@ public class GameCommand {
 		if(gamers.size() < bondQty)
 			throw CommandAPI.fail(msg.main("bond.too_many_bounds"));
 
-		List<ChatColor> colors = Arrays.stream(ChatColor.values())
+		// Get colors
+		Iterator<ChatColor> iColors = Arrays.stream(ChatColor.values())
 				.filter(ChatColor::isColor)
-				.collect(Collectors.toList());
-		Collections.shuffle(colors);
-		Iterator<ChatColor> iterColors = colors.iterator();
+				.collect(Collectors.collectingAndThen(Collectors.toList(), colors -> {
 
-		String fakerString = UHC.instance()
+					Collections.shuffle(colors);
+					return colors;
+
+				}))
+				.iterator();
+
+		String fakerKey = UHC.instance()
 				.getConfig()
-				.getString("faker", "esports.team");
-		FakerWrapper faker;
+				.getString("faker.key", "esports.team");
+
+		Faker faker = new Faker(new Locale(UHC.instance()
+				.getConfig()
+				.getString("faker.locale", "EN")));
+
 		try {
-			faker = new FakerWrapper(fakerString);
-		} catch(IllegalArgumentException e) {
-			throw CommandAPI.fail(msg.main("error.illegal_faker"));
+
+			faker.resolve(fakerKey);
+
+		} catch(Exception e) {
+			UHC.log()
+					.log(WARNING, "Key: " + fakerKey, e);
+			throw CommandAPI.fail(msg.main("error.illegal_faker_key"));
 		}
 
-		Bond[] bonds = IntStream.range(1, bondQty + 1)
-				.mapToObj(i -> hub.createBond(faker.getString())) //"Team" + i
-				.peek(bond -> hub.setBondColor(bond, iterColors.next()))
+		Set<String> bondNames = Stream.generate(() -> faker.resolve(fakerKey))
+				.distinct()
+				.limit(bondQty)
+				.filter(s -> s.length() <= 24)
+				.map(s -> s.replaceAll(" ", "_"))
+				.collect(Collectors.toSet());
+
+		if(bondNames.size() != bondQty)
+			throw CommandAPI.fail(msg.main("error.illegal_faker_value"));
+
+		Iterator<String> iNames = bondNames.iterator();
+
+		Bond[] bonds = Stream.generate(() -> hub.createBond(iNames.next()))
+				.limit(bondQty)
+				.peek(bond -> hub.setBondColor(bond, iColors.next()))
 				.toArray(Bond[]::new);
+
 		AtomicInteger iBonds = new AtomicInteger(0);
 
 		gamers.forEach(gamer -> hub.boundGamer(bonds[iBonds.getAndIncrement() % bondQty], gamer));
 
-		MessageFormatter formatter = new MessageFormatter()
-				.addColors();
-
-		sender.sendMessage(formatter.custom("nBonds", bonds.length)
+		sender.sendMessage(new MessageFormatter().addColors()
+				.custom("nBonds", bonds.length)
 				.custom("nGamers", gamers.size())
-				.formatFine(msg.game("bond.created_n")));
+				.formatFine(msg.main("bond.created_n")));
 
 	}
 

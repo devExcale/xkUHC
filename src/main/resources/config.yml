@@ -1,7 +1,9 @@
 debug: true
 delWorlds: true
-locale: it
-faker: esports.team
+
+faker:
+  locale: it
+  key: "esport.teams"
 
 discord:
   token: "TOKEN_HERE"
