@@ -1,7 +1,7 @@
 name: ${project.name}
 version: ${project.version}
 description: ${project.description}
-main: ovh.excale.mc.UHC
+main: ovh.excale.xkuhc.xkUHC
 authors:
   - Excale
   - Cr4zy5ky_U
