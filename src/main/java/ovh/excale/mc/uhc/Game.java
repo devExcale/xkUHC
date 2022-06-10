@@ -17,13 +17,13 @@ import ovh.excale.mc.eventhandlers.AsyncTeleportAnchor;
 import ovh.excale.mc.eventhandlers.BedInteractionHandler;
 import ovh.excale.mc.eventhandlers.GodModeHandler;
 import ovh.excale.mc.eventhandlers.MobRepellentHandler;
+import ovh.excale.mc.uhc.configuration.BorderAction;
+import ovh.excale.mc.uhc.configuration.GameSettings;
+import ovh.excale.mc.uhc.configuration.ScoreboardProcessor;
 import ovh.excale.mc.uhc.core.Bond;
 import ovh.excale.mc.uhc.core.Gamer;
 import ovh.excale.mc.uhc.core.GamerHub;
 import ovh.excale.mc.uhc.core.events.*;
-import ovh.excale.mc.uhc.configuration.BorderAction;
-import ovh.excale.mc.uhc.configuration.GameSettings;
-import ovh.excale.mc.uhc.configuration.ScoreboardProcessor;
 import ovh.excale.mc.uhc.world.WorldManager;
 import ovh.excale.mc.utils.MessageBundles;
 import ovh.excale.mc.utils.MessageFormatter;
@@ -182,7 +182,7 @@ public class Game implements Listener {
 
 			String s = "> " + BOLD + "Remaining:" + RESET + " N/A";
 			if(currentAction != null)
-				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getMinutes() * 60 - stopwatch.getLapDelta()) + "s";
+				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getTime() - stopwatch.getLapDelta()) + "s";
 
 			return s;
 		});
@@ -425,7 +425,7 @@ public class Game implements Listener {
 			scheduler.callSyncMethod(UHC.instance(), () -> {
 
 				world.getWorldBorder()
-						.setSize(currentAction.getBorderSize(), currentAction.getMinutes() * 60L);
+						.setSize(currentAction.getBorderSize(), currentAction.getTime());
 				return null;
 
 			});
@@ -434,7 +434,7 @@ public class Game implements Listener {
 		hub.broadcast(new MessageFormatter().addColors()
 				.formatFine(msg.game(actionType.getMessageKey())));
 
-		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getMinutes() * 1200L);
+		runTask = scheduler.runTaskLaterAsynchronously(UHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getTime() * 20L);
 
 	}
 
