@@ -15,18 +15,19 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.xkUHC;
+import ovh.excale.xkuhc.comms.MessageBundles;
+import ovh.excale.xkuhc.comms.MessageFormatter;
 import ovh.excale.xkuhc.eventhandlers.MateFindingCompass;
 import ovh.excale.xkuhc.events.GamerDeathEvent;
 import ovh.excale.xkuhc.events.GamerDisconnectEvent;
 import ovh.excale.xkuhc.events.GamerReconnectEvent;
-import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.comms.MessageFormatter;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static org.bukkit.ChatColor.WHITE;
@@ -41,6 +42,7 @@ public class GamerHub {
 	private final EventRaiser eventRaiser;
 	private final Game game;
 
+	private final Logger log;
 	private final MessageBundles msg;
 
 	private final MateFindingCompass compassHandler;
@@ -50,8 +52,9 @@ public class GamerHub {
 		gamers = Collections.synchronizedMap(new HashMap<>());
 		bonds = Collections.synchronizedMap(new HashMap<>());
 
-		msg = xkUHC.instance()
-				.getMessages();
+		xkUHC instance = xkUHC.instance();
+		log = instance.getLogger();
+		msg = instance.getMessages();
 
 		eventRaiser = new EventRaiser();
 		eventRaiser.turnOn();
@@ -358,20 +361,16 @@ public class GamerHub {
 			on = false;
 
 			// JOIN EVENT EXECUTOR
-			executors.put(PlayerJoinEvent.class,
-					(listener, event) -> ((EventRaiser) listener).onPlayerJoin((PlayerJoinEvent) event));
+			executors.put(PlayerJoinEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerJoin((PlayerJoinEvent) event));
 
 			// QUIT EVENT EXECUTOR
-			executors.put(PlayerQuitEvent.class,
-					(listener, event) -> ((EventRaiser) listener).onPlayerQuit((PlayerQuitEvent) event));
+			executors.put(PlayerQuitEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerQuit((PlayerQuitEvent) event));
 
 			// DAMAGE EVENT EXECUTOR
-			executors.put(EntityDamageEvent.class,
-					(listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
+			executors.put(EntityDamageEvent.class, (listener, event) -> ((EventRaiser) listener).onEntityDamage((EntityDamageEvent) event));
 
 			// CHAT EVENT EXECUTOR
-			executors.put(AsyncPlayerChatEvent.class,
-					(listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
+			executors.put(AsyncPlayerChatEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerChat((AsyncPlayerChatEvent) event));
 
 		}
 
@@ -379,8 +378,7 @@ public class GamerHub {
 
 			if(!on) {
 				executors.forEach(
-						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this,
-								EventPriority.HIGH, eventExecutor, xkUHC.instance(), true));
+						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, xkUHC.instance(), true));
 				on = true;
 			}
 
@@ -389,22 +387,22 @@ public class GamerHub {
 		public void turnOff() {
 
 			if(on) {
-				for(Class<? extends Event> eventClass : executors.keySet()) {
+				for(Class<? extends Event> eventClass : executors.keySet())
 					try {
 
 						((HandlerList) eventClass.getDeclaredMethod("getHandlerList")
 								.invoke(null)).unregister(EventRaiser.this);
 
 					} catch(NoSuchMethodException e) {
-						xkUHC.log()
-								.log(Level.SEVERE, "Event " + eventClass.getSimpleName() +
-										" is missing static method getHandlerList()", e);
+
+						log.log(Level.SEVERE, "Event " + eventClass.getSimpleName() + " is missing static method getHandlerList()", e);
+
 					} catch(InvocationTargetException | IllegalAccessException e) {
-						xkUHC.log()
-								.log(Level.SEVERE, "Cannot access HandlerList in class " + eventClass.getSimpleName(),
-										e);
+
+						log.log(Level.SEVERE, "Cannot access HandlerList in class " + eventClass.getSimpleName(), e);
+
 					}
-				}
+
 				on = false;
 			}
 

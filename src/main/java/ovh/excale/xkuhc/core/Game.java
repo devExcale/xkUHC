@@ -11,22 +11,23 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import ovh.excale.xkuhc.comms.MessageBundles;
+import ovh.excale.xkuhc.comms.MessageFormatter;
+import ovh.excale.xkuhc.comms.ScoreboardProcessor;
+import ovh.excale.xkuhc.configuration.BorderAction;
+import ovh.excale.xkuhc.configuration.GameSettings;
 import ovh.excale.xkuhc.discord.DiscordEndpoint;
-import ovh.excale.xkuhc.xkUHC;
 import ovh.excale.xkuhc.eventhandlers.AsyncTeleportAnchor;
 import ovh.excale.xkuhc.eventhandlers.BedInteractionHandler;
 import ovh.excale.xkuhc.eventhandlers.GodModeHandler;
 import ovh.excale.xkuhc.eventhandlers.MobRepellentHandler;
-import ovh.excale.xkuhc.configuration.BorderAction;
-import ovh.excale.xkuhc.configuration.GameSettings;
-import ovh.excale.xkuhc.comms.ScoreboardProcessor;
 import ovh.excale.xkuhc.events.*;
-import ovh.excale.xkuhc.world.WorldManager;
-import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.comms.MessageFormatter;
 import ovh.excale.xkuhc.world.PlayerSpreader;
+import ovh.excale.xkuhc.world.WorldManager;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.BOLD;
@@ -35,11 +36,13 @@ import static org.bukkit.GameMode.SPECTATOR;
 import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
+import static ovh.excale.xkuhc.configuration.BorderAction.ActionType.MOVE;
 import static ovh.excale.xkuhc.core.Game.Status.RUNNING;
 import static ovh.excale.xkuhc.core.Game.Status.STARTING;
-import static ovh.excale.xkuhc.configuration.BorderAction.ActionType.MOVE;
 
 public class Game implements Listener {
+
+	private final Logger log;
 
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
@@ -70,8 +73,9 @@ public class Game implements Listener {
 		mobRepellent = new MobRepellentHandler(this);
 		godMode = new GodModeHandler();
 
-		msg = xkUHC.instance()
-				.getMessages();
+		xkUHC instance = xkUHC.instance();
+		msg = instance.getMessages();
+		log = instance.getLogger();
 
 		runTask = null;
 		status = Status.PREPARING;
@@ -90,7 +94,8 @@ public class Game implements Listener {
 		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
 				xkUHC.instance());
 		// GAMER DEATH EVENT
-		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event), xkUHC.instance());
+		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event),
+				xkUHC.instance());
 
 		initScoreboardProcessor();
 
@@ -297,7 +302,7 @@ public class Game implements Listener {
 
 		hub.broadcast(msg.game("game.loading"));
 
-		world = new WorldManager().loadSpawn(false)
+		world = new WorldManager(log).loadSpawn(false)
 				.generateUntilClearCenter()
 				.applyRules()
 				.getWorld();

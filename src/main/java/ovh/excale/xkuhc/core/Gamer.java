@@ -11,9 +11,9 @@ import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.xkUHC;
-import ovh.excale.xkuhc.effects.CaveRepellentEffect;
 import ovh.excale.xkuhc.comms.ScoreboardPrinter;
+import ovh.excale.xkuhc.effects.CaveRepellentEffect;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -173,8 +173,11 @@ public class Gamer {
 						.get();
 
 		} catch(Exception e) {
-			xkUHC.log()
+
+			xkUHC.instance()
+					.getLogger()
 					.log(SEVERE, e.getMessage(), e);
+
 		}
 
 	}

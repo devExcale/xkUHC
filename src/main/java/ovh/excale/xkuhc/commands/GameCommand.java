@@ -10,19 +10,20 @@ import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
-import ovh.excale.xkuhc.xkUHC;
-import ovh.excale.xkuhc.core.Game;
+import ovh.excale.xkuhc.comms.MessageBundles;
+import ovh.excale.xkuhc.comms.MessageFormatter;
 import ovh.excale.xkuhc.configuration.ConfigKeys;
 import ovh.excale.xkuhc.core.Bond;
+import ovh.excale.xkuhc.core.Game;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
 import ovh.excale.xkuhc.world.WorldUtils;
-import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.comms.MessageFormatter;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +32,17 @@ import static java.util.logging.Level.WARNING;
 @Alias("xkuhc")
 @Command("uhc")
 public class GameCommand {
+
+	private static Logger LOG_DO_NOT_REFERENCE = null;
+
+	private static Logger log() {
+
+		if(LOG_DO_NOT_REFERENCE == null)
+			LOG_DO_NOT_REFERENCE = xkUHC.instance()
+					.getLogger();
+
+		return LOG_DO_NOT_REFERENCE;
+	}
 
 	@Subcommand("create")
 	public static void createGame(CommandSender sender) throws WrapperCommandSyntaxException {
@@ -47,9 +59,10 @@ public class GameCommand {
 			xkUHC.setGame(new Game());
 
 		} catch(Exception e) {
-			xkUHC.log()
-					.log(Level.SEVERE, e.getMessage(), e);
+
+			log().log(Level.SEVERE, e.getMessage(), e);
 			throw CommandAPI.fail(msg.main("error.internal"));
+
 		}
 
 		sender.sendMessage(new MessageFormatter().addColors()
@@ -72,11 +85,14 @@ public class GameCommand {
 			game.tryStart();
 
 		} catch(IllegalStateException e) {
+
 			throw CommandAPI.fail(e.getMessage());
+
 		} catch(Exception e) {
-			xkUHC.log()
-					.log(Level.SEVERE, e.getMessage(), e);
+
+			log().log(Level.SEVERE, e.getMessage(), e);
 			throw CommandAPI.fail(msg.main("error.internal"));
+
 		}
 
 	}
@@ -115,11 +131,14 @@ public class GameCommand {
 			xkUHC.setGame(null);
 
 		} catch(IllegalStateException e) {
+
 			throw CommandAPI.fail(e.getMessage());
+
 		} catch(Exception e) {
-			xkUHC.log()
-					.log(Level.SEVERE, e.getMessage(), e);
+
+			log().log(Level.SEVERE, e.getMessage(), e);
 			throw CommandAPI.fail(msg.main("error.internal"));
+
 		}
 
 	}
@@ -241,9 +260,10 @@ public class GameCommand {
 			faker.resolve(fakerKey);
 
 		} catch(Exception e) {
-			xkUHC.log()
-					.log(WARNING, "Key: " + fakerKey, e);
+
+			log().log(WARNING, "Key: " + fakerKey, e);
 			throw CommandAPI.fail(msg.main("error.illegal_faker_key"));
+
 		}
 
 		Set<String> bondNames = Stream.generate(() -> faker.resolve(fakerKey))

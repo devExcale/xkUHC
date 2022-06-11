@@ -8,8 +8,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.xkUHC;
 import ovh.excale.xkuhc.comms.MessageBundles;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.Optional;
 import java.util.Set;
@@ -17,22 +17,22 @@ import java.util.logging.Logger;
 
 public abstract class PlayerInteractionHandler implements Listener {
 
+	protected final xkUHC instance;
 	protected final MessageBundles msg;
 	protected final Logger log;
 
 	public PlayerInteractionHandler() {
 
-		msg = xkUHC.instance()
-				.getMessages();
-
-		log = xkUHC.log();
+		instance = xkUHC.instance();
+		msg = instance.getMessages();
+		log = instance.getLogger();
 
 	}
 
 	public void activate() {
 
 		Bukkit.getPluginManager()
-				.registerEvents(this, xkUHC.instance());
+				.registerEvents(this, instance);
 
 	}
 

@@ -11,13 +11,26 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import ovh.excale.xkuhc.xkUHC;
-import ovh.excale.xkuhc.world.WorldManager;
 import ovh.excale.xkuhc.world.PlayerSpreader;
+import ovh.excale.xkuhc.world.WorldManager;
+import ovh.excale.xkuhc.xkUHC;
+
+import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
 @Command("test")
 public class TestCommand {
+
+	private static Logger LOG_DO_NOT_REFERENCE = null;
+
+	private static Logger log() {
+
+		if(LOG_DO_NOT_REFERENCE == null)
+			LOG_DO_NOT_REFERENCE = xkUHC.instance()
+					.getLogger();
+
+		return LOG_DO_NOT_REFERENCE;
+	}
 
 	@Default
 	public static void nothing(CommandSender commandSender) {
@@ -31,7 +44,7 @@ public class TestCommand {
 
 		player.sendMessage("Starting generation");
 
-		World world = new WorldManager().loadSpawn(false)
+		World world = new WorldManager(log()).loadSpawn(false)
 				.generateUntilClearCenter()
 				.applyRules()
 				.getWorld();
@@ -52,7 +65,7 @@ public class TestCommand {
 
 		player.sendMessage("Starting generation");
 
-		World world = new WorldManager().loadSpawn(false)
+		World world = new WorldManager(log()).loadSpawn(false)
 				.generateUntilClearCenter()
 				.applyRules()
 				.getWorld();
@@ -72,7 +85,7 @@ public class TestCommand {
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(xkUHC.instance(), () -> {
 
-					World world = new WorldManager().loadSpawn(false)
+					World world = new WorldManager(log()).loadSpawn(false)
 							.generateUntilClearCenter()
 							.applyRules()
 							.getWorld();

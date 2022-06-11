@@ -14,6 +14,7 @@ import ovh.excale.xkuhc.xkUHC;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 import static org.bukkit.GameRule.*;
@@ -45,10 +46,13 @@ public class WorldManager implements Listener {
 	private World world;
 	private String worldName;
 
-	public WorldManager() {
+	private Logger log;
+
+	public WorldManager(Logger logger) {
 
 		loadSpawn = true;
 		world = null;
+		log = logger;
 
 	}
 
@@ -77,9 +81,10 @@ public class WorldManager implements Listener {
 						.get();
 
 			} catch(Exception e) {
+
 				// TODO: PROPAGATE EXCEPTION
-				xkUHC.log()
-						.log(Level.SEVERE, e.getMessage(), e);
+				log.log(Level.SEVERE, e.getMessage(), e);
+
 			}
 		else
 			world = worldCreator.createWorld();
@@ -128,9 +133,10 @@ public class WorldManager implements Listener {
 					.get();
 
 		} catch(Exception e) {
+
 			// TODO: PROPAGATE EXCEPTION
-			xkUHC.log()
-					.log(Level.SEVERE, e.getMessage(), e);
+			log.log(Level.SEVERE, e.getMessage(), e);
+
 		}
 
 		return this;

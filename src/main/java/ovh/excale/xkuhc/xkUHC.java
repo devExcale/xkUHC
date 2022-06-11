@@ -2,19 +2,17 @@ package ovh.excale.xkuhc;
 
 import dev.jorel.commandapi.CommandAPI;
 import io.papermc.lib.PaperLib;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import ovh.excale.xkuhc.discord.DiscordEndpoint;
 import ovh.excale.xkuhc.commands.*;
+import ovh.excale.xkuhc.comms.MessageBundles;
+import ovh.excale.xkuhc.configuration.ConfigKeys;
 import ovh.excale.xkuhc.core.Game;
 import ovh.excale.xkuhc.core.Game.Status;
-import ovh.excale.xkuhc.configuration.ConfigKeys;
+import ovh.excale.xkuhc.discord.DiscordEndpoint;
 import ovh.excale.xkuhc.world.WorldUtils;
-import ovh.excale.xkuhc.comms.MessageBundles;
 
 import java.util.Optional;
-import java.util.logging.Logger;
 
 public class xkUHC extends JavaPlugin {
 
@@ -24,10 +22,6 @@ public class xkUHC extends JavaPlugin {
 
 	public static xkUHC instance() {
 		return instance;
-	}
-
-	public static Logger log() {
-		return instance != null ? instance.getLogger() : Bukkit.getLogger();
 	}
 
 	public static Game getGame() {
