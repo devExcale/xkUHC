@@ -26,8 +26,8 @@ repellent:
   end: "You don't feel protected anymore..."
 
 border:
-  shrink: "The border is shrinking!"
-  hold: "The border is holding still..."
+  move: "The border is moving"
+  hold: "The border is holding still"
 
 chat:
   bond: "[bond] {bondColor}<{bond}/{BOLD}{gamer}{RESET}{bondColor}> {RESET}{message}"

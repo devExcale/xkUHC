@@ -452,7 +452,6 @@ public class Game implements Listener {
 			runTask.cancel();
 
 		stopwatch.stop();
-		scoreboardProcessor.stop();
 
 		bedHandler.deactivate();
 		mobRepellent.deactivate();
@@ -464,6 +463,8 @@ public class Game implements Listener {
 		// TODO: FIX: CANNOT STOP ON PLUGIN DISABLE (cannot schedule task while plugin is disabled)
 		Bukkit.getScheduler()
 				.runTaskLater(xkUHC.instance(), () -> {
+
+					scoreboardProcessor.stop();
 
 					World defWorld = Bukkit.getWorlds()
 							.get(0);
