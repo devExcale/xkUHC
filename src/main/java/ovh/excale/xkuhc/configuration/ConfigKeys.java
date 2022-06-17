@@ -26,6 +26,8 @@ public class ConfigKeys {
 
 	public static final String REPELLENT = "Game.EnableRepellent";
 
+	public static final String RESET_AFTER = "Game.ResetAfter";
+
 	public static final String LETHAL_DISCONNECT = "Game.LethalDisconnectTime";
 
 	public static final String BORDER_INITIAL_SIZE = "Game.Border.InitialSize";

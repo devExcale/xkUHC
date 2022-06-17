@@ -30,6 +30,7 @@ public class GameSettings {
 
 		settings.friendlyFire = config.getBoolean(FRIENDLY_FIRE, false);
 		settings.repellentEnabled = config.getBoolean(REPELLENT, true);
+		settings.resetAfter = config.getBoolean(RESET_AFTER, true);
 		settings.lethalDisconnectTime = config.getInt(LETHAL_DISCONNECT, 0);
 
 		if(settings.lethalDisconnectTime < 0) {
@@ -106,6 +107,7 @@ public class GameSettings {
 
 	private boolean friendlyFire;
 	private boolean repellentEnabled;
+	private boolean resetAfter;
 
 	private int initialSize;
 	private int lethalDisconnectTime;
@@ -117,6 +119,7 @@ public class GameSettings {
 
 		friendlyFire = false;
 		repellentEnabled = true;
+		resetAfter = true;
 
 		initialSize = 1500;
 		lethalDisconnectTime = 0;
@@ -133,6 +136,10 @@ public class GameSettings {
 
 	public boolean isRepellentEnabled() {
 		return repellentEnabled;
+	}
+
+	public boolean isResetAfter() {
+		return resetAfter;
 	}
 
 	public Iterator<BorderAction> getBorderActionIterator() {

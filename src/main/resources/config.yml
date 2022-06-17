@@ -23,6 +23,9 @@ Game:
   # Whether to enable repellent crafting TODO
   EnableRepellent: true
 
+  # Whether to reset (remove) all teams after a game
+  ResetAfter: true
+
   # Time after which logging out becomes lethal (seconds)
   LethalDisconnectTime: 1800    # 30 min
 

@@ -65,6 +65,7 @@ public class Game implements Listener {
 	private GameSettings settings;
 	private Iterator<BorderAction> borderActions;
 	private BorderAction currentAction;
+
 	private boolean confirmStart;
 
 	public Game() {
@@ -86,6 +87,7 @@ public class Game implements Listener {
 		world = null;
 		settings = null;
 		currentAction = null;
+
 		confirmStart = false;
 
 		PluginManager pluginManager = Bukkit.getPluginManager();
@@ -529,6 +531,13 @@ public class Game implements Listener {
 		godMode.disable();
 
 		phase = WORN;
+
+		if(settings.isResetAfter()) {
+
+			unset();
+			xkUHC.setGame(null);
+
+		}
 
 		// Call GameStopEvent on game stop
 		Bukkit.getScheduler()

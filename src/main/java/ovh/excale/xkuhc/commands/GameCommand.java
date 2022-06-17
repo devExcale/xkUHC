@@ -175,6 +175,29 @@ public class GameCommand {
 
 	}
 
+	// TODO: reset command
+
+	@Subcommand("delete")
+	public static void deleteGame(CommandSender sender) throws WrapperCommandSyntaxException {
+
+		MessageBundles msg = xkUHC.instance()
+				.getMessages();
+
+		Game game = xkUHC.getGame();
+		if(game == null)
+			throw CommandAPI.fail(msg.main("game.no_game"));
+
+		if(game.getPhase()
+				.isRunning())
+			throw CommandAPI.fail(msg.main("game.running"));
+
+		game.unset();
+		xkUHC.setGame(null);
+
+		// TODO: messages
+
+	}
+
 	@Subcommand("reload")
 	public static void reloadConfiguration(CommandSender sender) throws WrapperCommandSyntaxException {
 
