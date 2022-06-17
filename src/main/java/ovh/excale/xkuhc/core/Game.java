@@ -1,6 +1,9 @@
 package ovh.excale.xkuhc.core;
 
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.WorldBorder;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -33,12 +36,12 @@ import java.util.stream.Collectors;
 import static org.bukkit.ChatColor.BOLD;
 import static org.bukkit.ChatColor.RESET;
 import static org.bukkit.GameMode.SPECTATOR;
+import static org.bukkit.GameMode.SURVIVAL;
 import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static ovh.excale.xkuhc.configuration.BorderAction.ActionType.MOVE;
-import static ovh.excale.xkuhc.core.Game.Status.RUNNING;
-import static ovh.excale.xkuhc.core.Game.Status.STARTING;
+import static ovh.excale.xkuhc.core.Game.Phase.*;
 
 public class Game implements Listener {
 
@@ -54,7 +57,7 @@ public class Game implements Listener {
 	private final GodModeHandler godMode;
 
 	private BukkitTask runTask;
-	private Status status;
+	private Phase phase;
 	// TODO: SET STATUS
 	// TODO: STATUS EVENTS
 
@@ -78,7 +81,7 @@ public class Game implements Listener {
 		log = instance.getLogger();
 
 		runTask = null;
-		status = Status.PREPARING;
+		phase = READY;
 
 		world = null;
 		settings = null;
@@ -110,7 +113,7 @@ public class Game implements Listener {
 		// (11) > Kills:
 		// (10)
 		// ( 9) > Border:
-		// ( 8) > Status:
+		// ( 8) > Phase:
 		// ( 7) > Remaining:
 		// ( 6)
 		// ( 5) > Bonds:
@@ -175,7 +178,7 @@ public class Game implements Listener {
 							.toString()
 							.toLowerCase() + "ing";
 
-			return "> " + BOLD + "Status: " + RESET + action;
+			return "> " + BOLD + "Phase: " + RESET + action;
 		});
 
 		// REMAINING
@@ -225,8 +228,8 @@ public class Game implements Listener {
 
 	}
 
-	public Status getStatus() {
-		return status;
+	public Phase getPhase() {
+		return phase;
 	}
 
 	public GamerHub getHub() {
@@ -298,7 +301,7 @@ public class Game implements Listener {
 
 	private void start() {
 
-		status = STARTING;
+		phase = STARTING;
 
 		hub.broadcast(msg.game("game.loading"));
 
@@ -403,7 +406,7 @@ public class Game implements Listener {
 
 		runTask = Bukkit.getScheduler()
 				.runTaskAsynchronously(xkUHC.instance(), this::run);
-		status = RUNNING;
+		phase = RUNNING;
 
 		godMode.enableTime(200);
 
@@ -435,60 +438,97 @@ public class Game implements Listener {
 		hub.broadcast(new MessageFormatter().addColors()
 				.formatFine(msg.game(actionType.getMessageKey())));
 
-		runTask = scheduler.runTaskLaterAsynchronously(xkUHC.instance(), borderActions.hasNext() ? this::run : this::endgame, currentAction.getTime() * 20L);
+		runTask = scheduler.runTaskLaterAsynchronously(xkUHC.instance(), borderActions.hasNext() ? this::run : this::end, currentAction.getTime() * 20L);
 
 	}
 
-	private void endgame() {
-		// TODO: ENDGAME
+	/**
+	 * Ends the game gracefully, user interactive.
+	 */
+	public void end() throws IllegalStateException {
+
+		if(phase != RUNNING && phase != LETHAL)
+			throw new IllegalStateException(msg.main("game.not_stoppable"));
+
+		if(!runTask.isCancelled())
+			runTask.cancel();
+
+		phase = END;
+
+		// TODO: other checks/messages (move win condition over here)
+
+		godMode.enable();
+
+		MessageFormatter formatter = new MessageFormatter().addColors();
+
+		hub.broadcast(formatter.formatFine(msg.main("game.end_tp")));
+
+		// TODO: call GameEndEvent
+
+		runTask = Bukkit.getScheduler()
+				.runTaskLater(xkUHC.instance(), this::stop, 800);
+
 	}
 
+	/**
+	 * Stops abruptly the game, without user interaction.
+	 * Needs to be called when the game needs to be stopped instantly.
+	 * <br>
+	 * (e.g. server stop, plugin deactivation)
+	 *
+	 * <br><br>
+	 * <p>
+	 * This method <b>must</b> be called sync!
+	 * <br>
+	 * This method will be called after {@link #end()}.
+	 *
+	 * @throws IllegalStateException when game isn't running
+	 */
 	public void stop() throws IllegalStateException {
 
-		if(!status.equals(RUNNING))
-			throw new IllegalStateException(msg.main("game.not_running"));
+		if(phase != RUNNING && phase != LETHAL && phase != END)
+			throw new IllegalStateException(msg.main("game.not_stoppable"));
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
 
 		stopwatch.stop();
 
+		scoreboardProcessor.stop();
+
 		bedHandler.deactivate();
 		mobRepellent.deactivate();
 
-		godMode.enableTime(820);
+		World defWorld = Bukkit.getWorlds()
+				.get(0);
+		Location spawn = defWorld.getSpawnLocation();
 
-		hub.broadcast(msg.main("game.end_tp"));
+		for(Gamer gamer : hub.getGamers()) {
 
-		// TODO: FIX: CANNOT STOP ON PLUGIN DISABLE (cannot schedule task while plugin is disabled)
-		Bukkit.getScheduler()
-				.runTaskLater(xkUHC.instance(), () -> {
+			Player player = gamer.getPlayer();
 
-					scoreboardProcessor.stop();
+			// TODO: edit offline players, in a way or another
+			if(!player.isOnline())
+				continue;
 
-					World defWorld = Bukkit.getWorlds()
-							.get(0);
-					Location spawn = defWorld.getSpawnLocation();
+			//noinspection ConstantConditions
+			player.getAttribute(GENERIC_MAX_HEALTH)
+					.setBaseValue(20);
+			player.setHealth(20);
+			player.setFoodLevel(20);
+			player.setGameMode(SURVIVAL);
+			player.getInventory()
+					.clear();
+			player.setLevel(0);
 
-					for(Gamer gamer : hub.getGamers()) {
-						Player player = gamer.getPlayer();
+			if(world.equals(player.getWorld()))
+				player.teleport(spawn);
 
-						//noinspection ConstantConditions
-						player.getAttribute(GENERIC_MAX_HEALTH)
-								.setBaseValue(20);
-						player.setHealth(20);
-						player.setFoodLevel(20);
-						player.setGameMode(GameMode.SURVIVAL);
-						player.teleport(spawn);
-						player.getInventory()
-								.clear();
-						player.setLevel(0);
+		}
 
-					}
+		godMode.disable();
 
-				}, 800);
-
-		status = Status.WORN;
+		phase = WORN;
 
 		// Call GameStopEvent on game stop
 		Bukkit.getScheduler()
@@ -497,16 +537,21 @@ public class Game implements Listener {
 
 	}
 
-	public void dispose() throws IllegalStateException {
+	public void unset() throws IllegalStateException {
 
-		if(!status.isEditable())
+		if(phase.isRunning())
 			throw new IllegalStateException(msg.game("game.not_editable"));
 
 		scoreboardProcessor.untrackAll();
 
-		if(world != null)
+		if(world != null) {
+
 			Bukkit.unloadWorld(world, false);
-		hub.dispose();
+			world = null;
+
+		}
+
+		hub.unset();
 
 	}
 
@@ -526,7 +571,7 @@ public class Game implements Listener {
 				.isOn()) ? running : still);
 
 		map.put("WorldName", String.valueOf(world != null ? world.getName() : null));
-		map.put("Status", status.toString());
+		map.put("Phase", phase.toString());
 
 		map.put("Gamers Count", String.valueOf(hub.getGamers()
 				.size()));
@@ -536,35 +581,25 @@ public class Game implements Listener {
 		return map;
 	}
 
-	public enum Status {
+	public enum Phase {
 
-		PREPARING(true, true),
-		READY(true, true),
-		STARTING(false, false),
-		RUNNING(false, false),
-		FINAL(false, false),
-		WORN(false, true);
+		READY(false),
+		STARTING(true),
+		RUNNING(true),
+		LETHAL(true),
+		END(true),
+		WORN(false);
 
-		private final boolean editable;
-		private final boolean deletable;
+		private final boolean running;
 
-		Status(boolean editable, boolean deletable) {
-			this.editable = editable;
-			this.deletable = deletable;
+		Phase(boolean running) {
+			this.running = running;
 		}
 
-		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-		public boolean isEditable() {
-			return editable;
+		public boolean isRunning() {
+			return running;
 		}
 
-		public boolean isDeletable() {
-			return deletable;
-		}
-
-		public boolean isStoppable() {
-			return !editable & !deletable;
-		}
 	}
 
 	@EventHandler
@@ -587,7 +622,7 @@ public class Game implements Listener {
 		Gamer gamer = event.getGamer();
 		Player player = gamer.getPlayer();
 
-		if(status.equals(RUNNING) && gamer.isAlive() && gamer.hasBond()) {
+		if(phase.isRunning() && gamer.isAlive() && gamer.hasBond()) {
 
 			World world = player.getWorld();
 			Location location = player.getLocation();
@@ -651,7 +686,7 @@ public class Game implements Listener {
 					hub.broadcast(formatter.bond(winnerBond)
 							.format(msg.game("game.win")));
 
-					stop();
+					end();
 
 				}
 			}

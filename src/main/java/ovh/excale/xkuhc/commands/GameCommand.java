@@ -183,8 +183,8 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 
-		if(game != null && !game.getStatus()
-				.isEditable())
+		if(game != null && game.getPhase()
+				.isRunning())
 			throw CommandAPI.fail(msg.main("game.running"));
 
 		instance.reloadConfig();

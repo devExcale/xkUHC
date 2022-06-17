@@ -31,7 +31,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import static org.bukkit.ChatColor.WHITE;
-import static ovh.excale.xkuhc.core.Game.Status;
 
 public class GamerHub {
 
@@ -318,25 +317,26 @@ public class GamerHub {
 				.playSound(gamer.getPlayer(), sound, volume, pitch));
 	}
 
-	public void dispose() {
+	public void unset() {
 
 		eventRaiser.turnOff();
 		compassHandler.deactivate();
 
-		gamers.values()
-				.forEach(this::unregister);
-		bonds.values()
-				.forEach(this::breakBond);
+		for(Gamer gamer : Set.copyOf(gamers.values()))
+			unregister(gamer);
 
-		bonds.clear();
+		for(Bond bond : Set.copyOf(bonds.values()))
+			breakBond(bond);
+
 		gamers.clear();
+		bonds.clear();
 
 	}
 
 	private void statusCheck() throws IllegalStateException {
 
-		if(!game.getStatus()
-				.isEditable())
+		if(game.getPhase()
+				.isRunning())
 			throw new IllegalStateException("The game is not editable right now");
 
 	}
@@ -386,7 +386,7 @@ public class GamerHub {
 
 		public void turnOff() {
 
-			if(on) {
+			if(on)
 				for(Class<? extends Event> eventClass : executors.keySet())
 					try {
 
@@ -403,8 +403,7 @@ public class GamerHub {
 
 					}
 
-				on = false;
-			}
+			on = false;
 
 		}
 
@@ -441,7 +440,7 @@ public class GamerHub {
 		@EventHandler
 		private void onEntityDamage(EntityDamageEvent event) {
 
-			if(game.getStatus() == Status.RUNNING) {
+			if(game.getPhase() == Game.Phase.RUNNING) {
 
 				if(event.getEntity() instanceof Player) {
 

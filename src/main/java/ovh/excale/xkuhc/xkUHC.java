@@ -8,7 +8,6 @@ import ovh.excale.xkuhc.commands.*;
 import ovh.excale.xkuhc.comms.MessageBundles;
 import ovh.excale.xkuhc.configuration.ConfigKeys;
 import ovh.excale.xkuhc.core.Game;
-import ovh.excale.xkuhc.core.Game.Status;
 import ovh.excale.xkuhc.discord.DiscordEndpoint;
 import ovh.excale.xkuhc.world.WorldUtils;
 
@@ -84,9 +83,9 @@ public class xkUHC extends JavaPlugin {
 		if(coreGame != null)
 			try {
 
-				if(coreGame.getStatus() == Status.RUNNING)
+				if(coreGame.getPhase() == Game.Phase.RUNNING)
 					coreGame.stop();
-				coreGame.dispose();
+				coreGame.unset();
 
 			} catch(IllegalStateException ignored) {
 			}

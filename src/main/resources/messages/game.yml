@@ -4,6 +4,7 @@ game:
   loading: "Loading game..."
   teleporting: "Now teleporting to new world..."
   not_editable: "Game ain't currently editable"
+  not_stoppable: "Game ain't currently stoppable"
   cant_sleep: "There is a time and place for everything. Not now."
   stop_force: "Game stopped forcefully"
   win: "Bond {BOLD}{bondColor}{bond}{RESET} is the last one standing!"

@@ -15,11 +15,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.xkUHC;
-import ovh.excale.xkuhc.effects.CaveRepellentEffect;
 import ovh.excale.xkuhc.core.Game;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
+import ovh.excale.xkuhc.effects.CaveRepellentEffect;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -34,7 +34,6 @@ import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_AIR;
 import static org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK;
 import static org.bukkit.event.entity.EntityTargetEvent.TargetReason.CLOSEST_PLAYER;
-import static ovh.excale.xkuhc.core.Game.Status.RUNNING;
 
 public class MobRepellentHandler extends PlayerInteractionHandler {
 
@@ -170,7 +169,8 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onEntityTarget(EntityTargetLivingEntityEvent event) {
 
-		if(!RUNNING.equals(game.getStatus()))
+		if(!game.getPhase()
+				.isRunning())
 			return;
 
 		if(!(event.getTarget() instanceof Player target))
