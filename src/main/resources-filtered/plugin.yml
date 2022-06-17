@@ -9,4 +9,6 @@ authors:
 api-version: "1.18"
 website: ${project.url}
 load: POSTWORLD
-depend: [CommandAPI]
+depend:
+  - CommandAPI
+  - ProtocolLib

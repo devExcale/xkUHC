@@ -6,6 +6,10 @@ import ovh.excale.xkuhc.xkUHC;
 
 public class Stopwatch {
 
+	public static String timeToString(int seconds) {
+		return (seconds >= 60) ? "%dm %ds".formatted(seconds / 60, seconds % 60) : seconds + "s";
+	}
+
 	private BukkitTask task;
 	private int seconds;
 	private int lap;

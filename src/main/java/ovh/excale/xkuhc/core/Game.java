@@ -16,6 +16,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.comms.MessageBundles;
 import ovh.excale.xkuhc.comms.MessageFormatter;
+import ovh.excale.xkuhc.comms.PlayerListPrinter;
 import ovh.excale.xkuhc.comms.ScoreboardProcessor;
 import ovh.excale.xkuhc.configuration.BorderAction;
 import ovh.excale.xkuhc.configuration.GameSettings;
@@ -42,6 +43,7 @@ import static org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static ovh.excale.xkuhc.configuration.BorderAction.ActionType.MOVE;
 import static ovh.excale.xkuhc.core.Game.Phase.*;
+import static ovh.excale.xkuhc.core.Stopwatch.timeToString;
 
 public class Game implements Listener {
 
@@ -49,12 +51,16 @@ public class Game implements Listener {
 
 	private final GamerHub hub;
 	private final Stopwatch stopwatch;
-	private final ScoreboardProcessor scoreboardProcessor;
 	private final MessageBundles msg;
 
+	// EventHandlers
 	private final BedInteractionHandler bedHandler;
 	private final MobRepellentHandler mobRepellent;
 	private final GodModeHandler godMode;
+
+	// Runnables
+	private final ScoreboardProcessor scoreboardProcessor;
+	private final PlayerListPrinter tabPrinter;
 
 	private BukkitTask runTask;
 	private Phase phase;
@@ -71,11 +77,13 @@ public class Game implements Listener {
 	public Game() {
 		hub = new GamerHub(this);
 		stopwatch = new Stopwatch();
-		scoreboardProcessor = new ScoreboardProcessor();
 
 		bedHandler = new BedInteractionHandler();
 		mobRepellent = new MobRepellentHandler(this);
 		godMode = new GodModeHandler();
+
+		scoreboardProcessor = new ScoreboardProcessor();
+		tabPrinter = new PlayerListPrinter(hub);
 
 		xkUHC instance = xkUHC.instance();
 		msg = instance.getMessages();
@@ -103,6 +111,68 @@ public class Game implements Listener {
 				xkUHC.instance());
 
 		initScoreboardProcessor();
+		initTabPrinter();
+
+	}
+
+	private void initTabPrinter() {
+
+		tabPrinter.header(gamer -> {
+
+			WorldBorder border = gamer.getPlayer()
+					.getWorld()
+					.getWorldBorder();
+
+			int actionRemaining = currentAction.getTime() - stopwatch.getLapDelta();
+			String actionType = msg.game(currentAction.getType()
+					.getMessageKeyShort());
+
+			//noinspection StringBufferReplaceableByString
+			String header = new StringBuilder("\n").append("   --- ")
+					.append("{BOLD}Border: {RESET}")
+					.append("{ITALIC}{actionType}{RESET}")
+					.append(" ---   ")
+					.append("\n\n")
+					.append("   |  ")
+					.append("{BOLD}Radius: {RESET}")
+					.append("{ITALIC}{borderRad}{RESET}")
+					.append("  |  ")
+					.append("{BOLD}Remaining: {RESET}")
+					.append("{ITALIC}{actionRemaining}{RESET}")
+					.append("  |   ")
+					.append("\n")
+					.toString();
+
+			return new MessageFormatter().addColors()
+					.custom("actionType", actionType)
+					.custom("actionRemaining", timeToString(actionRemaining))
+					.custom("borderRad", (int) border.getSize() / 2)
+					.format(header);
+		});
+
+		tabPrinter.footer(gamer -> {
+
+			Location playerLoc = gamer.getPlayer()
+					.getLocation();
+
+			//noinspection StringBufferReplaceableByString
+			String footer = new StringBuilder("\n").append("   ")
+					.append("{BOLD}Coords: {RESET}")
+					.append("{ITALIC}[{gamerX} {gamerY} {gamerZ}]{RESET}")
+					.append(" | ")
+					.append("{BOLD}Time: {RESET}")
+					.append("{ITALIC}{gameTime}{RESET}")
+					.append("   ")
+					.append("\n")
+					.toString();
+
+			return new MessageFormatter().addColors()
+					.custom("gameTime", timeToString(stopwatch.getTotalSeconds()))
+					.custom("gamerX", playerLoc.getBlockX())
+					.custom("gamerY", playerLoc.getBlockY())
+					.custom("gamerZ", playerLoc.getBlockZ())
+					.format(footer);
+		});
 
 	}
 
@@ -114,15 +184,15 @@ public class Game implements Listener {
 		// (12) > Gamer:
 		// (11) > Kills:
 		// (10)
-		// ( 9) > Border:
-		// ( 8) > Phase:
-		// ( 7) > Remaining:
+		// ( 9)
+		// ( 8)
+		// ( 7)
 		// ( 6)
 		// ( 5) > Bonds:
 		// ( 4) > Gamers:
 		// ( 3)
-		// ( 2) [ 1h:32m:03s ]
-		// ( 1) [ 000, 00, 000 ]
+		// ( 2)
+		// ( 1)
 		// ( 0)
 
 		// TODO: USE MessageFormatter
@@ -158,41 +228,6 @@ public class Game implements Listener {
 		// KILLS
 		scoreboardProcessor.print(11, gamer -> "> " + BOLD + "Kills: " + RESET + gamer.getKillCount());
 
-		// BORDER
-		scoreboardProcessor.print(9, gamer -> {
-
-			int size;
-			if(world != null) {
-				WorldBorder border = world.getWorldBorder();
-				size = (int) (border.getSize() / 2);
-			} else
-				size = 0;
-
-			return "> " + BOLD + "Border: " + RESET + String.format("[%d, %d]", -size, size);
-		});
-
-		// STATUS
-		scoreboardProcessor.print(8, gamer -> {
-
-			String action = (currentAction == null)
-					? "none"
-					: currentAction.getType()
-							.toString()
-							.toLowerCase() + "ing";
-
-			return "> " + BOLD + "Phase: " + RESET + action;
-		});
-
-		// REMAINING
-		scoreboardProcessor.print(7, gamer -> {
-
-			String s = "> " + BOLD + "Remaining:" + RESET + " N/A";
-			if(currentAction != null)
-				s = "> " + BOLD + "Remaining: " + RESET + (currentAction.getTime() - stopwatch.getLapDelta()) + "s";
-
-			return s;
-		});
-
 		// BONDS
 		scoreboardProcessor.print(5, gamer -> "> " + BOLD + "Bonds: " + RESET + (int) hub.getBonds()
 				.stream()
@@ -204,29 +239,6 @@ public class Game implements Listener {
 				.stream()
 				.filter(Gamer::isAlive)
 				.count());
-
-		// TIME
-		scoreboardProcessor.print(2, gamer -> {
-
-			String str = "[ ";
-
-			int s = stopwatch.getSeconds();
-			int m = stopwatch.getMinutes();
-			int h = m / 60;
-			if(h > 0)
-				str += (m / 60) + "h:";
-
-			return String.format(str + "%2dm:%2ds ]", m % 60, s);
-		});
-
-		// POSITION
-		scoreboardProcessor.print(1, gamer -> {
-
-			Location loc = gamer.getPlayer()
-					.getLocation();
-
-			return String.format("[ %d, %d, %d ]", loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
-		});
 
 	}
 
@@ -415,6 +427,7 @@ public class Game implements Listener {
 		stopwatch.start();
 		bedHandler.activate();
 		mobRepellent.activate();
+		tabPrinter.activate();
 
 	}
 
@@ -438,7 +451,7 @@ public class Game implements Listener {
 
 		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
 		hub.broadcast(new MessageFormatter().addColors()
-				.formatFine(msg.game(actionType.getMessageKey())));
+				.formatFine(msg.game(actionType.getMessageKeyLong())));
 
 		runTask = scheduler.runTaskLaterAsynchronously(xkUHC.instance(), borderActions.hasNext() ? this::run : this::end, currentAction.getTime() * 20L);
 
@@ -497,6 +510,7 @@ public class Game implements Listener {
 		stopwatch.stop();
 
 		scoreboardProcessor.stop();
+		tabPrinter.deactivate();
 
 		bedHandler.deactivate();
 		mobRepellent.deactivate();

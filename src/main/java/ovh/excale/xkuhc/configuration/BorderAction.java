@@ -48,8 +48,12 @@ public class BorderAction {
 			this.msgKey = msgKey;
 		}
 
-		public String getMessageKey() {
-			return msgKey;
+		public String getMessageKeyShort() {
+			return msgKey + ".short";
+		}
+
+		public String getMessageKeyLong() {
+			return msgKey + ".long";
 		}
 
 		public static @Nullable ActionType parse(String value) {

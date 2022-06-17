@@ -1,11 +1,18 @@
 package ovh.excale.xkuhc.commands;
 
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
 import dev.jorel.commandapi.annotations.Subcommand;
 import dev.jorel.commandapi.annotations.arguments.AFloatArgument;
+import dev.jorel.commandapi.annotations.arguments.AGreedyStringArgument;
 import dev.jorel.commandapi.annotations.arguments.APlayerArgument;
 import dev.jorel.commandapi.annotations.arguments.ASoundArgument;
+import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.World;
@@ -15,6 +22,7 @@ import ovh.excale.xkuhc.world.PlayerSpreader;
 import ovh.excale.xkuhc.world.WorldManager;
 import ovh.excale.xkuhc.xkUHC;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
@@ -104,6 +112,43 @@ public class TestCommand {
 	@Subcommand("sound")
 	public static void soundNoVolume(Player player, @ASoundArgument Sound sound, @AFloatArgument float pitch) {
 		sound(player, sound, pitch, 100f);
+	}
+
+	@Subcommand("header")
+	public static void editHeader(Player player, @AGreedyStringArgument String header) throws WrapperCommandSyntaxException {
+
+		PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+		packet.getChatComponents()
+				.write(0, WrappedChatComponent.fromText(header.replaceAll("\\\\n", "\n")));
+
+		try {
+
+			ProtocolLibrary.getProtocolManager()
+					.sendServerPacket(player, packet);
+
+		} catch(InvocationTargetException e) {
+			throw CommandAPI.fail(e.getMessage());
+		}
+
+	}
+
+	@Subcommand("footer")
+	public static void editFooter(Player player, @AGreedyStringArgument String footer) throws WrapperCommandSyntaxException {
+
+		PacketContainer packet = new PacketContainer(PacketType.Play.Server.PLAYER_LIST_HEADER_FOOTER);
+		packet.getChatComponents()
+				.write(0, WrappedChatComponent.fromText(""))
+				.write(1, WrappedChatComponent.fromText(footer.replaceAll("\\\\n", "\n")));
+
+		try {
+
+			ProtocolLibrary.getProtocolManager()
+					.sendServerPacket(player, packet);
+
+		} catch(InvocationTargetException e) {
+			throw CommandAPI.fail(e.getMessage());
+		}
+
 	}
 
 }
