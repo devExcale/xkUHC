@@ -113,7 +113,7 @@ public class GameCommand {
 
 	}
 
-	@Subcommand("stop")
+	@Subcommand("disable")
 	public static void stopGame(CommandSender sender) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()

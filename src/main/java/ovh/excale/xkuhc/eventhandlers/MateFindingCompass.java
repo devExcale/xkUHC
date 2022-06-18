@@ -13,6 +13,7 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.core.Bond;
+import ovh.excale.xkuhc.core.Game.Phase;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
 
@@ -62,6 +63,19 @@ public class MateFindingCompass extends PlayerInteractionHandler {
 	@Override
 	public @NotNull Set<Block> enabledBlocks() {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public void onPhaseChange(@NotNull Phase phase) {
+
+		switch(phase) {
+
+			case READY -> enable();
+
+			case STOPPED -> disable();
+
+		}
+
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)

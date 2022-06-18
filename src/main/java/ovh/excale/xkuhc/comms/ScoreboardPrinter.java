@@ -33,16 +33,9 @@ public class ScoreboardPrinter {
 		sidebar = scoreboard.registerNewObjective("sidebar", "dummy", "xkUHC");
 		sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-		for(int i = 0; i < rowList.length; i++) {
-
-			StringBuilder s = new StringBuilder(" ");
-			for(int j = i; j > 0; j--)
-				s.append(" ");
-
-			sidebar.getScore(rowList[i] = s.toString())
+		for(int i = 0; i < rowList.length; i++)
+			sidebar.getScore(rowList[i] = " ".repeat(i + 1))
 					.setScore(i);
-
-		}
 
 	}
 
@@ -80,19 +73,12 @@ public class ScoreboardPrinter {
 		}
 	}
 
-	// TODO: INVERT INDEX
 	private void write(int rowIndex, Function<Gamer, String> rowProvider) {
 
-		String row;
-		if(rowProvider == null) {
-
-			StringBuilder rowBuilder = new StringBuilder(" ");
-			for(int i = rowIndex; i > 0; i--)
-				rowBuilder.append(" ");
-			row = rowBuilder.toString();
-
-		} else
-			row = rowProvider.apply(gamer);
+		String row = Optional.ofNullable(rowProvider)
+				.map(f -> f.apply(gamer))
+				.filter(s -> !s.isBlank())
+				.orElseGet(() -> " ".repeat(rowIndex + 1));
 
 		scoreboard.resetScores(rowList[rowIndex]);
 		sidebar.getScore(rowList[rowIndex] = row)

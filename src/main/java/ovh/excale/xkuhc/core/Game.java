@@ -21,10 +21,7 @@ import ovh.excale.xkuhc.comms.ScoreboardProcessor;
 import ovh.excale.xkuhc.configuration.BorderAction;
 import ovh.excale.xkuhc.configuration.GameSettings;
 import ovh.excale.xkuhc.discord.DiscordEndpoint;
-import ovh.excale.xkuhc.eventhandlers.AsyncTeleportAnchor;
-import ovh.excale.xkuhc.eventhandlers.BedInteractionHandler;
-import ovh.excale.xkuhc.eventhandlers.GodModeHandler;
-import ovh.excale.xkuhc.eventhandlers.MobRepellentHandler;
+import ovh.excale.xkuhc.eventhandlers.*;
 import ovh.excale.xkuhc.events.*;
 import ovh.excale.xkuhc.world.PlayerSpreader;
 import ovh.excale.xkuhc.world.WorldManager;
@@ -53,19 +50,16 @@ public class Game implements Listener {
 	private final Stopwatch stopwatch;
 	private final MessageBundles msg;
 
-	// EventHandlers
-	private final BedInteractionHandler bedHandler;
-	private final MobRepellentHandler mobRepellent;
-	private final GodModeHandler godMode;
+	// GameAccessories
+	private final Set<GameAccessory> accessories;
 
-	// Runnables
+	// Referenced Accessories
+	private final GodModeHandler godmodeAccessory;
 	private final ScoreboardProcessor scoreboardProcessor;
 	private final PlayerListPrinter tabPrinter;
 
 	private BukkitTask runTask;
 	private Phase phase;
-	// TODO: SET STATUS
-	// TODO: STATUS EVENTS
 
 	private World world;
 	private GameSettings settings;
@@ -78,12 +72,14 @@ public class Game implements Listener {
 		hub = new GamerHub(this);
 		stopwatch = new Stopwatch();
 
-		bedHandler = new BedInteractionHandler();
-		mobRepellent = new MobRepellentHandler(this);
-		godMode = new GodModeHandler();
+		accessories = Collections.synchronizedSet(new HashSet<>());
 
-		scoreboardProcessor = new ScoreboardProcessor();
-		tabPrinter = new PlayerListPrinter(hub);
+		accessories.add(godmodeAccessory = new GodModeHandler());
+		accessories.add(scoreboardProcessor = new ScoreboardProcessor());
+		accessories.add(tabPrinter = new PlayerListPrinter(hub));
+		accessories.add(new MobRepellentHandler(this));
+		accessories.add(new MateFindingCompass(hub));
+		accessories.add(new BedInteractionHandler());
 
 		xkUHC instance = xkUHC.instance();
 		msg = instance.getMessages();
@@ -110,6 +106,8 @@ public class Game implements Listener {
 		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event),
 				xkUHC.instance());
 
+		changePhase(READY);
+
 		initScoreboardProcessor();
 		initTabPrinter();
 
@@ -119,13 +117,24 @@ public class Game implements Listener {
 
 		tabPrinter.header(gamer -> {
 
-			WorldBorder border = gamer.getPlayer()
-					.getWorld()
-					.getWorldBorder();
+			String borderRadius = Optional.ofNullable(world)
+					.map(World::getWorldBorder)
+					.map(WorldBorder::getSize)
+					.map(size -> size.intValue() / 2)
+					.map(String::valueOf)
+					.orElse("N/A");
 
-			int actionRemaining = currentAction.getTime() - stopwatch.getLapDelta();
-			String actionType = msg.game(currentAction.getType()
-					.getMessageKeyShort());
+			String actionRemaining = Optional.ofNullable(currentAction)
+					.map(BorderAction::getTime)
+					.map(time -> time - stopwatch.getLapDelta())
+					.map(Stopwatch::timeToString)
+					.orElse("N/A");
+
+			String actionType = Optional.ofNullable(currentAction)
+					.map(BorderAction::getType)
+					.map(BorderAction.ActionType::getMessageKeyShort)
+					.map(msg::game)
+					.orElse("N/A");
 
 			//noinspection StringBufferReplaceableByString
 			String header = new StringBuilder("\n").append("   --- ")
@@ -145,8 +154,8 @@ public class Game implements Listener {
 
 			return new MessageFormatter().addColors()
 					.custom("actionType", actionType)
-					.custom("actionRemaining", timeToString(actionRemaining))
-					.custom("borderRad", (int) border.getSize() / 2)
+					.custom("actionRemaining", actionRemaining)
+					.custom("borderRad", borderRadius)
 					.format(header);
 		});
 
@@ -242,6 +251,15 @@ public class Game implements Listener {
 
 	}
 
+	private void changePhase(Phase phase) {
+
+		this.phase = phase;
+
+		for(GameAccessory accessory : accessories)
+			accessory.onPhaseChange(phase);
+
+	}
+
 	public Phase getPhase() {
 		return phase;
 	}
@@ -315,7 +333,7 @@ public class Game implements Listener {
 
 	private void start() {
 
-		phase = STARTING;
+		changePhase(STARTING);
 
 		hub.broadcast(msg.game("game.loading"));
 
@@ -344,12 +362,11 @@ public class Game implements Listener {
 		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 80);
 		AsyncTeleportAnchor tpAnchor = new AsyncTeleportAnchor();
 
-		godMode.setIds(hub.getGamers()
+		godmodeAccessory.setIds(hub.getGamers()
 				.stream()
 				.map(Gamer::getPlayer)
 				.map(Entity::getUniqueId)
 				.collect(Collectors.toSet()));
-		godMode.enable();
 
 		Bukkit.getScheduler()
 				.callSyncMethod(xkUHC.instance(), () -> {
@@ -420,14 +437,10 @@ public class Game implements Listener {
 
 		runTask = Bukkit.getScheduler()
 				.runTaskAsynchronously(xkUHC.instance(), this::run);
-		phase = RUNNING;
 
-		godMode.enableTime(200);
+		changePhase(RUNNING);
 
 		stopwatch.start();
-		bedHandler.activate();
-		mobRepellent.activate();
-		tabPrinter.activate();
 
 	}
 
@@ -468,11 +481,9 @@ public class Game implements Listener {
 		if(!runTask.isCancelled())
 			runTask.cancel();
 
-		phase = END;
+		changePhase(ENDING);
 
 		// TODO: other checks/messages (move win condition over here)
-
-		godMode.enable();
 
 		MessageFormatter formatter = new MessageFormatter().addColors();
 
@@ -489,7 +500,7 @@ public class Game implements Listener {
 	 * Stops abruptly the game, without user interaction.
 	 * Needs to be called when the game needs to be stopped instantly.
 	 * <br>
-	 * (e.g. server stop, plugin deactivation)
+	 * (e.g. server disable, plugin deactivation)
 	 *
 	 * <br><br>
 	 * <p>
@@ -501,19 +512,13 @@ public class Game implements Listener {
 	 */
 	public void stop() throws IllegalStateException {
 
-		if(phase != RUNNING && phase != LETHAL && phase != END)
+		if(phase != RUNNING && phase != LETHAL && phase != ENDING)
 			throw new IllegalStateException(msg.main("game.not_stoppable"));
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
 
 		stopwatch.stop();
-
-		scoreboardProcessor.stop();
-		tabPrinter.deactivate();
-
-		bedHandler.deactivate();
-		mobRepellent.deactivate();
 
 		World defWorld = Bukkit.getWorlds()
 				.get(0);
@@ -542,9 +547,7 @@ public class Game implements Listener {
 
 		}
 
-		godMode.disable();
-
-		phase = WORN;
+		changePhase(STOPPED);
 
 		if(settings.isResetAfter()) {
 
@@ -553,7 +556,7 @@ public class Game implements Listener {
 
 		}
 
-		// Call GameStopEvent on game stop
+		// Call GameStopEvent on game disable
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(xkUHC.instance(), () -> Bukkit.getPluginManager()
 						.callEvent(new GameStopEvent(Game.this)));
@@ -564,8 +567,6 @@ public class Game implements Listener {
 
 		if(phase.isRunning())
 			throw new IllegalStateException(msg.game("game.not_editable"));
-
-		scoreboardProcessor.untrackAll();
 
 		if(world != null) {
 
@@ -610,8 +611,8 @@ public class Game implements Listener {
 		STARTING(true),
 		RUNNING(true),
 		LETHAL(true),
-		END(true),
-		WORN(false);
+		ENDING(true),
+		STOPPED(false);
 
 		private final boolean running;
 

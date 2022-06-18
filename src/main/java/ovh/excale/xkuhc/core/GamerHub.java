@@ -17,7 +17,6 @@ import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.comms.MessageBundles;
 import ovh.excale.xkuhc.comms.MessageFormatter;
-import ovh.excale.xkuhc.eventhandlers.MateFindingCompass;
 import ovh.excale.xkuhc.events.GamerDeathEvent;
 import ovh.excale.xkuhc.events.GamerDisconnectEvent;
 import ovh.excale.xkuhc.events.GamerReconnectEvent;
@@ -44,8 +43,6 @@ public class GamerHub {
 	private final Logger log;
 	private final MessageBundles msg;
 
-	private final MateFindingCompass compassHandler;
-
 	public GamerHub(Game game) {
 		this.game = game;
 		gamers = Collections.synchronizedMap(new HashMap<>());
@@ -57,9 +54,6 @@ public class GamerHub {
 
 		eventRaiser = new EventRaiser();
 		eventRaiser.turnOn();
-
-		compassHandler = new MateFindingCompass(this);
-		compassHandler.activate();
 	}
 
 	public Gamer register(Player player) throws IllegalArgumentException, IllegalStateException {
@@ -320,7 +314,6 @@ public class GamerHub {
 	public void unset() {
 
 		eventRaiser.turnOff();
-		compassHandler.deactivate();
 
 		for(Gamer gamer : Set.copyOf(gamers.values()))
 			unregister(gamer);
@@ -339,10 +332,6 @@ public class GamerHub {
 				.isRunning())
 			throw new IllegalStateException("The game is not editable right now");
 
-	}
-
-	public MateFindingCompass getCompassHandler() {
-		return compassHandler;
 	}
 
 	public EventRaiser getEventRaiser() {

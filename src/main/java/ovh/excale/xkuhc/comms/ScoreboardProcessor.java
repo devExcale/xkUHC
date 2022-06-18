@@ -2,13 +2,16 @@ package ovh.excale.xkuhc.comms;
 
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
-import ovh.excale.xkuhc.xkUHC;
+import org.jetbrains.annotations.NotNull;
+import ovh.excale.xkuhc.core.Game.Phase;
+import ovh.excale.xkuhc.core.GameAccessory;
 import ovh.excale.xkuhc.core.Gamer;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.*;
 import java.util.function.Function;
 
-public class ScoreboardProcessor {
+public class ScoreboardProcessor implements GameAccessory {
 
 	private final Set<ScoreboardPrinter> printers;
 	private final List<Function<Gamer, String>> providers;
@@ -26,13 +29,40 @@ public class ScoreboardProcessor {
 
 	}
 
-	public void stop() {
-		if(task != null)
-			task.cancel();
+	@Override
+	public void enable() {
+
+		if(isEnabled())
+			return;
+
+		task = Bukkit.getScheduler()
+				.runTaskTimerAsynchronously(xkUHC.instance(), this::compute, 0L, 20L);
+
 	}
 
-	public boolean isRunning() {
+	public void disable() {
+
+		if(isEnabled())
+			task.cancel();
+
+	}
+
+	@Override
+	public boolean isEnabled() {
 		return task != null && !task.isCancelled();
+	}
+
+	@Override
+	public void onPhaseChange(@NotNull Phase phase) {
+
+		switch(phase) {
+
+			case READY -> enable();
+
+			case STOPPED -> disable();
+
+		}
+
 	}
 
 	public void compute() {
@@ -49,26 +79,14 @@ public class ScoreboardProcessor {
 	public void track(ScoreboardPrinter printer) {
 		printers.add(printer);
 
-		if(!isRunning())
-			task = Bukkit.getScheduler()
-					.runTaskTimerAsynchronously(xkUHC.instance(), this::compute, 0L, 20L);
-
 	}
 
 	public void untrack(ScoreboardPrinter printer) {
 		printers.remove(printer);
-
-		if(printers.isEmpty() && isRunning())
-			stop();
-
 	}
 
 	public void untrackAll() {
 		printers.clear();
-
-		if(isRunning())
-			stop();
-
 	}
 
 	public void print(int row, String message) {

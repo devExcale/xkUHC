@@ -21,14 +21,6 @@ public class AsyncTeleportAnchor implements Listener {
 		players = Collections.synchronizedSet(new HashSet<>());
 	}
 
-	public void activate() {
-
-	}
-
-	public void deactivate() {
-
-	}
-
 	public AsyncTeleportAnchor waitFor(Player player) {
 
 		players.add(player.getUniqueId());

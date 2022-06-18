@@ -4,17 +4,19 @@ import com.comphenix.packetwrapper.WrapperPlayServerPlayerListHeaderFooter;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import ovh.excale.xkuhc.core.Game.Phase;
+import ovh.excale.xkuhc.core.GameAccessory;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.util.function.Function;
-import java.util.logging.Logger;
 
 import static java.util.logging.Level.WARNING;
 
-public class PlayerListPrinter {
+public class PlayerListPrinter implements GameAccessory {
 
 	private final GamerHub hub;
 
@@ -41,24 +43,45 @@ public class PlayerListPrinter {
 		footerProvider = msgProvider;
 	}
 
-	public void activate() {
+	public void enable() {
+
+		if(isEnabled())
+			return;
 
 		task = Bukkit.getScheduler()
 				.runTaskTimer(xkUHC.instance(), this::update, 0L, 20L);
 
 	}
 
-	public void deactivate() {
+	public void disable() {
 
 		headerProvider = null;
 		footerProvider = null;
 
 		update();
 
-		if(task != null && !task.isCancelled()) {
+		if(isEnabled()) {
 
 			task.cancel();
 			task = null;
+
+		}
+
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return task != null && !task.isCancelled();
+	}
+
+	@Override
+	public void onPhaseChange(@NotNull Phase phase) {
+
+		switch(phase) {
+
+			case READY -> enable();
+
+			case STOPPED -> disable();
 
 		}
 

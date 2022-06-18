@@ -1,7 +1,7 @@
 # Used case: Pascal Case / Upper Camel Case
 
 # Misc configuration
-Debug: true               # Whether to activate debug mode
+Debug: true               # Whether to enable debug mode
 DelWorlds: true           # Whether to delete used .xkuhc worlds on startup
 
 # Faker configuration

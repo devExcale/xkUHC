@@ -9,17 +9,20 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.comms.MessageBundles;
+import ovh.excale.xkuhc.core.GameAccessory;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public abstract class PlayerInteractionHandler implements Listener {
+public abstract class PlayerInteractionHandler implements Listener, GameAccessory {
 
 	protected final xkUHC instance;
 	protected final MessageBundles msg;
 	protected final Logger log;
+
+	private boolean enabled;
 
 	public PlayerInteractionHandler() {
 
@@ -27,20 +30,33 @@ public abstract class PlayerInteractionHandler implements Listener {
 		msg = instance.getMessages();
 		log = instance.getLogger();
 
+		enabled = false;
+
 	}
 
-	public void activate() {
+	@Override
+	public void enable() {
 
 		Bukkit.getPluginManager()
 				.registerEvents(this, instance);
 
+		enabled = true;
+
 	}
 
-	public void deactivate() {
+	@Override
+	public void disable() {
 
 		PlayerInteractEvent.getHandlerList()
 				.unregister(this);
 
+		enabled = false;
+
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

@@ -10,6 +10,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
+import ovh.excale.xkuhc.core.Game.Phase;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -32,6 +33,19 @@ public class BedInteractionHandler extends PlayerInteractionHandler {
 	@Override
 	public @NotNull Set<Block> enabledBlocks() {
 		return Collections.emptySet();
+	}
+
+	@Override
+	public void onPhaseChange(@NotNull Phase phase) {
+
+		switch(phase) {
+
+			case STARTING -> enable();
+
+			case STOPPED -> disable();
+
+		}
+
 	}
 
 	@EventHandler(priority = EventPriority.HIGH)
