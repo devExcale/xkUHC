@@ -1,21 +1,19 @@
 package ovh.excale.xkuhc.commands;
 
+import com.comphenix.packetwrapper.WrapperPlayServerPlayerInfo;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
+import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.annotations.Command;
 import dev.jorel.commandapi.annotations.Default;
 import dev.jorel.commandapi.annotations.Subcommand;
-import dev.jorel.commandapi.annotations.arguments.AFloatArgument;
-import dev.jorel.commandapi.annotations.arguments.AGreedyStringArgument;
-import dev.jorel.commandapi.annotations.arguments.APlayerArgument;
-import dev.jorel.commandapi.annotations.arguments.ASoundArgument;
+import dev.jorel.commandapi.annotations.arguments.*;
 import dev.jorel.commandapi.exceptions.WrapperCommandSyntaxException;
-import org.bukkit.Bukkit;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import ovh.excale.xkuhc.world.PlayerSpreader;
@@ -23,7 +21,14 @@ import ovh.excale.xkuhc.world.WorldManager;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
+
+import static com.comphenix.protocol.wrappers.EnumWrappers.NativeGameMode.CREATIVE;
+import static com.comphenix.protocol.wrappers.EnumWrappers.PlayerInfoAction.*;
+import static com.comphenix.protocol.wrappers.WrappedChatComponent.fromLegacyText;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unused")
 @Command("test")
@@ -148,6 +153,70 @@ public class TestCommand {
 		} catch(InvocationTargetException e) {
 			throw CommandAPI.fail(e.getMessage());
 		}
+
+	}
+
+	@Subcommand("addfakeplayer")
+	public static void addFakePlayer(Player player, @AStringArgument String name) {
+
+		WrapperPlayServerPlayerInfo packet = new WrapperPlayServerPlayerInfo();
+		packet.setAction(ADD_PLAYER);
+
+		UUID uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(UTF_8));
+		WrappedGameProfile profile = new WrappedGameProfile(uuid, name);
+		PlayerInfoData playerData = new PlayerInfoData(profile, 0, CREATIVE, WrappedChatComponent.fromText(name));
+
+		packet.setData(List.of(playerData));
+
+		packet.sendPacket(player);
+
+	}
+
+	@Subcommand("removefakeplayer")
+	public static void removeFakePlayer(Player player, @AStringArgument String name) {
+
+		WrapperPlayServerPlayerInfo packet = new WrapperPlayServerPlayerInfo();
+		packet.setAction(REMOVE_PLAYER);
+
+		UUID uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(UTF_8));
+		WrappedGameProfile profile = new WrappedGameProfile(uuid, name);
+
+		packet.setData(List.of(new PlayerInfoData(profile, 0, CREATIVE, null)));
+
+		packet.sendPacket(player);
+
+	}
+
+	@Subcommand("colorfakeplayer")
+	public static void colorFakePlayer(Player player, @AStringArgument String name, @AChatColorArgument ChatColor color) {
+
+		WrapperPlayServerPlayerInfo packet = new WrapperPlayServerPlayerInfo();
+		packet.setAction(UPDATE_DISPLAY_NAME);
+
+		UUID uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(UTF_8));
+		WrappedGameProfile profile = new WrappedGameProfile(uuid, name);
+		String displayName = color + name;
+
+		packet.setData(List.of(new PlayerInfoData(profile, 0, CREATIVE, fromLegacyText(displayName))));
+
+		packet.sendPacket(player);
+
+	}
+
+	@Subcommand("getTrueUUID")
+	public static void getRealUUID(CommandSender sender, @AOfflinePlayerArgument OfflinePlayer player) {
+
+		sender.sendMessage(player.getUniqueId()
+				.toString());
+
+	}
+
+	@Subcommand("getComputedUUID")
+	public static void getFakeUUID(CommandSender sender, @AStringArgument String playerName) {
+
+		String namespaced = "OfflinePlayer:" + playerName;
+		sender.sendMessage(UUID.nameUUIDFromBytes(namespaced.getBytes(UTF_8))
+				.toString());
 
 	}
 
