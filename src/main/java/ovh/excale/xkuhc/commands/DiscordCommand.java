@@ -35,7 +35,7 @@ public class DiscordCommand {
 		// TODO: GAME STATUS CHECK
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		MessageFormatter formatter = new MessageFormatter();
 
@@ -44,7 +44,7 @@ public class DiscordCommand {
 			case "enable" -> {
 
 				if(DiscordEndpoint.getInstance() != null)
-					throw CommandAPI.fail(formatter.formatFail(msg.discord("integration.is_enabled")));
+					throw CommandAPI.fail(formatter.formatFail(msg.discordRaw("integration.is_enabled")));
 
 				// Get token and guildId from config file
 				ConfigurationSection config = xkUHC.instance()
@@ -56,12 +56,12 @@ public class DiscordCommand {
 				Bukkit.getScheduler()
 						.runTaskAsynchronously(xkUHC.instance(), () -> {
 
-							sender.sendMessage(formatter.formatFine(msg.discord("integration.loading")));
+							sender.sendMessage(formatter.formatFine(msg.discordRaw("integration.loading")));
 
 							try {
 
 								DiscordEndpoint.open(token, guildId);
-								sender.sendMessage(formatter.formatFine(msg.discord("integration.enabled")));
+								sender.sendMessage(formatter.formatFine(msg.discordRaw("integration.enabled")));
 
 							} catch(Exception e) {
 
@@ -79,7 +79,7 @@ public class DiscordCommand {
 				DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 				if(endpoint == null)
-					throw CommandAPI.fail(msg.discord("integration.is_disabled"));
+					throw CommandAPI.fail(msg.discordRaw("integration.is_disabled"));
 
 				Bukkit.getScheduler()
 						.runTaskAsynchronously(xkUHC.instance(), () -> {
@@ -87,7 +87,7 @@ public class DiscordCommand {
 							try {
 
 								DiscordEndpoint.close();
-								sender.sendMessage(formatter.formatFine(msg.discord("integration.disabled")));
+								sender.sendMessage(formatter.formatFine(msg.discordRaw("integration.disabled")));
 
 							} catch(Exception e) {
 
@@ -100,7 +100,7 @@ public class DiscordCommand {
 
 			}
 
-			default -> throw CommandAPI.fail(msg.main("error.unknown_option"));
+			default -> throw CommandAPI.fail(msg.mainRaw("error.unknown_option"));
 
 		}
 
@@ -115,7 +115,7 @@ public class DiscordCommand {
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 		if(endpoint == null)
-			throw CommandAPI.fail(msg.discord("integration.not_enabled"));
+			throw CommandAPI.fail(msg.discordRaw("integration.not_enabled"));
 
 		MessageFormatter formatter = new MessageFormatter();
 
@@ -124,7 +124,7 @@ public class DiscordCommand {
 			Member member = endpoint.linkPlayer(player, userId);
 			sender.sendMessage(formatter.custom("gamer", player.getDisplayName())
 					.custom("user", member.getDisplayName())
-					.formatFine(msg.discord("player.linked")));
+					.formatFine(msg.discordRaw("player.linked")));
 
 		} catch(IllegalArgumentException e) {
 			throw CommandAPI.fail(e.getMessage());
@@ -141,7 +141,7 @@ public class DiscordCommand {
 		DiscordEndpoint endpoint = DiscordEndpoint.getInstance();
 
 		if(endpoint == null)
-			throw CommandAPI.fail(msg.discord("integration.not_enabled"));
+			throw CommandAPI.fail(msg.discordRaw("integration.not_enabled"));
 
 		MessageFormatter formatter = new MessageFormatter();
 
@@ -149,7 +149,7 @@ public class DiscordCommand {
 
 			VoiceChannel channel = endpoint.setMainChannel(channelId);
 			sender.sendMessage(formatter.custom("channelName", channel.getName())
-					.formatFine(msg.discord("channel.set_main")));
+					.formatFine(msg.discordRaw("channel.set_main")));
 
 		} catch(IllegalArgumentException e) {
 			throw CommandAPI.fail(e.getMessage());

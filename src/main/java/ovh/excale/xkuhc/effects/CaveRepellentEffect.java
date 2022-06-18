@@ -28,8 +28,8 @@ public class CaveRepellentEffect {
 		ItemMeta meta = tear.getItemMeta();
 
 		//noinspection ConstantConditions
-		meta.setDisplayName(ITALIC + msg.game("repellent.name"));
-		meta.setLore(List.of(msg.game("repellent.description")));
+		meta.setDisplayName(ITALIC + msg.gameRaw("repellent.name"));
+		meta.setLore(List.of(msg.gameRaw("repellent.description")));
 
 		tear.setItemMeta(meta);
 

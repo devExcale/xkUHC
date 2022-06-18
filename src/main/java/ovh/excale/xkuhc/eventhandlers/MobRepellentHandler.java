@@ -136,7 +136,7 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 				gamer.removeCustomEffect();
 				gamer.getPlayer()
 						.spigot()
-						.sendMessage(ACTION_BAR, new ComponentBuilder(msg.game("repellent.end")).color(GOLD)
+						.sendMessage(ACTION_BAR, new ComponentBuilder(msg.gameRaw("repellent.end")).color(GOLD)
 								.create());
 
 			} else {
@@ -181,7 +181,7 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 
 			gamer.setCustomEffect(new CaveRepellentEffect(6000L));
 			player.spigot()
-					.sendMessage(new ComponentBuilder(msg.game("repellent.apply")).color(GRAY)
+					.sendMessage(new ComponentBuilder(msg.gameRaw("repellent.apply")).color(GRAY)
 							.italic(true)
 							.create());
 
@@ -189,7 +189,7 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 
 			effect.addDuration(6000L);
 			player.spigot()
-					.sendMessage(new ComponentBuilder(msg.game("repellent.reapply")).color(GRAY)
+					.sendMessage(new ComponentBuilder(msg.gameRaw("repellent.reapply")).color(GRAY)
 							.italic(true)
 							.create());
 

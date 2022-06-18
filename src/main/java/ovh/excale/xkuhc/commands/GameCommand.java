@@ -52,7 +52,7 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 		if(game != null)
-			throw CommandAPI.fail(msg.main("game.another_session"));
+			throw CommandAPI.fail(msg.mainRaw("game.another_session"));
 
 		try {
 
@@ -61,12 +61,12 @@ public class GameCommand {
 		} catch(Exception e) {
 
 			log().log(Level.SEVERE, e.getMessage(), e);
-			throw CommandAPI.fail(msg.main("error.internal"));
+			throw CommandAPI.fail(msg.mainRaw("error.internal"));
 
 		}
 
-		sender.sendMessage(new MessageFormatter().addColors()
-				.formatFine(msg.main("game.created")));
+		sender.sendMessage(msg.main("game.created")
+				.formatFine());
 
 	}
 
@@ -78,7 +78,7 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		try {
 
@@ -91,7 +91,7 @@ public class GameCommand {
 		} catch(Exception e) {
 
 			log().log(Level.SEVERE, e.getMessage(), e);
-			throw CommandAPI.fail(msg.main("error.internal"));
+			throw CommandAPI.fail(msg.mainRaw("error.internal"));
 
 		}
 
@@ -105,11 +105,11 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		game.setConfirmStart(true);
 
-		sender.sendMessage(new MessageFormatter().formatFine(msg.main("game.confirmed")));
+		sender.sendMessage(new MessageFormatter().formatFine(msg.mainRaw("game.confirmed")));
 
 	}
 
@@ -121,13 +121,13 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		try {
 
 			game.stop();
 			game.getHub()
-					.broadcast(msg.game("game.stop_force"));
+					.broadcast(msg.gameRaw("game.stop_force"));
 			xkUHC.setGame(null);
 
 		} catch(IllegalStateException e) {
@@ -137,7 +137,7 @@ public class GameCommand {
 		} catch(Exception e) {
 
 			log().log(Level.SEVERE, e.getMessage(), e);
-			throw CommandAPI.fail(msg.main("error.internal"));
+			throw CommandAPI.fail(msg.mainRaw("error.internal"));
 
 		}
 
@@ -151,7 +151,7 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		StringBuilder sb = new StringBuilder("\n [Game dump]");
 		game.dump()
@@ -171,7 +171,7 @@ public class GameCommand {
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
-		WorldUtils.purgeWorlds(count -> sender.sendMessage(msg.main("misc.removed_worlds", count)));
+		WorldUtils.purgeWorlds(count -> sender.sendMessage(msg.mainRaw("misc.removed_worlds", count)));
 
 	}
 
@@ -185,11 +185,11 @@ public class GameCommand {
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		if(game.getPhase()
 				.isRunning())
-			throw CommandAPI.fail(msg.main("game.running"));
+			throw CommandAPI.fail(msg.mainRaw("game.running"));
 
 		game.unset();
 		xkUHC.setGame(null);
@@ -208,14 +208,14 @@ public class GameCommand {
 
 		if(game != null && game.getPhase()
 				.isRunning())
-			throw CommandAPI.fail(msg.main("game.running"));
+			throw CommandAPI.fail(msg.mainRaw("game.running"));
 
 		instance.reloadConfig();
 		xkUHC.DEBUG = instance.getConfig()
 				.getBoolean(ConfigKeys.DEBUG, false);
 
 		sender.sendMessage(new MessageFormatter().addColors()
-				.formatFine(msg.main("config.reloaded")));
+				.formatFine(msg.mainRaw("config.reloaded")));
 
 	}
 
@@ -226,12 +226,12 @@ public class GameCommand {
 				.getMessages();
 
 		if(bondQty < 2)
-			throw CommandAPI.fail(msg.main("bond.less_two"));
+			throw CommandAPI.fail(msg.mainRaw("bond.less_two"));
 
 		Game game = xkUHC.getGame();
 
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		// TODO: check for other bonds / game status
 
@@ -252,12 +252,12 @@ public class GameCommand {
 				.collect(Collectors.toCollection(ArrayList::new));
 
 		if(gamers.size() == 0)
-			throw CommandAPI.fail(msg.main("bond.gamers_all_bound"));
+			throw CommandAPI.fail(msg.mainRaw("bond.gamers_all_bound"));
 
 		Collections.shuffle(gamers);
 
 		if(gamers.size() < bondQty)
-			throw CommandAPI.fail(msg.main("bond.too_many_bounds"));
+			throw CommandAPI.fail(msg.mainRaw("bond.too_many_bounds"));
 
 		// Get colors
 		Iterator<ChatColor> iColors = Arrays.stream(ChatColor.values())
@@ -285,7 +285,7 @@ public class GameCommand {
 		} catch(Exception e) {
 
 			log().log(WARNING, "Key: " + fakerKey, e);
-			throw CommandAPI.fail(msg.main("error.illegal_faker_key"));
+			throw CommandAPI.fail(msg.mainRaw("error.illegal_faker_key"));
 
 		}
 
@@ -297,7 +297,7 @@ public class GameCommand {
 				.collect(Collectors.toSet());
 
 		if(bondNames.size() != bondQty)
-			throw CommandAPI.fail(msg.main("error.illegal_faker_value"));
+			throw CommandAPI.fail(msg.mainRaw("error.illegal_faker_value"));
 
 		Iterator<String> iNames = bondNames.iterator();
 
@@ -313,7 +313,7 @@ public class GameCommand {
 		sender.sendMessage(new MessageFormatter().addColors()
 				.custom("nBonds", bonds.length)
 				.custom("nGamers", gamers.size())
-				.formatFine(msg.main("bond.created_n")));
+				.formatFine(msg.mainRaw("bond.created_n")));
 
 	}
 

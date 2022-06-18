@@ -34,11 +34,11 @@ public class ChatAllCommand {
 		Gamer gamer = hub.getGamer(player.getUniqueId());
 
 		if(!gamer.isAlive())
-			throw CommandAPI.fail(msg.game("chat.dead_all_err"));
+			throw CommandAPI.fail(msg.gameRaw("chat.dead_all_err"));
 
 		hub.broadcast(MessageFormatter.with(gamer, gamer.getBond())
 				.custom("message", message)
-				.format(msg.game("chat.all")));
+				.format(msg.gameRaw("chat.all")));
 
 	}
 
@@ -48,7 +48,7 @@ public class ChatAllCommand {
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
-		throw CommandAPI.fail(msg.main("error.undeveloped"));
+		throw CommandAPI.fail(msg.mainRaw("error.undeveloped"));
 
 	}
 
@@ -57,7 +57,7 @@ public class ChatAllCommand {
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
-		throw CommandAPI.fail(msg.main("error.undeveloped"));
+		throw CommandAPI.fail(msg.mainRaw("error.undeveloped"));
 
 	}
 

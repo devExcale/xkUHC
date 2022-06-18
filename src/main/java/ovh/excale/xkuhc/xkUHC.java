@@ -60,7 +60,7 @@ public class xkUHC extends JavaPlugin {
 		if(delWorlds)
 			WorldUtils.purgeWorlds(worldCount -> Optional.of(worldCount)
 					.filter(count -> count > 0)
-					.map(count -> msg.main("misc.removed_worlds", count))
+					.map(count -> msg.mainRaw("misc.removed_worlds", count))
 					.ifPresent(getLogger()::info));
 
 		// REGISTER COMMANDS

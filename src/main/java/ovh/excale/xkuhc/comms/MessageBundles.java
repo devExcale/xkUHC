@@ -39,7 +39,22 @@ public class MessageBundles {
 
 	}
 
-	public String main(@NotNull String key, Object... args) {
+	public MessageFormatter main(@NotNull String key) {
+
+		String msg;
+
+		if(!main.containsKey(key)) {
+
+			log.warning("Could not find main message with key " + key);
+			msg = key;
+
+		} else
+			msg = main.getString(key);
+
+		return new MessageFormatter(msg).addColors();
+	}
+
+	public String mainRaw(@NotNull String key, Object... args) {
 
 		String msg;
 
@@ -55,7 +70,22 @@ public class MessageBundles {
 		return msg;
 	}
 
-	public String discord(@NotNull String key, Object... args) {
+	public MessageFormatter discord(@NotNull String key) {
+
+		String msg;
+
+		if(!discord.containsKey(key)) {
+
+			log.warning("Could not find discord message with key " + key);
+			msg = key;
+
+		} else
+			msg = discord.getString(key);
+
+		return new MessageFormatter(msg).addColors();
+	}
+
+	public String discordRaw(@NotNull String key, Object... args) {
 
 		String msg;
 
@@ -71,7 +101,24 @@ public class MessageBundles {
 		return msg;
 	}
 
-	public String game(@NotNull String key, Object... args) {
+	public MessageFormatter game(@NotNull String key) {
+
+		String msg = gameUser.getString(key, "");
+
+		if(msg.isEmpty())
+			msg = gameOriginal.getString(key, "");
+
+		if(msg.isEmpty()) {
+
+			log.warning("Could not find game message with key " + key);
+			msg = key;
+
+		}
+
+		return new MessageFormatter(msg).addColors();
+	}
+
+	public String gameRaw(@NotNull String key, Object... args) {
 
 		String msg = gameUser.getString(key, "");
 

@@ -125,7 +125,7 @@ public class MateFindingCompass extends PlayerInteractionHandler {
 				itemName += targetName;
 
 			} else
-				itemName += msg.game("compass.no_teammates");
+				itemName += msg.gameRaw("compass.no_teammates");
 
 		} else {
 
@@ -134,7 +134,7 @@ public class MateFindingCompass extends PlayerInteractionHandler {
 			if(target == null || !target.isAlive()) {
 
 				gamer.setCompassTracking(null);
-				itemName += msg.game("compass.no_tracking");
+				itemName += msg.gameRaw("compass.no_tracking");
 
 			} else {
 
@@ -149,7 +149,7 @@ public class MateFindingCompass extends PlayerInteractionHandler {
 		}
 
 		itemMeta.setDisplayName(itemName);
-		itemMeta.setLore(List.of(msg.game("compass.tooltip")));
+		itemMeta.setLore(List.of(msg.gameRaw("compass.tooltip")));
 
 		item.setItemMeta(itemMeta);
 

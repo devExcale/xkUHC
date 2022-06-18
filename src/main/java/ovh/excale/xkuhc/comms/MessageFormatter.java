@@ -34,8 +34,14 @@ public class MessageFormatter {
 	}
 
 	private final Map<String, String> map;
+	private final String message;
 
 	public MessageFormatter() {
+		this("");
+	}
+
+	public MessageFormatter(String message) {
+		this.message = message;
 		map = new HashMap<>();
 	}
 
@@ -99,6 +105,10 @@ public class MessageFormatter {
 		return this;
 	}
 
+	public String format() {
+		return format(message);
+	}
+
 	public String format(final String message) {
 
 		String s = message;
@@ -109,8 +119,16 @@ public class MessageFormatter {
 		return s;
 	}
 
+	public String formatFine() {
+		return formatFine(message);
+	}
+
 	public String formatFine(String message) {
 		return GRAY.toString() + ITALIC + format(message.replaceAll("\\{RESET}", "{RESET}{GRAY}{ITALIC}"));
+	}
+
+	public String formatFail() {
+		return formatFail(message);
 	}
 
 	public String formatFail(String message) {

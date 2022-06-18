@@ -133,7 +133,7 @@ public class Game implements Listener {
 			String actionType = Optional.ofNullable(currentAction)
 					.map(BorderAction::getType)
 					.map(BorderAction.ActionType::getMessageKeyShort)
-					.map(msg::game)
+					.map(msg::gameRaw)
 					.orElse("N/A");
 
 			//noinspection StringBufferReplaceableByString
@@ -301,13 +301,13 @@ public class Game implements Listener {
 
 		if(hub.getBonds()
 				.size() < 2)
-			throw new IllegalStateException(msg.main("game.no_bonds"));
+			throw new IllegalStateException(msg.mainRaw("game.no_bonds"));
 
 		DiscordEndpoint discord = DiscordEndpoint.getInstance();
 		if(discord != null) {
 
 			if(!discord.hasMainChannel())
-				throw new IllegalStateException(msg.discord("error.no_main_ch"));
+				throw new IllegalStateException(msg.discordRaw("error.no_main_ch"));
 
 			Set<UUID> linked = discord.getLinkedPlayers();
 			String unlinked = hub.getGamers()
@@ -318,7 +318,7 @@ public class Game implements Listener {
 					.collect(Collectors.joining(", "));
 
 			String message = new MessageFormatter().custom("unlinked", unlinked)
-					.format(msg.discord("error.unlinked"));
+					.format(msg.discordRaw("error.unlinked"));
 
 			if(!unlinked.isEmpty() && !confirmStart)
 				throw new IllegalStateException(message);
@@ -335,7 +335,7 @@ public class Game implements Listener {
 
 		changePhase(STARTING);
 
-		hub.broadcast(msg.game("game.loading"));
+		hub.broadcast(msg.gameRaw("game.loading"));
 
 		world = new WorldManager(log).loadSpawn(false)
 				.generateUntilClearCenter()
@@ -357,7 +357,7 @@ public class Game implements Listener {
 		for(Gamer gamer : hub.getGamers())
 			gamer.initForGame(true);
 
-		hub.broadcast(msg.game("game.teleporting"));
+		hub.broadcast(msg.gameRaw("game.teleporting"));
 
 		PlayerSpreader spreader = new PlayerSpreader(world, initialBorder - 80);
 		AsyncTeleportAnchor tpAnchor = new AsyncTeleportAnchor();
@@ -432,7 +432,7 @@ public class Game implements Listener {
 		Bukkit.getPluginManager()
 				.callEvent(new GameStartEvent(this));
 
-		hub.broadcastTitle(msg.game("game.title"), msg.game("game.subtitle"), 10, 70, 20);
+		hub.broadcastTitle(msg.gameRaw("game.title"), msg.gameRaw("game.subtitle"), 10, 70, 20);
 		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 1);
 
 		runTask = Bukkit.getScheduler()
@@ -464,7 +464,7 @@ public class Game implements Listener {
 
 		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
 		hub.broadcast(new MessageFormatter().addColors()
-				.formatFine(msg.game(actionType.getMessageKeyLong())));
+				.formatFine(msg.gameRaw(actionType.getMessageKeyLong())));
 
 		runTask = scheduler.runTaskLaterAsynchronously(xkUHC.instance(), borderActions.hasNext() ? this::run : this::end, currentAction.getTime() * 20L);
 
@@ -476,7 +476,7 @@ public class Game implements Listener {
 	public void end() throws IllegalStateException {
 
 		if(phase != RUNNING && phase != LETHAL)
-			throw new IllegalStateException(msg.main("game.not_stoppable"));
+			throw new IllegalStateException(msg.mainRaw("game.not_stoppable"));
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
@@ -487,7 +487,7 @@ public class Game implements Listener {
 
 		MessageFormatter formatter = new MessageFormatter().addColors();
 
-		hub.broadcast(formatter.formatFine(msg.main("game.end_tp")));
+		hub.broadcast(formatter.formatFine(msg.mainRaw("game.end_tp")));
 
 		// TODO: call GameEndEvent
 
@@ -513,7 +513,7 @@ public class Game implements Listener {
 	public void stop() throws IllegalStateException {
 
 		if(phase != RUNNING && phase != LETHAL && phase != ENDING)
-			throw new IllegalStateException(msg.main("game.not_stoppable"));
+			throw new IllegalStateException(msg.mainRaw("game.not_stoppable"));
 
 		if(!runTask.isCancelled())
 			runTask.cancel();
@@ -566,7 +566,7 @@ public class Game implements Listener {
 	public void unset() throws IllegalStateException {
 
 		if(phase.isRunning())
-			throw new IllegalStateException(msg.game("game.not_editable"));
+			throw new IllegalStateException(msg.gameRaw("game.not_editable"));
 
 		if(world != null) {
 
@@ -583,8 +583,8 @@ public class Game implements Listener {
 
 		LinkedHashMap<String, String> map = new LinkedHashMap<>();
 
-		final String running = msg.game("game.options.running");
-		final String still = msg.game("game.options.still");
+		final String running = msg.gameRaw("game.options.running");
+		final String still = msg.gameRaw("game.options.still");
 
 		map.put("StopwatchStatus", stopwatch.isRunning() ? running : still);
 		map.put("StopwatchCount", stopwatch.getTotalSeconds() + "s");
@@ -676,9 +676,9 @@ public class Game implements Listener {
 			boolean isPK = event.byGamer();
 
 			message = switch(event.getDamageCause()) {
-				case PROJECTILE -> msg.game("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
-				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.game("death.reason.ENTITY_ATTACK.default");
-				default -> msg.game("death.reason." + event.getDamageCause());
+				case PROJECTILE -> msg.gameRaw("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
+				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.gameRaw("death.reason.ENTITY_ATTACK.default");
+				default -> msg.gameRaw("death.reason." + event.getDamageCause());
 			};
 
 			MessageFormatter formatter = MessageFormatter.with(gamer, bond);
@@ -695,7 +695,7 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				hub.broadcast(formatter.format(msg.game("death.bond")));
+				hub.broadcast(formatter.format(msg.gameRaw("death.bond")));
 
 				List<Bond> bondsLeft = hub.getBonds()
 						.stream()
@@ -708,7 +708,7 @@ public class Game implements Listener {
 
 					Bond winnerBond = bondsLeft.get(0);
 					hub.broadcast(formatter.bond(winnerBond)
-							.format(msg.game("game.win")));
+							.format(msg.gameRaw("game.win")));
 
 					end();
 

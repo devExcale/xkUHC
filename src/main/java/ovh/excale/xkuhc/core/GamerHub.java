@@ -460,9 +460,9 @@ public class GamerHub {
 						.custom("message", event.getMessage());
 
 				if(gamer.isAlive())
-					bond.broadcast(formatter.format(msg.game("chat.bond")));
+					bond.broadcast(formatter.format(msg.gameRaw("chat.bond")));
 				else
-					GamerHub.this.broadcastDead(formatter.format(msg.game("chat.dead")));
+					GamerHub.this.broadcastDead(formatter.format(msg.gameRaw("chat.dead")));
 
 			}
 		}

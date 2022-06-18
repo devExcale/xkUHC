@@ -125,7 +125,7 @@ public class WorldUtils {
 				if(!deleteFile(master, file1))
 					xkUHC.instance()
 							.getLogger()
-							.warning(msg.main("error.cant_remove_files", file1.getName(), master.getName()));
+							.warning(msg.mainRaw("error.cant_remove_files", file1.getName(), master.getName()));
 
 		return file.delete();
 	}

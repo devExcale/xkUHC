@@ -21,13 +21,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-import ovh.excale.xkuhc.xkUHC;
-import ovh.excale.xkuhc.core.Game;
-import ovh.excale.xkuhc.core.Bond;
-import ovh.excale.xkuhc.core.Gamer;
-import ovh.excale.xkuhc.core.GamerHub;
 import ovh.excale.xkuhc.comms.MessageBundles;
 import ovh.excale.xkuhc.comms.MessageFormatter;
+import ovh.excale.xkuhc.core.Bond;
+import ovh.excale.xkuhc.core.Game;
+import ovh.excale.xkuhc.core.Gamer;
+import ovh.excale.xkuhc.core.GamerHub;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +47,7 @@ public class BondCommand {
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		GamerHub hub = game.getHub();
 		StringBuilder list = new StringBuilder("\n~~~ BONDS ~~~");
@@ -82,21 +82,20 @@ public class BondCommand {
 	}
 
 	@Subcommand("list")
-	public static void listBondMembers(CommandSender sender,
-			@AStringArgument String bondName) throws WrapperCommandSyntaxException {
+	public static void listBondMembers(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		GamerHub hub = game.getHub();
 		Bond bond = hub.getBond(bondName);
 
 		if(bond == null)
-			throw CommandAPI.fail(msg.main("bond.no_such"));
+			throw CommandAPI.fail(msg.mainRaw("bond.no_such"));
 
 		StringBuilder list = new StringBuilder("\n-- " + bond.getColor() + bondName + ChatColor.RESET + " --");
 		for(Gamer gamer : bond.getGamers()) {
@@ -116,15 +115,14 @@ public class BondCommand {
 	}
 
 	@Subcommand("create")
-	public static void createBond(CommandSender sender,
-			@AStringArgument String bondName) throws WrapperCommandSyntaxException {
+	public static void createBond(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		Bond bond;
 
@@ -137,21 +135,21 @@ public class BondCommand {
 			throw CommandAPI.fail(e.getMessage());
 		}
 
-		sender.sendMessage(MessageFormatter.with(bond)
-				.formatFine(msg.main("bond.created")));
+		sender.sendMessage(msg.main("bond.created")
+				.bond(bond)
+				.formatFine());
 
 	}
 
 	@Subcommand("break")
-	public static void breakBond(CommandSender sender,
-			@AStringArgument String bondName) throws WrapperCommandSyntaxException {
+	public static void breakBond(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		try {
 
@@ -162,28 +160,27 @@ public class BondCommand {
 			throw CommandAPI.fail(e.getMessage());
 		}
 
-		sender.sendMessage(new MessageFormatter().addColors()
+		sender.sendMessage(msg.main("bond.deleted")
 				.bond(bondName)
-				.formatFine(msg.main("bond.deleted")));
+				.formatFine());
 
 	}
 
 	@Subcommand("bound")
-	public static void boundGamer(CommandSender sender, @AStringArgument String bondName,
-			@APlayerArgument Player target) throws WrapperCommandSyntaxException {
+	public static void boundGamer(CommandSender sender, @AStringArgument String bondName, @APlayerArgument Player target) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		Bond bond = game.getHub()
 				.getBond(bondName);
 
 		if(bond == null)
-			throw CommandAPI.fail(msg.main("bond.no_such"));
+			throw CommandAPI.fail(msg.mainRaw("bond.no_such"));
 
 		Gamer gamer;
 
@@ -201,21 +198,22 @@ public class BondCommand {
 			throw CommandAPI.fail(e.getMessage());
 		}
 
-		sender.sendMessage(MessageFormatter.with(gamer, bond)
-				.formatFine(msg.main("bond.gamer_bound")));
+		sender.sendMessage(msg.main("bond.gamer_bound")
+				.gamer(gamer)
+				.bond(bondName)
+				.formatFine());
 
 	}
 
 	@Subcommand("unbound")
-	public static void unboundGamer(CommandSender sender,
-			@APlayerArgument Player target) throws WrapperCommandSyntaxException {
+	public static void unboundGamer(CommandSender sender, @APlayerArgument Player target) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		Gamer gamer;
 		Bond bond;
@@ -226,15 +224,16 @@ public class BondCommand {
 			gamer = hub.getGamer(target.getUniqueId());
 
 			if(gamer == null)
-				throw CommandAPI.fail(new MessageFormatter().addColors()
+				throw CommandAPI.fail(msg.main("bond.gamer_no_bond")
 						.gamer(target.getName())
-						.format(msg.main("bond.gamer_no_bond")));
+						.format());
 
 			bond = gamer.getBond();
 
 			if(!gamer.hasBond())
-				throw CommandAPI.fail(MessageFormatter.with(gamer)
-						.format(msg.main("bond.gamer_no_bond")));
+				throw CommandAPI.fail(msg.main("bond.gamer_no_bond")
+						.gamer(gamer)
+						.format());
 
 			hub.unboundGamer(gamer);
 
@@ -242,27 +241,28 @@ public class BondCommand {
 			throw CommandAPI.fail(e.getMessage());
 		}
 
-		sender.sendMessage(MessageFormatter.with(gamer, bond)
-				.formatFine(msg.main("bond.gamer_unbound")));
+		sender.sendMessage(msg.main("bond.gamer_unbound")
+				.gamer(gamer)
+				.bond(bond)
+				.formatFine());
 
 	}
 
 	@Subcommand("color")
-	public static void getColor(CommandSender sender,
-			@AStringArgument String bondName) throws WrapperCommandSyntaxException {
+	public static void getColor(CommandSender sender, @AStringArgument String bondName) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		Bond bond = game.getHub()
 				.getBond(bondName);
 
 		if(bond == null)
-			throw CommandAPI.fail(msg.main("bond.no_such"));
+			throw CommandAPI.fail(msg.mainRaw("bond.no_such"));
 
 		ChatColor color = bond.getColor();
 		sender.sendMessage(bondName + " ~ " + color + color.name());
@@ -270,24 +270,23 @@ public class BondCommand {
 	}
 
 	@Subcommand("color")
-	public static void setColor(CommandSender sender, @AStringArgument String bondName,
-			@AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
+	public static void setColor(CommandSender sender, @AStringArgument String bondName, @AChatColorArgument ChatColor color) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		GamerHub hub = game.getHub();
 		Bond bond = hub.getBond(bondName);
 
 		if(bond == null)
-			throw CommandAPI.fail(msg.main("bond.no_such"));
+			throw CommandAPI.fail(msg.mainRaw("bond.no_such"));
 
 		if(!color.isColor())
-			throw CommandAPI.fail(msg.main("error.illegal_color"));
+			throw CommandAPI.fail(msg.mainRaw("error.illegal_color"));
 
 		try {
 
@@ -297,8 +296,9 @@ public class BondCommand {
 			throw CommandAPI.fail(e.getMessage());
 		}
 
-		sender.sendMessage(MessageFormatter.with(bond)
-				.formatFine(msg.main("bond.color_set")));
+		sender.sendMessage(msg.main("bond.color_set")
+				.bond(bond)
+				.formatFine());
 
 	}
 
@@ -337,15 +337,14 @@ public class BondCommand {
 
 	}
 
-	private static void createBondFullArgsImpl(CommandSender sender, String bondName, ChatColor bondColor,
-			List<Player> players) throws WrapperCommandSyntaxException {
+	private static void createBondFullArgsImpl(CommandSender sender, String bondName, ChatColor bondColor, List<Player> players) throws WrapperCommandSyntaxException {
 
 		MessageBundles msg = xkUHC.instance()
 				.getMessages();
 
 		Game game = xkUHC.getGame();
 		if(game == null)
-			throw CommandAPI.fail(msg.main("game.no_game"));
+			throw CommandAPI.fail(msg.mainRaw("game.no_game"));
 
 		GamerHub hub = game.getHub();
 
@@ -354,12 +353,16 @@ public class BondCommand {
 			Bond bond = hub.createBond(bondName);
 
 			MessageFormatter formatter = MessageFormatter.with(bond);
-			sender.sendMessage(formatter.formatFine(msg.main("bond.created")));
+			sender.sendMessage(msg.main("bond.created")
+					.bond(bond)
+					.formatFine());
 
 			hub.setBondColor(bond, bondColor);
 
 			formatter.bond(bond);
-			sender.sendMessage(formatter.formatFine(msg.main("bond.color_set")));
+			sender.sendMessage(msg.main("bond.color_set")
+					.bond(bond)
+					.formatFine());
 
 			for(Player player : players) {
 
@@ -371,7 +374,9 @@ public class BondCommand {
 
 			}
 
-			sender.sendMessage(formatter.formatFine(msg.main("bond.gamers_bound")));
+			sender.sendMessage(msg.main("bond.gamers_bound")
+					.bond(bond)
+					.formatFine());
 
 		} catch(IllegalStateException | IllegalArgumentException e) {
 			throw CommandAPI.fail(e.getMessage());
