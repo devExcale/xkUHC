@@ -109,7 +109,9 @@ public class GameCommand {
 
 		game.setConfirmStart(true);
 
-		sender.sendMessage(new MessageFormatter().formatFine(msg.mainRaw("game.confirmed")));
+		sender.sendMessage(msg.main("game.confirmed")
+				.addColors()
+				.formatFine());
 
 	}
 
@@ -214,8 +216,8 @@ public class GameCommand {
 		xkUHC.DEBUG = instance.getConfig()
 				.getBoolean(ConfigKeys.DEBUG, false);
 
-		sender.sendMessage(new MessageFormatter().addColors()
-				.formatFine(msg.mainRaw("config.reloaded")));
+		sender.sendMessage(msg.main("config.reloaded")
+				.formatFine());
 
 	}
 
@@ -310,10 +312,10 @@ public class GameCommand {
 
 		gamers.forEach(gamer -> hub.boundGamer(bonds[iBonds.getAndIncrement() % bondQty], gamer));
 
-		sender.sendMessage(new MessageFormatter().addColors()
+		sender.sendMessage(msg.main("bond.created_n")
 				.custom("nBonds", bonds.length)
 				.custom("nGamers", gamers.size())
-				.formatFine(msg.mainRaw("bond.created_n")));
+				.formatFine());
 
 	}
 

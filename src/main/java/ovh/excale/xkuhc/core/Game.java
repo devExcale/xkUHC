@@ -152,11 +152,11 @@ public class Game implements Listener {
 					.append("\n")
 					.toString();
 
-			return new MessageFormatter().addColors()
+			return new MessageFormatter(header).addColors()
 					.custom("actionType", actionType)
 					.custom("actionRemaining", actionRemaining)
 					.custom("borderRad", borderRadius)
-					.format(header);
+					.format();
 		});
 
 		tabPrinter.footer(gamer -> {
@@ -175,12 +175,12 @@ public class Game implements Listener {
 					.append("\n")
 					.toString();
 
-			return new MessageFormatter().addColors()
+			return new MessageFormatter(footer).addColors()
 					.custom("gameTime", timeToString(stopwatch.getTotalSeconds()))
 					.custom("gamerX", playerLoc.getBlockX())
 					.custom("gamerY", playerLoc.getBlockY())
 					.custom("gamerZ", playerLoc.getBlockZ())
-					.format(footer);
+					.format();
 		});
 
 	}
@@ -317,11 +317,10 @@ public class Game implements Listener {
 					.map(Player::getDisplayName)
 					.collect(Collectors.joining(", "));
 
-			String message = new MessageFormatter().custom("unlinked", unlinked)
-					.format(msg.discordRaw("error.unlinked"));
-
 			if(!unlinked.isEmpty() && !confirmStart)
-				throw new IllegalStateException(message);
+				throw new IllegalStateException(msg.discord("error.unlinked")
+						.custom("unlinked", unlinked)
+						.format());
 
 		}
 
@@ -463,8 +462,8 @@ public class Game implements Listener {
 			});
 
 		hub.broadcastSound(ENTITY_EXPERIENCE_ORB_PICKUP, 100, 0);
-		hub.broadcast(new MessageFormatter().addColors()
-				.formatFine(msg.gameRaw(actionType.getMessageKeyLong())));
+		hub.broadcast(msg.game(actionType.getMessageKeyLong())
+				.formatFine());
 
 		runTask = scheduler.runTaskLaterAsynchronously(xkUHC.instance(), borderActions.hasNext() ? this::run : this::end, currentAction.getTime() * 20L);
 
@@ -485,9 +484,8 @@ public class Game implements Listener {
 
 		// TODO: other checks/messages (move win condition over here)
 
-		MessageFormatter formatter = new MessageFormatter().addColors();
-
-		hub.broadcast(formatter.formatFine(msg.mainRaw("game.end_tp")));
+		hub.broadcast(msg.main("game.end_tp")
+				.formatFine());
 
 		// TODO: call GameEndEvent
 
@@ -681,13 +679,15 @@ public class Game implements Listener {
 				default -> msg.gameRaw("death.reason." + event.getDamageCause());
 			};
 
-			MessageFormatter formatter = MessageFormatter.with(gamer, bond);
+			MessageFormatter formatter = new MessageFormatter(message);
 
 			if(isPK)
 				formatter.killer(event.getKiller());
 
 			// Broadcast death message
-			hub.broadcast(formatter.format(message));
+			hub.broadcast(formatter.gamer(gamer)
+					.bond(bond)
+					.format());
 
 			boolean bondDead = bond.getGamers()
 					.stream()
@@ -695,7 +695,9 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				hub.broadcast(formatter.format(msg.gameRaw("death.bond")));
+				hub.broadcast(msg.game("death.bond")
+						.bond(bond)
+						.format());
 
 				List<Bond> bondsLeft = hub.getBonds()
 						.stream()
@@ -707,8 +709,9 @@ public class Game implements Listener {
 				if(bondsLeft.size() == 1) {
 
 					Bond winnerBond = bondsLeft.get(0);
-					hub.broadcast(formatter.bond(winnerBond)
-							.format(msg.gameRaw("game.win")));
+					hub.broadcast(msg.game("game.win")
+							.bond(winnerBond)
+							.format());
 
 					end();
 

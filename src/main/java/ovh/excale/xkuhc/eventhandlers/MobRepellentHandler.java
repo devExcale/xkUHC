@@ -1,6 +1,7 @@
 package ovh.excale.xkuhc.eventhandlers;
 
 import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,7 +29,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import static net.md_5.bungee.api.ChatColor.GOLD;
-import static net.md_5.bungee.api.ChatColor.GRAY;
 import static net.md_5.bungee.api.ChatMessageType.ACTION_BAR;
 import static org.bukkit.Material.GHAST_TEAR;
 import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
@@ -136,8 +136,8 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 				gamer.removeCustomEffect();
 				gamer.getPlayer()
 						.spigot()
-						.sendMessage(ACTION_BAR, new ComponentBuilder(msg.gameRaw("repellent.end")).color(GOLD)
-								.create());
+						.sendMessage(ACTION_BAR, TextComponent.fromLegacyText(msg.game("repellent.end")
+								.formatAccent()));
 
 			} else {
 
@@ -180,18 +180,14 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 		if(effect == null) {
 
 			gamer.setCustomEffect(new CaveRepellentEffect(6000L));
-			player.spigot()
-					.sendMessage(new ComponentBuilder(msg.gameRaw("repellent.apply")).color(GRAY)
-							.italic(true)
-							.create());
+			player.sendMessage(msg.game("repellent.apply")
+					.formatFine());
 
 		} else {
 
 			effect.addDuration(6000L);
-			player.spigot()
-					.sendMessage(new ComponentBuilder(msg.gameRaw("repellent.reapply")).color(GRAY)
-							.italic(true)
-							.create());
+			player.sendMessage(msg.game("repellent.reapply")
+					.formatFine());
 
 		}
 

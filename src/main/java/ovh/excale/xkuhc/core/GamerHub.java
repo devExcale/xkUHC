@@ -16,7 +16,6 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.comms.MessageFormatter;
 import ovh.excale.xkuhc.events.GamerDeathEvent;
 import ovh.excale.xkuhc.events.GamerDisconnectEvent;
 import ovh.excale.xkuhc.events.GamerReconnectEvent;
@@ -456,13 +455,17 @@ public class GamerHub {
 				event.setCancelled(true);
 
 				Bond bond = gamer.getBond();
-				MessageFormatter formatter = MessageFormatter.with(gamer, bond)
-						.custom("message", event.getMessage());
+
+				String formattedMsg = msg.game(gamer.isAlive() ? "chat.bond" : "chat.dead")
+						.gamer(gamer)
+						.bond(bond)
+						.custom("message", event.getMessage())
+						.format();
 
 				if(gamer.isAlive())
-					bond.broadcast(formatter.format(msg.gameRaw("chat.bond")));
+					bond.broadcast(formattedMsg);
 				else
-					GamerHub.this.broadcastDead(formatter.format(msg.gameRaw("chat.dead")));
+					GamerHub.this.broadcastDead(formattedMsg);
 
 			}
 		}

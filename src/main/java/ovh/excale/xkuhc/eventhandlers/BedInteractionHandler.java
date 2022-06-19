@@ -69,10 +69,8 @@ public class BedInteractionHandler extends PlayerInteractionHandler {
 		event.setCancelled(true);
 
 		event.getPlayer()
-				.spigot()
-				.sendMessage(new ComponentBuilder(msg.gameRaw("game.cant_sleep")).color(ChatColor.GRAY)
-						.italic(true)
-						.create());
+				.sendMessage(msg.game("game.cant_sleep")
+						.formatFine());
 
 	}
 

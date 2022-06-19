@@ -4,41 +4,18 @@ import org.bukkit.ChatColor;
 import ovh.excale.xkuhc.core.Bond;
 import ovh.excale.xkuhc.core.Gamer;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.*;
 
 public class MessageFormatter {
 
-	public static MessageFormatter with(Gamer gamer, Bond bond) {
-
-		MessageFormatter formatter = new MessageFormatter().addColors();
-
-		if(gamer != null)
-			formatter.gamer(gamer);
-
-		if(bond != null)
-			formatter.bond(bond);
-
-		return formatter;
-	}
-
-	public static MessageFormatter with(Bond bond) {
-		return with(null, bond);
-	}
-
-	public static MessageFormatter with(Gamer gamer) {
-		return with(gamer, null);
-	}
-
 	private final Map<String, String> map;
 	private final String message;
-
-	public MessageFormatter() {
-		this("");
-	}
 
 	public MessageFormatter(String message) {
 		this.message = message;
@@ -109,7 +86,7 @@ public class MessageFormatter {
 		return format(message);
 	}
 
-	public String format(final String message) {
+	private String format(final String message) {
 
 		String s = message;
 
@@ -119,20 +96,25 @@ public class MessageFormatter {
 		return s;
 	}
 
-	public String formatFine() {
-		return formatFine(message);
+	public String formatSpecial(ChatColor... formats) {
+
+		String joinedFormats = Arrays.stream(formats)
+				.map(ChatColor::toString)
+				.collect(Collectors.joining());
+
+		return joinedFormats + format(message.replaceAll("\\{RESET}", RESET + joinedFormats));
 	}
 
-	public String formatFine(String message) {
-		return GRAY.toString() + ITALIC + format(message.replaceAll("\\{RESET}", "{RESET}{GRAY}{ITALIC}"));
+	public String formatFine() {
+		return formatSpecial(GRAY, ITALIC);
 	}
 
 	public String formatFail() {
-		return formatFail(message);
+		return formatSpecial(RED);
 	}
 
-	public String formatFail(String message) {
-		return RED + format(message.replaceAll("\\{RESET}", "{RESET}{RED}"));
+	public String formatAccent() {
+		return formatSpecial(GOLD);
 	}
 
 }

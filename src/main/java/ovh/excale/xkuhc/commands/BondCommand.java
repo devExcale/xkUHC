@@ -22,7 +22,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.comms.MessageFormatter;
 import ovh.excale.xkuhc.core.Bond;
 import ovh.excale.xkuhc.core.Game;
 import ovh.excale.xkuhc.core.Gamer;
@@ -200,7 +199,7 @@ public class BondCommand {
 
 		sender.sendMessage(msg.main("bond.gamer_bound")
 				.gamer(gamer)
-				.bond(bondName)
+				.bond(bond)
 				.formatFine());
 
 	}
@@ -351,15 +350,11 @@ public class BondCommand {
 		try {
 
 			Bond bond = hub.createBond(bondName);
-
-			MessageFormatter formatter = MessageFormatter.with(bond);
 			sender.sendMessage(msg.main("bond.created")
 					.bond(bond)
 					.formatFine());
 
 			hub.setBondColor(bond, bondColor);
-
-			formatter.bond(bond);
 			sender.sendMessage(msg.main("bond.color_set")
 					.bond(bond)
 					.formatFine());
