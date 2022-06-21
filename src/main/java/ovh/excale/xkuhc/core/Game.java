@@ -566,6 +566,10 @@ public class Game implements Listener {
 		if(phase.isRunning())
 			throw new IllegalStateException(msg.gameRaw("game.not_editable"));
 
+		for(GameAccessory accessory : accessories)
+			if(accessory.isEnabled())
+				accessory.disable();
+
 		if(world != null) {
 
 			Bukkit.unloadWorld(world, false);
