@@ -23,11 +23,17 @@ Game:
   # Whether to enable repellent crafting TODO
   EnableRepellent: true
 
-  # Whether to reset (remove) all teams after a game
-  ResetAfter: true
-
   # Time after which logging out becomes lethal (seconds)
   LethalDisconnectTime: 1800    # 30 min
+
+  # When game stops
+  OnStop:
+    # Whether to reset (remove) all teams after a game
+    ResetAfter: true
+    # Coordinates where to TP after a game stopped
+    TpCoords: [0, 120, 0]
+    # World where to TP after a game stopped
+    TpWorld: "world"
 
   # Border specific configuration
   Border:

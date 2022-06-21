@@ -518,9 +518,21 @@ public class Game implements Listener {
 
 		stopwatch.stop();
 
-		World defWorld = Bukkit.getWorlds()
-				.get(0);
-		Location spawn = defWorld.getSpawnLocation();
+		double[] tpCoords = settings.getTpCoords();
+		World tpWorld = Bukkit.getWorld(settings.getTpWorld());
+		Location tpLoc;
+
+		if(tpWorld == null) {
+
+			if(tpCoords != null)
+				log.warning(msg.mainRaw("error.tp_world_notfound", settings.getTpWorld()));
+
+			tpLoc = Bukkit.getWorlds()
+					.get(0)
+					.getSpawnLocation();
+
+		} else
+			tpLoc = new Location(tpWorld, tpCoords[0], tpCoords[1], tpCoords[2]);
 
 		for(Gamer gamer : hub.getGamers()) {
 
@@ -541,7 +553,7 @@ public class Game implements Listener {
 			player.setLevel(0);
 
 			if(world.equals(player.getWorld()))
-				player.teleport(spawn);
+				player.teleport(tpLoc);
 
 		}
 

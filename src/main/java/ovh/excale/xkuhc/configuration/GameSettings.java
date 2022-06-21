@@ -2,8 +2,8 @@ package ovh.excale.xkuhc.configuration;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.Plugin;
-import ovh.excale.xkuhc.xkUHC;
 import ovh.excale.xkuhc.configuration.BorderAction.ActionType;
+import ovh.excale.xkuhc.xkUHC;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,17 +28,33 @@ public class GameSettings {
 		ConfigurationSection config = plugin.getConfig();
 		GameSettings settings = new GameSettings();
 
+		/// Miscellaneous ///
+
 		settings.friendlyFire = config.getBoolean(FRIENDLY_FIRE, false);
 		settings.repellentEnabled = config.getBoolean(REPELLENT, true);
-		settings.resetAfter = config.getBoolean(RESET_AFTER, true);
 		settings.lethalDisconnectTime = config.getInt(LETHAL_DISCONNECT, 0);
 
 		if(settings.lethalDisconnectTime < 0) {
 
-			log.warning("Invalid %s value, disabling it".formatted(LETHAL_DISCONNECT));
+			log.warning("Invalid %s value, reverting to default option".formatted(LETHAL_DISCONNECT));
 			settings.lethalDisconnectTime = 0;
 
 		}
+
+		/// OnStop ///
+
+		settings.resetAfter = config.getBoolean(RESET_AFTER, true);
+
+		List<Double> coords = config.getDoubleList(STOP_TP_COORDS);
+
+		if(coords.size() == 3)
+			settings.tpCoords = new double[] { coords.get(0), coords.get(1), coords.get(2) };
+		else
+			log.warning("Invalid %s value, reverting to default option".formatted(STOP_TP_COORDS));
+
+		settings.tpWorld = config.getString(STOP_TP_WORLD, "");
+
+		/// Border ///
 
 		settings.initialSize = config.getInt(BORDER_INITIAL_SIZE, MIN_VALUE);
 
@@ -103,26 +119,35 @@ public class GameSettings {
 	}
 
 	private String errorMessage;
-	private final List<BorderAction> borderActions;
 
+	/// Miscellaneous ///
 	private boolean friendlyFire;
 	private boolean repellentEnabled;
-	private boolean resetAfter;
-
-	private int initialSize;
 	private int lethalDisconnectTime;
+
+	/// OnStop ///
+	private boolean resetAfter;
+	private double[] tpCoords;
+	private String tpWorld;
+
+	/// Border ///
+	private int initialSize;
+	private final List<BorderAction> borderActions;
 
 	private GameSettings() {
 
 		errorMessage = "";
-		borderActions = new LinkedList<>();
 
 		friendlyFire = false;
 		repellentEnabled = true;
+		lethalDisconnectTime = 0;
+
 		resetAfter = true;
+		tpCoords = null;
+		tpWorld = "";
 
 		initialSize = 1500;
-		lethalDisconnectTime = 0;
+		borderActions = new LinkedList<>();
 
 	}
 
@@ -144,6 +169,14 @@ public class GameSettings {
 
 	public Iterator<BorderAction> getBorderActionIterator() {
 		return borderActions.listIterator();
+	}
+
+	public double[] getTpCoords() {
+		return tpCoords;
+	}
+
+	public String getTpWorld() {
+		return tpWorld;
 	}
 
 	public int getInitialBorderSize() {

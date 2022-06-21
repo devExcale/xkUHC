@@ -26,9 +26,13 @@ public class ConfigKeys {
 
 	public static final String REPELLENT = "Game.EnableRepellent";
 
-	public static final String RESET_AFTER = "Game.ResetAfter";
-
 	public static final String LETHAL_DISCONNECT = "Game.LethalDisconnectTime";
+
+	public static final String RESET_AFTER = "Game.OnStop.ResetAfter";
+
+	public static final String STOP_TP_COORDS = "Game.OnStop.TpCoords";
+
+	public static final String STOP_TP_WORLD = "Game.OnStop.TpWorld";
 
 	public static final String BORDER_INITIAL_SIZE = "Game.Border.InitialSize";
 
