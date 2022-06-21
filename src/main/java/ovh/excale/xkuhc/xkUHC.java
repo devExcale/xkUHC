@@ -2,7 +2,9 @@ package ovh.excale.xkuhc;
 
 import dev.jorel.commandapi.CommandAPI;
 import io.papermc.lib.PaperLib;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.Event;
 import org.bukkit.plugin.java.JavaPlugin;
 import ovh.excale.xkuhc.commands.*;
 import ovh.excale.xkuhc.comms.MessageBundles;
@@ -29,6 +31,14 @@ public class xkUHC extends JavaPlugin {
 
 	public static void setGame(Game game) {
 		instance.coreGame = game;
+	}
+
+	public static void callAsync(Event event) {
+
+		Bukkit.getScheduler()
+				.runTaskAsynchronously(instance(), () -> Bukkit.getPluginManager()
+						.callEvent(event));
+
 	}
 
 	private Game coreGame;

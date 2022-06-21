@@ -16,9 +16,12 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.events.GamerDeathEvent;
-import ovh.excale.xkuhc.events.GamerDisconnectEvent;
-import ovh.excale.xkuhc.events.GamerReconnectEvent;
+import ovh.excale.xkuhc.events.bond.BondCreateEvent;
+import ovh.excale.xkuhc.events.bond.BondDeleteEvent;
+import ovh.excale.xkuhc.events.bond.BondSetColorEvent;
+import ovh.excale.xkuhc.events.gamer.GamerDeathEvent;
+import ovh.excale.xkuhc.events.gamer.GamerDisconnectEvent;
+import ovh.excale.xkuhc.events.gamer.GamerReconnectEvent;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.lang.reflect.InvocationTargetException;
@@ -164,6 +167,8 @@ public class GamerHub {
 				.registerNewTeam(name));
 		bonds.put(name, bond);
 
+		xkUHC.callAsync(new BondCreateEvent(bond));
+
 		return bond;
 	}
 
@@ -181,6 +186,8 @@ public class GamerHub {
 
 		statusCheck();
 
+		Event deleteEvent = new BondDeleteEvent(bond);
+
 		bond.getGamers()
 				.forEach(gamer -> gamer.setBond(null));
 		//noinspection ConstantConditions
@@ -191,6 +198,8 @@ public class GamerHub {
 				.forEach(Team::unregister);
 
 		bonds.remove(bond.getName());
+
+		xkUHC.callAsync(deleteEvent);
 
 	}
 
@@ -251,6 +260,8 @@ public class GamerHub {
 				.map(Gamer::getScoreboard)
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.setColor(color));
+
+		xkUHC.callAsync(new BondSetColorEvent(bond));
 
 	}
 

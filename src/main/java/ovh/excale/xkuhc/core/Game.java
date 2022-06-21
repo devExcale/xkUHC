@@ -22,7 +22,12 @@ import ovh.excale.xkuhc.configuration.BorderAction;
 import ovh.excale.xkuhc.configuration.GameSettings;
 import ovh.excale.xkuhc.discord.DiscordEndpoint;
 import ovh.excale.xkuhc.eventhandlers.*;
-import ovh.excale.xkuhc.events.*;
+import ovh.excale.xkuhc.events.bond.BondEliminatedEvent;
+import ovh.excale.xkuhc.events.game.GameStartEvent;
+import ovh.excale.xkuhc.events.game.GameStopEvent;
+import ovh.excale.xkuhc.events.gamer.GamerDeathEvent;
+import ovh.excale.xkuhc.events.gamer.GamerDisconnectEvent;
+import ovh.excale.xkuhc.events.gamer.GamerReconnectEvent;
 import ovh.excale.xkuhc.world.PlayerSpreader;
 import ovh.excale.xkuhc.world.WorldManager;
 import ovh.excale.xkuhc.xkUHC;
@@ -690,9 +695,13 @@ public class Game implements Listener {
 			boolean isPK = event.byGamer();
 
 			message = switch(event.getDamageCause()) {
+
 				case PROJECTILE -> msg.gameRaw("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
+
 				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.gameRaw("death.reason.ENTITY_ATTACK.default");
+
 				default -> msg.gameRaw("death.reason." + event.getDamageCause());
+
 			};
 
 			MessageFormatter formatter = new MessageFormatter(message);
@@ -710,6 +719,8 @@ public class Game implements Listener {
 					.noneMatch(Gamer::isAlive);
 
 			if(bondDead) {
+
+				xkUHC.callAsync(new BondEliminatedEvent(bond));
 
 				hub.broadcast(msg.game("death.bond")
 						.bond(bond)

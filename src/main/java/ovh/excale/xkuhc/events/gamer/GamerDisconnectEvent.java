@@ -1,21 +1,21 @@
-package ovh.excale.xkuhc.events;
+package ovh.excale.xkuhc.events.gamer;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
 
-public class GamerReconnectEvent extends Event {
+public class GamerDisconnectEvent extends Event {
 
 	private static final HandlerList handlers = new HandlerList();
 
-	private final PlayerJoinEvent playerEvent;
+	private final PlayerQuitEvent playerEvent;
 	private final GamerHub hub;
 	private final Gamer gamer;
 
-	public GamerReconnectEvent(PlayerJoinEvent playerEvent, GamerHub hub) {
+	public GamerDisconnectEvent(PlayerQuitEvent playerEvent, GamerHub hub) {
 		this.playerEvent = playerEvent;
 		this.hub = hub;
 
@@ -24,7 +24,7 @@ public class GamerReconnectEvent extends Event {
 
 	}
 
-	public PlayerJoinEvent getPlayerEvent() {
+	public PlayerQuitEvent getPlayerEvent() {
 		return playerEvent;
 	}
 

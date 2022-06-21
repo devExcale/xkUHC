@@ -152,6 +152,7 @@ public class BondCommand {
 
 		try {
 
+			// TODO: verify bug (bond detached from hub but still existing)
 			game.getHub()
 					.removeBond(bondName);
 

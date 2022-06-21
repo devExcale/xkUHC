@@ -1,4 +1,4 @@
-package ovh.excale.xkuhc.events;
+package ovh.excale.xkuhc.events.game;
 
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
