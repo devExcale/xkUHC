@@ -606,7 +606,7 @@ public class Game implements Listener {
 		map.put("MainLoop", (runTask != null && !runTask.isCancelled()) ? running : still);
 		map.put("ScoreboardLoop", (runTask != null && !runTask.isCancelled()) ? running : still);
 		map.put("EventRaiser", (hub.getEventRaiser()
-				.isOn()) ? running : still);
+				.isEnabled()) ? running : still);
 
 		map.put("WorldName", String.valueOf(world != null ? world.getName() : null));
 		map.put("Phase", phase.toString());

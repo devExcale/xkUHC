@@ -27,8 +27,10 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.WHITE;
+import static ovh.excale.xkuhc.core.Game.Phase.RUNNING;
 
 public class GamerHub {
 
@@ -52,7 +54,7 @@ public class GamerHub {
 		msg = instance.getMessages();
 
 		eventRaiser = new EventRaiser();
-		eventRaiser.turnOn();
+		eventRaiser.enable();
 	}
 
 	public Gamer register(Player player) throws IllegalArgumentException, IllegalStateException {
@@ -130,14 +132,13 @@ public class GamerHub {
 	 * @return a {@link Set}<{@link ChatColor}> that contains all the color binded to the bonds, expect for the WHITE
 	 */
 	public Set<ChatColor> getBondColors() {
-		Set<ChatColor> chatColors = new HashSet<>();
-		bonds.values()
-				.forEach(bond -> {
-					if(!bond.getColor()
-							.equals(WHITE))
-						chatColors.add(bond.getColor());
-				});
-		return chatColors;
+
+		return bonds.values()
+				.stream()
+				.map(Bond::getColor)
+				.filter(color -> !color.equals(WHITE))
+				.collect(Collectors.toSet());
+
 	}
 
 	/**
@@ -312,7 +313,7 @@ public class GamerHub {
 
 	public void unset() {
 
-		eventRaiser.turnOff();
+		eventRaiser.disable();
 
 		for(Gamer gamer : Set.copyOf(gamers.values()))
 			unregister(gamer);
@@ -341,12 +342,12 @@ public class GamerHub {
 
 		private final Map<Class<? extends Event>, EventExecutor> executors;
 		private final PluginManager pluginManager;
-		private boolean on;
+		private boolean enabled;
 
 		public EventRaiser() {
 			executors = new HashMap<>();
 			pluginManager = Bukkit.getPluginManager();
-			on = false;
+			enabled = false;
 
 			// JOIN EVENT EXECUTOR
 			executors.put(PlayerJoinEvent.class, (listener, event) -> ((EventRaiser) listener).onPlayerJoin((PlayerJoinEvent) event));
@@ -362,19 +363,19 @@ public class GamerHub {
 
 		}
 
-		public void turnOn() {
+		public void enable() {
 
-			if(!on) {
+			if(!enabled) {
 				executors.forEach(
 						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, xkUHC.instance(), true));
-				on = true;
+				enabled = true;
 			}
 
 		}
 
-		public void turnOff() {
+		public void disable() {
 
-			if(on)
+			if(enabled)
 				for(Class<? extends Event> eventClass : executors.keySet())
 					try {
 
@@ -391,12 +392,12 @@ public class GamerHub {
 
 					}
 
-			on = false;
+			enabled = false;
 
 		}
 
-		public boolean isOn() {
-			return on;
+		public boolean isEnabled() {
+			return enabled;
 		}
 
 		@EventHandler
@@ -406,9 +407,11 @@ public class GamerHub {
 			Gamer gamer = gamers.get(player.getUniqueId());
 
 			if(gamer != null) {
+
 				gamer.takeSnapshot();
 				gamer.resetPlayer();
 				pluginManager.callEvent(new GamerDisconnectEvent(event, GamerHub.this));
+
 			}
 
 		}
@@ -420,27 +423,27 @@ public class GamerHub {
 			Gamer gamer = gamers.get(player.getUniqueId());
 
 			if(gamer != null) {
+
 				gamer.applySnapshot(player);
 				pluginManager.callEvent(new GamerReconnectEvent(event, GamerHub.this));
+
 			}
+
 		}
 
 		@EventHandler
 		private void onEntityDamage(EntityDamageEvent event) {
 
-			if(game.getPhase() == Game.Phase.RUNNING) {
+			if(game.getPhase() != RUNNING)
+				return;
 
-				if(event.getEntity() instanceof Player) {
+			if(event.getEntity() instanceof Player damaged)
+				if((damaged.getHealth() - event.getDamage()) <= 0) {
 
-					Player damaged = (Player) event.getEntity();
-					if((damaged.getHealth() - event.getDamage()) <= 0) {
+					event.setCancelled(true);
+					pluginManager.callEvent(new GamerDeathEvent(event, GamerHub.this));
 
-						event.setCancelled(true);
-						pluginManager.callEvent(new GamerDeathEvent(event, GamerHub.this));
-
-					}
 				}
-			}
 
 		}
 
