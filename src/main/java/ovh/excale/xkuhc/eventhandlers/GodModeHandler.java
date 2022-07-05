@@ -6,8 +6,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.core.Game.Phase;
 import ovh.excale.xkuhc.core.GameAccessory;
+import ovh.excale.xkuhc.core.GamePhase;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.util.Collection;
@@ -62,7 +62,7 @@ public class GodModeHandler implements Listener, GameAccessory {
 	}
 
 	@Override
-	public void onPhaseChange(@NotNull Phase phase) {
+	public void onPhaseChange(@NotNull GamePhase phase) {
 
 		switch(phase) {
 

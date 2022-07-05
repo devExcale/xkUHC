@@ -15,6 +15,8 @@ import ovh.excale.xkuhc.world.WorldUtils;
 
 import java.util.Optional;
 
+import static ovh.excale.xkuhc.core.GamePhase.RUNNING;
+
 public class xkUHC extends JavaPlugin {
 
 	private static xkUHC instance;
@@ -38,6 +40,13 @@ public class xkUHC extends JavaPlugin {
 		Bukkit.getScheduler()
 				.runTaskAsynchronously(instance(), () -> Bukkit.getPluginManager()
 						.callEvent(event));
+
+	}
+
+	public static void call(Event event) {
+
+		Bukkit.getPluginManager()
+				.callEvent(event);
 
 	}
 
@@ -93,7 +102,7 @@ public class xkUHC extends JavaPlugin {
 		if(coreGame != null)
 			try {
 
-				if(coreGame.getPhase() == Game.Phase.RUNNING)
+				if(coreGame.getPhase() == RUNNING)
 					coreGame.stop();
 				coreGame.unset();
 

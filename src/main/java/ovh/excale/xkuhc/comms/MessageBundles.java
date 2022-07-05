@@ -136,7 +136,7 @@ public class MessageBundles {
 		return msg;
 	}
 
-	public String gameRandomPick(@NotNull String key, Object... args) {
+	public MessageFormatter gameRandomPick(@NotNull String key) {
 
 		List<String> strings = gameUser.getStringList(key);
 		String msg;
@@ -150,12 +150,13 @@ public class MessageBundles {
 			msg = key;
 
 		} else {
+
 			int i = random.nextInt(strings.size());
-			msg = strings.get(i)
-					.formatted(args);
+			msg = strings.get(i);
+
 		}
 
-		return msg;
+		return new MessageFormatter(msg).addColors();
 	}
 
 }

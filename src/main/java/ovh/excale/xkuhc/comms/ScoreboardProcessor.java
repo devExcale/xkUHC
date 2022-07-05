@@ -3,9 +3,9 @@ package ovh.excale.xkuhc.comms;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.core.Game.Phase;
 import ovh.excale.xkuhc.core.GameAccessory;
 import ovh.excale.xkuhc.core.Gamer;
+import ovh.excale.xkuhc.core.GamePhase;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.util.*;
@@ -53,7 +53,7 @@ public class ScoreboardProcessor implements GameAccessory {
 	}
 
 	@Override
-	public void onPhaseChange(@NotNull Phase phase) {
+	public void onPhaseChange(@NotNull GamePhase phase) {
 
 		switch(phase) {
 

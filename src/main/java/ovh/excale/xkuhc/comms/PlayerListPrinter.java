@@ -6,8 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import ovh.excale.xkuhc.core.Game.Phase;
 import ovh.excale.xkuhc.core.GameAccessory;
+import ovh.excale.xkuhc.core.GamePhase;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
 import ovh.excale.xkuhc.xkUHC;
@@ -75,7 +75,7 @@ public class PlayerListPrinter implements GameAccessory {
 	}
 
 	@Override
-	public void onPhaseChange(@NotNull Phase phase) {
+	public void onPhaseChange(@NotNull GamePhase phase) {
 
 		switch(phase) {
 

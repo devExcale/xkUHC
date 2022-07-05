@@ -17,9 +17,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.core.Game;
-import ovh.excale.xkuhc.core.Game.Phase;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.core.GamerHub;
+import ovh.excale.xkuhc.core.GamePhase;
 import ovh.excale.xkuhc.effects.CaveRepellentEffect;
 import ovh.excale.xkuhc.xkUHC;
 
@@ -106,7 +106,7 @@ public class MobRepellentHandler extends PlayerInteractionHandler {
 	}
 
 	@Override
-	public void onPhaseChange(@NotNull Phase phase) {
+	public void onPhaseChange(@NotNull GamePhase phase) {
 
 		switch(phase) {
 

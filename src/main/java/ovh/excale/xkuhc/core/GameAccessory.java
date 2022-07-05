@@ -1,7 +1,6 @@
 package ovh.excale.xkuhc.core;
 
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.core.Game.Phase;
 
 public interface GameAccessory {
 
@@ -11,6 +10,6 @@ public interface GameAccessory {
 
 	boolean isEnabled();
 
-	void onPhaseChange(@NotNull Phase phase);
+	void onPhaseChange(@NotNull GamePhase phase);
 
 }

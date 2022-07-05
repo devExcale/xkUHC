@@ -1,46 +1,32 @@
 package ovh.excale.xkuhc.events.gamer;
 
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import ovh.excale.xkuhc.core.Gamer;
-import ovh.excale.xkuhc.core.GamerHub;
 
-public class GamerDisconnectEvent extends Event {
+public class GamerDisconnectEvent extends GamerEvent {
 
 	private static final HandlerList handlers = new HandlerList();
 
-	private final PlayerQuitEvent playerEvent;
-	private final GamerHub hub;
-	private final Gamer gamer;
+	public GamerDisconnectEvent(Gamer gamer, PlayerQuitEvent parentEvent) {
+		super(gamer, parentEvent);
 
-	public GamerDisconnectEvent(PlayerQuitEvent playerEvent, GamerHub hub) {
-		this.playerEvent = playerEvent;
-		this.hub = hub;
-
-		gamer = hub.getGamer(playerEvent.getPlayer()
-				.getUniqueId());
+		parentEventCheck(event -> ((PlayerQuitEvent) event).getPlayer());
 
 	}
 
-	public PlayerQuitEvent getPlayerEvent() {
-		return playerEvent;
-	}
-
-	public GamerHub getHub() {
-		return hub;
-	}
-
-	public Gamer getGamer() {
-		return gamer;
+	@Override
+	public @Nullable PlayerQuitEvent getParentEvent() {
+		return (PlayerQuitEvent) super.getParentEvent();
 	}
 
 	public @NotNull HandlerList getHandlers() {
 		return handlers;
 	}
 
-	public static HandlerList getHandlerList() {
+	public static @NotNull HandlerList getHandlerList() {
 		return handlers;
 	}
 

@@ -1,34 +1,25 @@
 package ovh.excale.xkuhc.events.bond;
 
+import lombok.Getter;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.core.Bond;
-import ovh.excale.xkuhc.core.BondSnapshot;
 
+@Getter
 public abstract class BondEvent extends Event {
 
 	private static final HandlerList handlers = new HandlerList();
 
-	protected final BondSnapshot bond;
+	protected final Bond bond;
 
 	protected BondEvent(Bond bond) {
-		this(bond, true);
+		this(bond, false);
 	}
 
-	protected BondEvent(Bond bond, boolean reference) {
-		super(true);
-
-		this.bond = new BondSnapshot(bond, reference);
-
-	}
-
-	public BondSnapshot getBond() {
-		return bond;
-	}
-
-	public Bond getReferencedBond() {
-		return bond.getReferencedBond();
+	protected BondEvent(Bond bond, boolean async) {
+		super(async);
+		this.bond = bond;
 	}
 
 	public @NotNull HandlerList getHandlers() {

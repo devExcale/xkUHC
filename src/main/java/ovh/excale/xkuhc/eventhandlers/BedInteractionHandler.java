@@ -1,7 +1,5 @@
 package ovh.excale.xkuhc.eventhandlers;
 
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -10,7 +8,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.core.Game.Phase;
+import ovh.excale.xkuhc.core.GamePhase;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -36,7 +34,7 @@ public class BedInteractionHandler extends PlayerInteractionHandler {
 	}
 
 	@Override
-	public void onPhaseChange(@NotNull Phase phase) {
+	public void onPhaseChange(@NotNull GamePhase phase) {
 
 		switch(phase) {
 

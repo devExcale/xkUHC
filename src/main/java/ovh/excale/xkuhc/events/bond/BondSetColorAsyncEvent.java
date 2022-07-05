@@ -1,15 +1,20 @@
-package ovh.excale.xkuhc.events.game;
+package ovh.excale.xkuhc.events.bond;
 
+import org.bukkit.ChatColor;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import ovh.excale.xkuhc.core.Game;
+import ovh.excale.xkuhc.core.Bond;
 
-public class GameStartEvent extends GameEvent {
+public class BondSetColorAsyncEvent extends BondEvent {
 
 	private static final HandlerList handlers = new HandlerList();
 
-	public GameStartEvent(Game game) {
-		super(game);
+	public BondSetColorAsyncEvent(Bond bond) {
+		super(bond, true);
+	}
+
+	public ChatColor getColor() {
+		return bond.getColor();
 	}
 
 	public @NotNull HandlerList getHandlers() {

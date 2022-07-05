@@ -4,6 +4,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -16,12 +17,10 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import ovh.excale.xkuhc.comms.MessageBundles;
-import ovh.excale.xkuhc.events.bond.BondCreateEvent;
-import ovh.excale.xkuhc.events.bond.BondDeleteEvent;
-import ovh.excale.xkuhc.events.bond.BondSetColorEvent;
-import ovh.excale.xkuhc.events.gamer.GamerDeathEvent;
-import ovh.excale.xkuhc.events.gamer.GamerDisconnectEvent;
-import ovh.excale.xkuhc.events.gamer.GamerReconnectEvent;
+import ovh.excale.xkuhc.events.bond.BondCreateAsyncEvent;
+import ovh.excale.xkuhc.events.bond.BondDeleteAsyncEvent;
+import ovh.excale.xkuhc.events.bond.BondSetColorAsyncEvent;
+import ovh.excale.xkuhc.events.gamer.*;
 import ovh.excale.xkuhc.xkUHC;
 
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.bukkit.ChatColor.WHITE;
-import static ovh.excale.xkuhc.core.Game.Phase.RUNNING;
+import static ovh.excale.xkuhc.core.GamePhase.RUNNING;
 
 public class GamerHub {
 
@@ -51,13 +50,12 @@ public class GamerHub {
 		this.game = game;
 		gamers = Collections.synchronizedMap(new HashMap<>());
 		bonds = Collections.synchronizedMap(new HashMap<>());
+		eventRaiser = new EventRaiser();
 
 		xkUHC instance = xkUHC.instance();
 		log = instance.getLogger();
 		msg = instance.getMessages();
 
-		eventRaiser = new EventRaiser();
-		eventRaiser.enable();
 	}
 
 	public Gamer register(Player player) throws IllegalArgumentException, IllegalStateException {
@@ -90,6 +88,8 @@ public class GamerHub {
 		game.getScoreboardProcessor()
 				.track(gamer.getScoreboardPrinter());
 
+		xkUHC.call(new GamerRegisterEvent(gamer));
+
 		return gamer;
 	}
 
@@ -110,6 +110,8 @@ public class GamerHub {
 		//noinspection ConstantConditions
 		player.setScoreboard(Bukkit.getScoreboardManager()
 				.getMainScoreboard());
+
+		xkUHC.call(new GamerUnregisterEvent(gamer));
 
 	}
 
@@ -167,7 +169,7 @@ public class GamerHub {
 				.registerNewTeam(name));
 		bonds.put(name, bond);
 
-		xkUHC.callAsync(new BondCreateEvent(bond));
+		xkUHC.callAsync(new BondCreateAsyncEvent(bond));
 
 		return bond;
 	}
@@ -186,8 +188,6 @@ public class GamerHub {
 
 		statusCheck();
 
-		Event deleteEvent = new BondDeleteEvent(bond);
-
 		bond.getGamers()
 				.forEach(gamer -> gamer.setBond(null));
 		//noinspection ConstantConditions
@@ -199,7 +199,7 @@ public class GamerHub {
 
 		bonds.remove(bond.getName());
 
-		xkUHC.callAsync(deleteEvent);
+		xkUHC.callAsync(new BondDeleteAsyncEvent(bond));
 
 	}
 
@@ -261,7 +261,7 @@ public class GamerHub {
 				.map(scoreboard -> scoreboard.getTeam(bond.getName()))
 				.forEach(team -> team.setColor(color));
 
-		xkUHC.callAsync(new BondSetColorEvent(bond));
+		xkUHC.callAsync(new BondSetColorAsyncEvent(bond));
 
 	}
 
@@ -324,8 +324,6 @@ public class GamerHub {
 
 	public void unset() {
 
-		eventRaiser.disable();
-
 		for(Gamer gamer : Set.copyOf(gamers.values()))
 			unregister(gamer);
 
@@ -345,11 +343,11 @@ public class GamerHub {
 
 	}
 
-	public EventRaiser getEventRaiser() {
+	protected EventRaiser getEventRaiser() {
 		return eventRaiser;
 	}
 
-	public class EventRaiser implements Listener {
+	public class EventRaiser implements Listener, GameAccessory {
 
 		private final Map<Class<? extends Event>, EventExecutor> executors;
 		private final PluginManager pluginManager;
@@ -377,9 +375,11 @@ public class GamerHub {
 		public void enable() {
 
 			if(!enabled) {
+
 				executors.forEach(
 						(eventClass, eventExecutor) -> pluginManager.registerEvent(eventClass, EventRaiser.this, EventPriority.HIGH, eventExecutor, xkUHC.instance(), true));
 				enabled = true;
+
 			}
 
 		}
@@ -411,6 +411,19 @@ public class GamerHub {
 			return enabled;
 		}
 
+		@Override
+		public void onPhaseChange(@NotNull GamePhase phase) {
+
+			switch(phase) {
+
+				case READY -> enable();
+
+				case STOPPED -> disable();
+
+			}
+
+		}
+
 		@EventHandler
 		private void onPlayerQuit(PlayerQuitEvent event) {
 
@@ -421,7 +434,7 @@ public class GamerHub {
 
 				gamer.takeSnapshot();
 				gamer.resetPlayer();
-				pluginManager.callEvent(new GamerDisconnectEvent(event, GamerHub.this));
+				pluginManager.callEvent(new GamerDisconnectEvent(gamer, event));
 
 			}
 
@@ -436,7 +449,7 @@ public class GamerHub {
 			if(gamer != null) {
 
 				gamer.applySnapshot(player);
-				pluginManager.callEvent(new GamerReconnectEvent(event, GamerHub.this));
+				pluginManager.callEvent(new GamerReconnectEvent(gamer, event));
 
 			}
 
@@ -448,13 +461,17 @@ public class GamerHub {
 			if(game.getPhase() != RUNNING)
 				return;
 
-			if(event.getEntity() instanceof Player damaged)
-				if((damaged.getHealth() - event.getDamage()) <= 0) {
+			Entity entity = event.getEntity();
+			Gamer gamer = gamers.get(entity.getUniqueId());
 
-					event.setCancelled(true);
-					pluginManager.callEvent(new GamerDeathEvent(event, GamerHub.this));
+			if(gamer == null)
+				return;
 
-				}
+			if(((Player) entity).getHealth() - event.getDamage() > 0)
+				return;
+
+			event.setCancelled(true);
+			pluginManager.callEvent(new GamerDeathEvent(gamer, event, GamerHub.this));
 
 		}
 

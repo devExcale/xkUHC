@@ -19,12 +19,12 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import ovh.excale.xkuhc.events.gamer.GamerDeathEvent;
 import ovh.excale.xkuhc.xkUHC;
 import ovh.excale.xkuhc.core.Bond;
 import ovh.excale.xkuhc.core.Gamer;
 import ovh.excale.xkuhc.events.game.GameStartEvent;
 import ovh.excale.xkuhc.events.game.GameStopEvent;
-import ovh.excale.xkuhc.events.gamer.GamerDeathEvent;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

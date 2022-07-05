@@ -7,7 +7,6 @@ import org.bukkit.WorldBorder;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
@@ -44,7 +43,7 @@ import static org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
 import static org.bukkit.Sound.ENTITY_PLAYER_ATTACK_CRIT;
 import static org.bukkit.attribute.Attribute.GENERIC_MAX_HEALTH;
 import static ovh.excale.xkuhc.configuration.BorderAction.ActionType.MOVE;
-import static ovh.excale.xkuhc.core.Game.Phase.*;
+import static ovh.excale.xkuhc.core.GamePhase.*;
 import static ovh.excale.xkuhc.core.Stopwatch.timeToString;
 
 public class Game implements Listener {
@@ -64,7 +63,7 @@ public class Game implements Listener {
 	private final PlayerListPrinter tabPrinter;
 
 	private BukkitTask runTask;
-	private Phase phase;
+	private GamePhase phase;
 
 	private World world;
 	private GameSettings settings;
@@ -79,6 +78,7 @@ public class Game implements Listener {
 
 		accessories = Collections.synchronizedSet(new HashSet<>());
 
+		accessories.add(hub.getEventRaiser());
 		accessories.add(godmodeAccessory = new GodModeHandler());
 		accessories.add(scoreboardProcessor = new ScoreboardProcessor());
 		accessories.add(tabPrinter = new PlayerListPrinter(hub));
@@ -101,16 +101,7 @@ public class Game implements Listener {
 
 		PluginManager pluginManager = Bukkit.getPluginManager();
 
-		// GAMER RECONNECT EVENT
-		pluginManager.registerEvent(GamerReconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerReconnect((GamerReconnectEvent) event),
-				xkUHC.instance());
-		// GAMER DISCONNECT EVENT
-		pluginManager.registerEvent(GamerDisconnectEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDisconnect((GamerDisconnectEvent) event),
-				xkUHC.instance());
-		// GAMER DEATH EVENT
-		pluginManager.registerEvent(GamerDeathEvent.class, this, EventPriority.HIGH, (listener, event) -> ((Game) listener).onGamerDeath((GamerDeathEvent) event),
-				xkUHC.instance());
-
+		pluginManager.registerEvents(this, xkUHC.instance());
 		changePhase(READY);
 
 		initScoreboardProcessor();
@@ -256,7 +247,7 @@ public class Game implements Listener {
 
 	}
 
-	private void changePhase(Phase phase) {
+	private void changePhase(GamePhase phase) {
 
 		this.phase = phase;
 
@@ -265,7 +256,7 @@ public class Game implements Listener {
 
 	}
 
-	public Phase getPhase() {
+	public GamePhase getPhase() {
 		return phase;
 	}
 
@@ -446,6 +437,8 @@ public class Game implements Listener {
 
 		stopwatch.start();
 
+		xkUHC.call(new GameStartEvent(this));
+
 	}
 
 	private void run() {
@@ -572,9 +565,7 @@ public class Game implements Listener {
 		}
 
 		// Call GameStopEvent on game disable
-		Bukkit.getScheduler()
-				.runTaskAsynchronously(xkUHC.instance(), () -> Bukkit.getPluginManager()
-						.callEvent(new GameStopEvent(Game.this)));
+		xkUHC.call(new GameStopEvent(this));
 
 	}
 
@@ -624,27 +615,6 @@ public class Game implements Listener {
 		return map;
 	}
 
-	public enum Phase {
-
-		READY(false),
-		STARTING(true),
-		RUNNING(true),
-		LETHAL(true),
-		ENDING(true),
-		STOPPED(false);
-
-		private final boolean running;
-
-		Phase(boolean running) {
-			this.running = running;
-		}
-
-		public boolean isRunning() {
-			return running;
-		}
-
-	}
-
 	@EventHandler
 	private void onGamerDisconnect(GamerDisconnectEvent event) {
 
@@ -691,26 +661,24 @@ public class Game implements Listener {
 			player.setGameMode(SPECTATOR);
 			gamer.setAlive(false);
 
-			String message;
-			boolean isPK = event.byGamer();
+			MessageFormatter format;
+			boolean isPK = event.isPK();
 
-			message = switch(event.getDamageCause()) {
+			format = switch(event.getDamageCause()) {
 
-				case PROJECTILE -> msg.gameRaw("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
+				case PROJECTILE -> msg.game("death.reason.PROJECTILE." + (isPK ? "player" : "default"));
 
-				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.gameRaw("death.reason.ENTITY_ATTACK.default");
+				case ENTITY_ATTACK -> (isPK) ? msg.gameRandomPick("death.reason.ENTITY_ATTACK.player") : msg.game("death.reason.ENTITY_ATTACK.default");
 
-				default -> msg.gameRaw("death.reason." + event.getDamageCause());
+				default -> msg.game("death.reason." + event.getDamageCause());
 
 			};
 
-			MessageFormatter formatter = new MessageFormatter(message);
-
 			if(isPK)
-				formatter.killer(event.getKiller());
+				format.killer(event.getKiller());
 
 			// Broadcast death message
-			hub.broadcast(formatter.gamer(gamer)
+			hub.broadcast(format.gamer(gamer)
 					.bond(bond)
 					.format());
 
@@ -720,7 +688,9 @@ public class Game implements Listener {
 
 			if(bondDead) {
 
-				xkUHC.callAsync(new BondEliminatedEvent(bond));
+				// TODO: move this logic
+
+				xkUHC.call(new BondEliminatedEvent(bond));
 
 				hub.broadcast(msg.game("death.bond")
 						.bond(bond)
